@@ -63,6 +63,18 @@ RUN wget http://compbio.cs.princeton.edu/conservation/conservation_code.tar.gz -
 
 RUN chmod -R a+r ./jense_shannon_divergence/matrix
 
+RUN wget http://eddylab.org/software/hmmer/hmmer-3.3.2.tar.gz -q \
+ && tar -xzf hmmer-3.3.2.tar.gz \
+ && mv hmmer-3.3.2/ hmmer-3.3.2-build/ \
+ && cd hmmer-3.3.2-build/ \
+ && ./configure --prefix /opt/conservation-software/hmmer-3.3.2/ \
+ && make \
+ && make install \
+ && cd easel/ \
+ && make install \
+ && cd ../../ \
+ && rm -r hmmer-3.3.2-build/ hmmer-3.3.2.tar.gz
+
 WORKDIR /opt/conservation
 
 COPY ./conservation ./
@@ -164,6 +176,7 @@ ENV BLASTDBCMD_CMD="/opt/conservation-software/ncbi-blast-2.9.0+/bin/blastdbcmd"
 ENV BLASTDMAKEDB_CMD="/opt/conservation-software/ncbi-blast-2.9.0+/bin/makeblastdb"
 ENV CDHIT_CMD="/opt/conservation-software/cd-hit-v4.8.1-2019-0228/cd-hit"
 ENV MUSCLE_CMD="/opt/conservation-software/muscle3.8.31_i86linux64"
+ENV PATH="/opt/conservation-software/hmmer-3.3.2/bin/:$PATH"
 ENV PDB_DIR="/tmp/pdb/"
 ENV PDB_CACHE_DIR="/tmp/pdb-cache/"
 
