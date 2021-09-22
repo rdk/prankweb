@@ -10,7 +10,7 @@
 
 ### Requirements
 
-The [HMMER](http://hmmer.org/) software package, including the Easel tools, must be installed and the programs must be available in `$PATH`. All development and testing is done using HMMER 3.3.2.
+The [HMMER](http://hmmer.org/) software package, including the Easel tools, must be installed and the programs must be available in `$PATH`; alternatively, the location of the HMMER programs can be specified using the `HMMER_DIR` environment variable. All development and testing is done using HMMER 3.3.2.
 
 The script `examples/database/download_Swiss-Prot.sh` can be used to download an example sequence database.
 

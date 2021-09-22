@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
-from os import path
+from os import environ, path
 import subprocess
 import random
+
+
+try:
+    HMMER_DIR = environ["HMMER_DIR"]
+except KeyError:
+    HMMER_DIR = ""
 
 
 def _generate_msa(fasta_file, database_file, working_directory):
@@ -11,8 +17,8 @@ def _generate_msa(fasta_file, database_file, working_directory):
         path.join(working_directory, path.basename(fasta_file)) + ".sto"
     )
     subprocess.run(
-        "phmmer -o /dev/null -A {} {} {}".format(
-            unweighted_msa_file, fasta_file, database_file
+        "{}phmmer -o /dev/null -A {} {} {}".format(
+            HMMER_DIR, unweighted_msa_file, fasta_file, database_file
         ).split()
     )
     return unweighted_msa_file
@@ -38,8 +44,8 @@ def _select_sequences(unweighted_msa_file, max_seqs):
 def _generate_msa_sample(unweighted_msa_file, ss_file):
     unweighted_msa_sample_file = unweighted_msa_file + ".sample"
     subprocess.run(
-        "esl-alimanip -o {} --seq-k {} {}".format(
-            unweighted_msa_sample_file, ss_file, unweighted_msa_file
+        "{}esl-alimanip -o {} --seq-k {} {}".format(
+            HMMER_DIR, unweighted_msa_sample_file, ss_file, unweighted_msa_file
         ).split(),
         stdout=subprocess.DEVNULL,
     )
@@ -50,7 +56,7 @@ def _calculate_sequence_weights(unweighted_msa_file):
     weighted_msa_file = unweighted_msa_file + ".w"
     with open(weighted_msa_file, mode="w") as f:
         subprocess.run(
-            "esl-weight {}".format(unweighted_msa_file).split(),
+            "{}esl-weight {}".format(HMMER_DIR, unweighted_msa_file).split(),
             stdout=f,
             stderr=subprocess.DEVNULL,
         )
@@ -61,8 +67,8 @@ def _calculate_information_content(weighted_msa_file):
     ic_file = weighted_msa_file + ".ic"
     r_file = weighted_msa_file + ".r"
     subprocess.run(
-        "esl-alistat --icinfo {} --rinfo {} --weight {}".format(
-            ic_file, r_file, weighted_msa_file
+        "{}esl-alistat --icinfo {} --rinfo {} --weight {}".format(
+            HMMER_DIR, ic_file, r_file, weighted_msa_file
         ).split(),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -114,18 +120,14 @@ def run_conservation_hmm(
 ):
     if msa:
         print("Option `--msa` is not yet implemented.")
-    unweighted_msa_file = _generate_msa(
-        fasta_file, database_file, working_directory
-    )
+    unweighted_msa_file = _generate_msa(fasta_file, database_file, working_directory)
     if max_seqs:
         ss_file = _select_sequences(unweighted_msa_file, max_seqs)
         if ss_file:
             unweighted_msa_sample_file = _generate_msa_sample(
                 unweighted_msa_file, ss_file
             )
-            weighted_msa_file = _calculate_sequence_weights(
-                unweighted_msa_sample_file
-            )
+            weighted_msa_file = _calculate_sequence_weights(unweighted_msa_sample_file)
         else:  # `ss_file` is `None` if MSA contains fewer than `max_seqs` sequences
             weighted_msa_file = _calculate_sequence_weights(unweighted_msa_file)
     else:
@@ -134,9 +136,7 @@ def run_conservation_hmm(
     fasta_file_header, fasta_file_sequence = _read_fasta_file(fasta_file)
     information_content, freqgap = _read_information_content(ic_file, r_file)
     if information_content:
-        assert (
-            len(fasta_file_sequence) == len(information_content) == len(freqgap)
-        )
+        assert len(fasta_file_sequence) == len(information_content) == len(freqgap)
         _write_feature(target_file, fasta_file_sequence, information_content)
         _write_feature(target_file + ".freqgap", fasta_file_sequence, freqgap)
     else:  # `information_content` is `None` if no MSA was generated

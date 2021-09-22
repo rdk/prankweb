@@ -176,7 +176,7 @@ ENV BLASTDBCMD_CMD="/opt/conservation-software/ncbi-blast-2.9.0+/bin/blastdbcmd"
 ENV BLASTDMAKEDB_CMD="/opt/conservation-software/ncbi-blast-2.9.0+/bin/makeblastdb"
 ENV CDHIT_CMD="/opt/conservation-software/cd-hit-v4.8.1-2019-0228/cd-hit"
 ENV MUSCLE_CMD="/opt/conservation-software/muscle3.8.31_i86linux64"
-ENV PATH="/opt/conservation-software/hmmer-3.3.2/bin/:$PATH"
+ENV HMMER_DIR="/opt/conservation-software/hmmer-3.3.2/bin/"
 ENV PDB_DIR="/tmp/pdb/"
 ENV PDB_CACHE_DIR="/tmp/pdb-cache/"
 
