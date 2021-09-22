@@ -36,9 +36,8 @@ from conservation_hmm import run_conservation_hmm
 ```
 and call it with the same arguments as described above
 ```
-run_conservation_hmm(fasta_file, database_file, working_directory, target_file, msa=False, max_seqs=None)
+run_conservation_hmm(fasta_file, database_file, working_directory, target_file, max_seqs=None)
 ```
-The `msa` argument is a flag and can be ignored, as it does not do anything yet.
 
 ### Output
 

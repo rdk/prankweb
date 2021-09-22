@@ -115,11 +115,8 @@ def run_conservation_hmm(
     database_file,
     working_directory,
     target_file,
-    msa=False,
     max_seqs=None,
 ):
-    if msa:
-        print("Option `--msa` is not yet implemented.")
     unweighted_msa_file = _generate_msa(fasta_file, database_file, working_directory)
     if max_seqs:
         ss_file = _select_sequences(unweighted_msa_file, max_seqs)
@@ -158,7 +155,6 @@ if __name__ == "__main__":
     parser.add_argument("database_file")
     parser.add_argument("working_directory")
     parser.add_argument("target_file")
-    parser.add_argument("--msa", action="store_true")
     parser.add_argument("--max_seqs", type=int)
     args = vars(parser.parse_args())
     run_conservation_hmm(**args)
