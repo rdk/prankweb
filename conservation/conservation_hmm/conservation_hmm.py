@@ -137,16 +137,10 @@ def run_conservation_hmm(
         _write_feature(target_file, fasta_file_sequence, information_content)
         _write_feature(target_file + ".freqgap", fasta_file_sequence, freqgap)
     else:  # `information_content` is `None` if no MSA was generated
-        _write_feature(
-            target_file,
-            fasta_file_sequence,
-            ("-1000.0" for i in fasta_file_sequence),
-        )
-        _write_feature(
-            target_file + ".freqgap",
-            fasta_file_sequence,
-            ("-1000.0" for i in fasta_file_sequence),
-        )
+        filler_values = ["-1000.0" for i in fasta_file_sequence]
+        _write_feature(target_file, fasta_file_sequence, filler_values)
+        _write_feature(target_file + ".freqgap", fasta_file_sequence, filler_values)
+    return weighted_msa_file
 
 
 if __name__ == "__main__":
