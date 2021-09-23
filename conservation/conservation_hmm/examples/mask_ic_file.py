@@ -3,7 +3,7 @@
 from argparse import ArgumentParser
 
 
-def _mask_ic_file(ic_file, freqgap_file, target_file, max_freqgap, mask_string):
+def mask_ic_file(ic_file, freqgap_file, target_file, max_freqgap, mask_string):
     with open(ic_file) as f_ic, open(freqgap_file) as f_freqgap, open(
         target_file, mode="w"
     ) as f_target:
@@ -23,4 +23,4 @@ if __name__ == "__main__":
     parser.add_argument("max_freqgap", type=float)
     parser.add_argument("mask_string")
     args = vars(parser.parse_args())
-    _mask_ic_file(**args)
+    mask_ic_file(**args)
