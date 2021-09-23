@@ -91,7 +91,7 @@ FROM debian:buster-20200607
 ARG UID=5988
 ARG GID=5988
 # Default p2rank version.
-ARG P2RANK_DOWNLOAD_URL=https://github.com/rdk/p2rank/releases/download/2.2/p2rank_2.2.tar.gz
+ARG P2RANK_DOWNLOAD_URL=https://github.com/rdk/p2rank/releases/download/2.3.1/p2rank_2.3.1.tar.gz
 
 #
 
