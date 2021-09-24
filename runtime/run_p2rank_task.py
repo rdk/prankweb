@@ -18,6 +18,7 @@ import collections
 import requests
 
 import conservation
+import conservation_hmm_wrapper
 import blast_database
 
 PROTEIN_UTILS_CMD = os.environ["PROTEIN_UTILS_CMD"]
@@ -298,8 +299,13 @@ def compute_from_structure_for_chain(
     configuration = conservation.ConservationConfiguration()
     configuration.execute_command = execute_command
     configuration.blast_databases = prepare_blast_databases()
-    msa_file = conservation.compute_conservation(
-        fasta_file, working_dir, target_file, configuration
+    # msa_file = conservation.compute_conservation(
+    #    fasta_file, working_dir, target_file, configuration
+    # )
+    # `database_file` in the next command must specify the path to the supplied
+    # UniRef50 file. This comment can be removed then.
+    msa_file = conservation_hmm_wrapper.run_conservation_hmm_wrapper(
+        fasta_file, database_file, working_dir, target_file
     )
     return ConservationTuple(target_file, msa_file)
 
