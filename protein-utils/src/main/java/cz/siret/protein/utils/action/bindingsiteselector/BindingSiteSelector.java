@@ -20,7 +20,7 @@ public class BindingSiteSelector {
      * Atoms in this distance to the ligands are considered to be
      * a part of the binding site.
      */
-    private final double bindingSiteDistance = 4.0;
+    private final double BINDING_SITE_DISTANCE = 4.0;
 
     public Set<ResidueNumber> getBindingSites(
             Structure structure, List<Ligand> ligands) {
@@ -31,7 +31,7 @@ public class BindingSiteSelector {
         List<Atom> proteinAtoms = ProteinUtils.polymerAtoms(
                 StructureUtils.getAllAtoms(structure));
         List<Atom> bindingSiteAtoms = StructureUtils.selectInProximity(
-                proteinAtoms, ligandAtoms, bindingSiteDistance);
+                proteinAtoms, ligandAtoms, BINDING_SITE_DISTANCE);
         return AtomUtils.getDistinctGroups(bindingSiteAtoms)
                 .stream()
                 .map(Group::getResidueNumber)

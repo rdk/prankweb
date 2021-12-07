@@ -1,9 +1,9 @@
-package cz.siret.protein.utils.command.prepareforprankweb.p2rank;
+package cz.siret.protein.utils.command.selectbindingsite;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class P2RankSequence {
+class SelectBindingSiteOutput {
 
     public static class Region {
 
@@ -25,13 +25,9 @@ public class P2RankSequence {
 
     public final List<String> seq = new ArrayList<>();
 
-    /**
-     * Conservation scores.
-     */
-    public final List<Double> scores = new ArrayList<>();
-
     public final List<Region> regions = new ArrayList<>();
 
     public final List<Integer> bindingSites = new ArrayList<>();
+
 
 }

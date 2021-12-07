@@ -1,9 +1,9 @@
-package cz.siret.protein.utils.command.prepareforp2rank;
+package cz.siret.protein.utils.command.filterstrcuture;
 
 import java.io.File;
 import java.util.List;
 
-public class PrepareForP2RankConfiguration {
+class FilterStructureArgs {
 
     /**
      * Input structure file.
@@ -13,7 +13,7 @@ public class PrepareForP2RankConfiguration {
     /**
      * Output directory.
      */
-    public File outputDirectory;
+    public File outputFile;
 
     /**
      * Chains to select, when null use all available chains.

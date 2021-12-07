@@ -1,7 +1,6 @@
-package cz.siret.protein.utils.action.parsecommandline;
+package cz.siret.protein.utils.action.commandlineparser;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
@@ -11,10 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
-public class ParseCommandLine {
+public class CommandLineParser {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(ParseCommandLine.class);
+            LoggerFactory.getLogger(CommandLineParser.class);
 
     private static final String FOOTER =
             "\nPlease report issues at "
@@ -24,7 +23,7 @@ public class ParseCommandLine {
 
     private final String header;
 
-    public ParseCommandLine(String command, String header) {
+    public CommandLineParser(String command, String header) {
         this.command = command;
         this.header = header;
     }
@@ -34,7 +33,7 @@ public class ParseCommandLine {
             printHelp(options);
             return null;
         }
-        CommandLineParser parser = new DefaultParser();
+        org.apache.commons.cli.CommandLineParser parser = new DefaultParser();
         try {
             return parser.parse(options, args);
         } catch (ParseException ex) {

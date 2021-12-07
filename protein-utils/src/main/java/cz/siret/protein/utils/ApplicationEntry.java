@@ -1,8 +1,8 @@
 package cz.siret.protein.utils;
 
 import cz.siret.protein.utils.command.Command;
-import cz.siret.protein.utils.command.prepareforp2rank.PrepareForP2Rank;
-import cz.siret.protein.utils.command.prepareforprankweb.PrepareForPrankWeb;
+import cz.siret.protein.utils.command.filterstrcuture.FilterStructure;
+import cz.siret.protein.utils.command.selectbindingsite.SelectBindingSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +18,8 @@ public class ApplicationEntry {
             LoggerFactory.getLogger(ApplicationEntry.class);
 
     private static final List<Command> COMMANDS = Arrays.asList(
-            new PrepareForP2Rank(),
-            new PrepareForPrankWeb()
+            new FilterStructure(),
+            new SelectBindingSite()
     );
 
     public static void main(String[] args) {
@@ -29,7 +29,7 @@ public class ApplicationEntry {
 
     private int run(String[] args) {
         if (shouldShowHelp(args)) {
-            System.out.println("Show help ...");
+            printAvailableActions();
             return 0;
         }
         Command command = getCommand(args);
@@ -59,6 +59,13 @@ public class ApplicationEntry {
             }
         }
         return false;
+    }
+
+    private void printAvailableActions() {
+        System.out.println("available actions:");
+        for (Command action : COMMANDS) {
+            System.out.println(" " + action.getName());
+        }
     }
 
     private Command getCommand(String args[]) {
@@ -228,12 +235,7 @@ public class ApplicationEntry {
 //        return null;
 //    }
 //
-//    private void printAvailableActions() {
-//        System.out.println("available actions:");
-//        for (Command<?> action : COMMANDS) {
-//            System.out.println(" " + action.getModuleName());
-//        }
-//    }
+
 //
 //    private CommandLine parseActionArguments(
 //            Command<?> action, String[] args) {

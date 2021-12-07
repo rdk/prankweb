@@ -27,7 +27,7 @@ public class LigandSelector {
     /**
      * 1.7 is a size of a covalent bond.
      */
-    private final double ligandClusteringDistance = 1.7;
+    private final double LIGAND_CLUSTER_DISTANCE = 1.7;
 
     public List<Ligand> selectLigands(Structure structure) {
         List<Group> ligandGroups = StructureUtils.getLigandGroups(structure);
@@ -45,7 +45,7 @@ public class LigandSelector {
         var distanceFunction = ClusterDistanceFunction.minDistance(
                 AtomUtils::atomEuclideanDistance);
         return clustering.cluster(
-                atoms, ligandClusteringDistance, distanceFunction);
+                atoms, LIGAND_CLUSTER_DISTANCE, distanceFunction);
     }
 
     private List<Ligand> createFromAtoms(List<List<Atom>> ligandGroups) {
@@ -83,7 +83,7 @@ public class LigandSelector {
                 if (atom != null) {
                     currentLigandAtoms.add(atom);
                 } else {
-                    LOG.warn("Can't find atom in strcuture for line: {}", line);
+                    LOG.warn("Can't find atom in structure for line: {}", line);
                 }
             } else if (line.startsWith("TER")) {
                 result.add(currentLigandAtoms);

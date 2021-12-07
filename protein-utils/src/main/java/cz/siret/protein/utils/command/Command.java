@@ -1,6 +1,6 @@
 package cz.siret.protein.utils.command;
 
-import cz.siret.protein.utils.action.parsecommandline.ParseCommandLine;
+import cz.siret.protein.utils.action.commandlineparser.CommandLineParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
@@ -22,7 +22,7 @@ public abstract class Command {
     public abstract void execute(String[] args) throws Exception;
 
     protected CommandLine parseCommandLine(Options options, String[] args) {
-        ParseCommandLine parser = new ParseCommandLine(
+        CommandLineParser parser = new CommandLineParser(
                 "protein-utils.jar " + getName(),
                 getDescription()
         );
