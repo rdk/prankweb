@@ -56,7 +56,7 @@ RUN wget http://www.drive5.com/muscle/downloads3.8.31/muscle3.8.31_i86linux64.ta
  && tar -xzf muscle3.8.31_i86linux64.tar.gz \
  && rm ./muscle3.8.31_i86linux64.tar.gz
 
-RUN wget http://compbio.cs.princeton.edu/conservation/conservation_code.tar.gz -q \
+RUN wget http://compbio.cs.princeton.edu/conservation/conservation_code.tar.gz -q --no-check-certificate \
  && tar -xzf conservation_code.tar.gz \
  && mv conservation_code jense_shannon_divergence \
  && rm ./conservation_code.tar.gz
