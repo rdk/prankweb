@@ -1,5 +1,6 @@
-FROM node:buster AS frontend-build
+FROM node:17.2-bullseye AS frontend-build
 
+# We need this for building client applicaiton.
 ARG GOOGLE_ANALYTICS
 
 WORKDIR /opt/prankweb-frontend
