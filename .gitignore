@@ -5,6 +5,7 @@ dist/
 node_modules/
 data/
 __pycache__/
+venv/
 
 *.iml
 .*
