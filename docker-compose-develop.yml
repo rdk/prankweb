@@ -37,7 +37,7 @@ services:
       PRANKWEB_DATA: "/data/prankweb"
 #    restart: unless-stopped
     volumes:
-      - prankweb:/data/prankweb
+      - predictions:/data/prankweb
   executor:
     build:
       context: ./
@@ -52,9 +52,8 @@ services:
 #    restart: unless-stopped
     volumes:
       - conservation:/data/conservation
-      - prankweb:/data/prankweb
+      - predictions:/data/prankweb
 volumes:
   rabbitmq:
   conservation:
-  prankweb:
-
+  predictions:
