@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 #
 # Given a sequence in a FASTA file compute MSA.
 #
@@ -126,7 +125,7 @@ def _save_sequence_to_fasta(header: str, sequence: str, output_file: str):
 def _format_fasta_sequence(header: str, sequence: str, line_width: int = 80):
     lines = "\n".join(
         [
-            sequence[index : index + line_width]
+            sequence[index: index + line_width]
             for index in range(0, len(sequence), line_width)
         ]
     )
@@ -139,7 +138,7 @@ def _format_fasta_sequence(header: str, sequence: str, line_width: int = 80):
 
 
 def _find_similar_sequences(
-    input_file: str, output_file: str, config: MsaConfiguration
+        input_file: str, output_file: str, config: MsaConfiguration
 ):
     """
     Try to find sufficient amount of similar sequences in databases.
@@ -154,10 +153,12 @@ def _find_similar_sequences(
 
 
 def _find_similar_sequences_in_database(
-    input_file: str, output_file: str, config: MsaConfiguration, database: str
+        input_file: str, output_file: str, config: MsaConfiguration,
+        database: str
 ) -> bool:
     logging.info(
-        "Searching for similar sequences using psiblast on '%s' database ...", database
+        "Searching for similar sequences using psiblast on '%s' database ...",
+        database
     )
     psiblast = os.path.join(config.working_dir, "psiblast")
     config.execute_psiblast(input_file, psiblast, database)
@@ -177,12 +178,13 @@ def _find_similar_sequences_in_database(
     config.execute_cdhit(sequences, cdhit_output_file, cdhit_log_file)
     if not _found_enough_sequences(cdhit_output_file, config):
         return False
-    _select_sequences(cdhit_output_file, output_file, config.maximum_sequences_for_msa)
+    _select_sequences(cdhit_output_file, output_file,
+                      config.maximum_sequences_for_msa)
     return True
 
 
 def _filter_psiblast_file(
-    input_file: str, output_file: str, config: MsaConfiguration
+        input_file: str, output_file: str, config: MsaConfiguration
 ) -> int:
     inputs_count = 0
     results_count = 0
@@ -216,7 +218,8 @@ def _select_sequences(input_file: str, output_file: str, count: int):
     sequences = _read_fasta_file(input_file)
     if 0 < count < len(sequences):
         filtered_sequence = [
-            sequences[index] for index in uniform_sample(0, len(sequences), count)
+            sequences[index] for index in
+            uniform_sample(0, len(sequences), count)
         ]
         logging.info(
             "Using %s from %s sequences", len(filtered_sequence), len(sequences)
@@ -242,7 +245,8 @@ def uniform_sample(start, end, total_count):
 
 
 def _compute_msa_for_sequences(
-    fasta_file: str, sequence_file: str, output_file: str, config: MsaConfiguration
+        fasta_file: str, sequence_file: str, output_file: str,
+        config: MsaConfiguration
 ):
     muscle_input = os.path.join(config.working_dir, "muscle-input")
     _merge_files([sequence_file, fasta_file], muscle_input)
@@ -258,7 +262,7 @@ def _merge_files(input_files: typing.List[str], output_file: str):
 
 
 def _prepare_for_conservation(
-    input_file: str, output_file: str, config: MsaConfiguration
+        input_file: str, output_file: str, config: MsaConfiguration
 ):
     """
     Put the marked sequence at the top of the file and change it's header,
@@ -270,7 +274,7 @@ def _prepare_for_conservation(
     for header, sequence in _read_fasta_file(input_file):
         if header.startswith(config.sequence_prefix):
             # We can remove the prefix here
-            first_header = header[len(config.sequence_prefix) :]
+            first_header = header[len(config.sequence_prefix):]
             first_sequence = sequence
             break
 
@@ -280,7 +284,8 @@ def _prepare_for_conservation(
         )
 
     with open(output_file, "w", newline="\n") as out_stream:
-        out_stream.write(_format_fasta_sequence(first_header, first_sequence, 60))
+        out_stream.write(
+            _format_fasta_sequence(first_header, first_sequence, 60))
         for header, sequence in _read_fasta_file(input_file):
             if header.startswith(config.sequence_prefix):
                 continue
