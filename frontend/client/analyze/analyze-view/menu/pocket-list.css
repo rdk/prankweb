@@ -1,0 +1,48 @@
+.pockets {
+    margin-top: 1em;
+    font-size: 80%;
+    line-height: 1em;
+}
+
+@media (max-width: 768px) {
+    .pockets {
+        padding-bottom: 1em;
+    }
+}
+
+.pockets .btn-show-pockets {
+    padding: 0 0.3rem;
+    font-size: 70%;
+}
+
+.pockets .pocket {
+    margin: 1em;
+    border-width: 0.2em;
+}
+
+.pocket .card-header button:first-of-type {
+    margin-right: 1rem;
+}
+
+.pocket .card-header button {
+    line-height: 0.8rem;
+}
+
+.pocket .card-body {
+    padding: 0.5rem 0.5rem 0 0.5rem;
+}
+
+.pocket-properties {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+}
+
+.pocket-properties dt {
+    width: 50%;
+}
+
+.pocket-properties dd {
+    width: 50%;
+    text-align: right;
+}

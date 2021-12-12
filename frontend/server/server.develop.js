@@ -1,11 +1,11 @@
-const express = require("express");
+const fs = require("fs");
 const path = require("path");
+const express = require("express");
 const webpack = require("webpack");
 const webpackConfig = require("../build/webpack.develop.js");
 const webpackMiddleware = require("webpack-dev-middleware");
 const webpackHotMiddleware = require("webpack-hot-middleware");
 const proxy = require("express-http-proxy");
-const fs = require("fs");
 
 const logger = require("./logging");
 const configuration = require("./configuration");
@@ -27,15 +27,15 @@ function getAssetsPath() {
 }
 
 function initializeApi(app) {
-  if (configuration["task-runner-service"]) {
+  if (configuration["proxy-service"]) {
     app.use("/api", proxy(
-      configuration["task-runner-service"], {
+      configuration["proxy-service"], {
         "proxyReqPathResolver": (request) => "/api" + request.url
       }));
-  } else if (configuration["task-runner-directory"]) {
+  } else if (configuration["proxy-directory"]) {
     const apiDirectory = path.join(
-      __dirname, configuration["task-runner-directory"]);
-    app.use("/api/v1/task", express.static(apiDirectory));
+      __dirname, configuration["proxy-directory"]);
+    app.use("/api/v2/predictions", express.static(apiDirectory));
     logger.info("Serving API from directory.", {"path": apiDirectory});
   }
 }
