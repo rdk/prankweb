@@ -148,7 +148,7 @@ WORKDIR /opt
 COPY --chown=user:user --from=hmm-based-conservation /opt/hmm-based-conservation ./hmm-based-conservation
 COPY --chown=user:user --from=hmm-based-conservation /opt/hmm-based-conservation-dependencies ./hmm-based-conservation-dependencies
 
-ENV SEQUENCE_FILE="/data/conservation/hmm-based/uniref50.fasta"
+ENV HMM_SEQUENCE_FILE="/data/conservation/hmm-based/uniref50.fasta"
 
 ENV HMMER_DIR="/opt/hmm-based-conservation-dependencies/hmmer-3.3.2/bin/"
 
