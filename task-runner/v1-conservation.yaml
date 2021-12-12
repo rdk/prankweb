@@ -1,7 +1,0 @@
-template:
-  version: 1
-  id: v1-conservation
-  urlPath: v1-conservation
-  readOnly: true
-  disableListing: true
-  allowGzipPublicFiles: true
