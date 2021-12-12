@@ -4,30 +4,57 @@ services:
     build:
       context: ./
       dockerfile: ./api-gateway/Dockerfile
-      labels:
-        com.github.cusbg.project: "prankweb"
-    restart: unless-stopped
-    networks:
-      - prankweb
+      args:
+        GOOGLE_ANALYTICS: ""
+    depends_on:
+      - rabbitmq
+      - api-server
+#    restart: unless-stopped
     ports:
       - "8020:80"
-  runtime:
+  rabbitmq:
     build:
       context: ./
-      dockerfile: ./runtime/Dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        P2RANK_DOWNLOAD_URL: "https://github.com/rdk/p2rank/releases/download/2.3.1/p2rank_2.3.1.tar.gz"
-      labels:
-        com.github.cusbg.project: "prankweb"
-    user: ${UID}:${GID}
-    restart: unless-stopped
-    networks:
-      - prankweb
+      dockerfile: ./rabbitmq/Dockerfile
+    hostname: "rabbitmq"
+    environment:
+      RABBITMQ_DEFAULT_USER: "user-develop"
+      RABBITMQ_DEFAULT_PASS: "develop"
+#    restart: unless-stopped
     volumes:
-      - /data/conservation/2020_06:/data/conservation/blast-database
-      - /data/conservation/hssp:/data/conservation/hssp
-      - /data/prankweb:/data/prankweb/task
-networks:
+      - rabbitmq:/var/lib/rabbitmq/mnesia/
+  api-server:
+    build:
+      context: ./
+      dockerfile: ./web-server/Dockerfile
+      args:
+        UID: ${UID-5988}
+        GID: ${GID-5988}
+    depends_on:
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      PRANKWEB_DATA: "/data/prankweb"
+#    restart: unless-stopped
+    volumes:
+      - prankweb:/data/prankweb
+  executor:
+    build:
+      context: ./
+      dockerfile: ./executor/Dockerfile
+      args:
+        UID: ${UID-5988}
+        GID: ${GID-5988}
+    depends_on:
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+#    restart: unless-stopped
+    volumes:
+      - conservation:/data/conservation
+      - prankweb:/data/prankweb
+volumes:
+  rabbitmq:
+  conservation:
   prankweb:
+
