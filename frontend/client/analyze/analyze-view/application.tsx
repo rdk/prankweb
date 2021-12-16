@@ -111,7 +111,12 @@ export class Application extends React.Component<{
     });
     const {plugin, predictionInfo} = this.props;
     const _this = this;
-    DataLoader.loadData(plugin, predictionInfo.database, predictionInfo.id)
+    DataLoader.loadData(
+      plugin,
+      predictionInfo.database,
+      predictionInfo.id,
+      predictionInfo.metadata.structureName
+      )
       .then((data: PrankData) => DataLoader.visualizeData(plugin, data))
       .then((data: PrankData) => {
         return new LiteMol.Promise<DataLoader.PrankData>((accept, reject) => {
@@ -154,7 +159,7 @@ export class Application extends React.Component<{
           <ToolsBox
             plugin={this.props.plugin}
             downloadUrl={getApiDownloadUrl(predictionInfo)}
-            downloadAs={predictionInfo.downloadName ?? "visualizations.zip"}
+            downloadAs={`p2rank-${predictionInfo.metadata.predictionName}.zip`}
             polymerView={this.state.polymerView}
             pocketsView={this.state.pocketsView}
             onPolymerViewChange={this.onPolymerViewChange}

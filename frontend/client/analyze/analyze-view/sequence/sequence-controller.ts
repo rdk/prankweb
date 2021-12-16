@@ -16,6 +16,7 @@ export class SequenceController extends LiteMol.Bootstrap.Components.Component<{
         indices: [],
         sequence: [],
         scores: [],
+        scoresLabel: "",
         bindingSites: [],
         regions: []
       }, pockets: [], pocketVisibility: [], version: 0

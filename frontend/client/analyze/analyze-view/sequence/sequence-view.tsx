@@ -146,6 +146,7 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
       features,
       chainRegions,
       sequence.scores,
+      sequence.scoresLabel,
       bindingSites);
   }
 

@@ -27,7 +27,7 @@
                                onchange="onInputChange('input-pdb')"
                                checked="checked">
                         <label class="form-check-label" for="input-pdb-code">
-                            PDB Code
+                            Experimental structures
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
@@ -35,7 +35,7 @@
                                value="input-user-file" name="input-type"
                                onchange="onInputChange('input-user-file')">
                         <label class="form-check-label" for="input-user-file">
-                            Custom structure file
+                            Custom structure
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
@@ -43,7 +43,7 @@
                                value="input-uniprot" name="input-type"
                                onchange="onInputChange('input-uniprot')">
                         <label class="form-check-label" for="input-uniprot">
-                            Custom PDB file
+                            Predicted structures
                         </label>
                     </div>
                 </div>
@@ -95,11 +95,11 @@
                 </div>
                 <div id="input-uniprot-block" style="display: none">
                     <div class="mb-3">
-                        <label for="uniprot-code" class="form-label">Uniprot Code</label>
+                        <label for="uniprot-code" class="form-label">UniProt ID</label>
                         <input type="text" class="form-control" id="uniprot-code"
                                name="uniprotCode"
-                               placeholder="..."
-                               title="...">
+                               placeholder="Q5VSL9"
+                               title="PrankWeb will use AlphaFold predicted structure.">
                     </div>
                 </div>
             </div>

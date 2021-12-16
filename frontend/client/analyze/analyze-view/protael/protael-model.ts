@@ -2,20 +2,35 @@ export class ProtaelContent {
 
   sequence: string;
 
-  ftracks: Array<{ label: string, color: string, showLine: boolean, allowOverlap: boolean, features: Array<ProtaelFeature> }>
+  ftracks: Array<{
+    label: string,
+    color: string,
+    showLine: boolean,
+    allowOverlap: boolean,
+    features: Array<ProtaelFeature>
+  }>
 
-  overlayfeatures: { label: string, features: Array<ProtaelRegion> }
+  overlayfeatures: {
+    label: string,
+    features: Array<ProtaelRegion>
+  }
 
-  qtracks: Array<{ label: string, color: string, type: string, values: number[] }> = []
+  qtracks: Array<{
+    label: string,
+    color: string,
+    type: string,
+    values: number[]
+  }> = []
 
   constructor(
-    seq: string,
+    sequence: string,
     pocketFeatures: ProtaelFeature[],
     chains: ProtaelRegion[],
-    conservationScores: number[],
+    score: number[],
+    scoreLabel: string,
     bindingSites: ProtaelFeature[]
   ) {
-    this.sequence = seq;
+    this.sequence = sequence;
     this.ftracks = [{
       label: "Pockets",
       color: "blue",
@@ -24,12 +39,12 @@ export class ProtaelContent {
       features: pocketFeatures
     }]
     this.overlayfeatures = {label: "Chains", features: chains};
-    if (conservationScores != null && conservationScores.length > 0) {
+    if (score != null && score.length > 0) {
       this.qtracks = [{
-        label: "Evolutionary conservation",
+        label: scoreLabel,
         color: "gray",
         type: "column",
-        values: conservationScores
+        values: score
       }]
     }
     if (bindingSites != null && bindingSites.length > 0) {

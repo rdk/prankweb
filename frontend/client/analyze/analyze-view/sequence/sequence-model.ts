@@ -4,6 +4,7 @@ export interface Sequence {
   indices: string[]
   sequence: string[]
   scores: number[]
+  scoresLabel: string
   regions: Array<{ name: string, start: number, end: number }>
   bindingSites: number[]
 }

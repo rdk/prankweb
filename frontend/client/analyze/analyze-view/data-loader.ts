@@ -111,23 +111,25 @@ function initColorMapping(
 }
 
 export function loadData(
-  plugin: LiteMol.Plugin.Controller, database: string, inputId: string
+  plugin: LiteMol.Plugin.Controller,
+  database: string,
+  identifier: string,
+  structureName: string
 ) {
   return new LiteMol.Promise<PrankData>((accept, reject) => {
     plugin.clear();
-    const baseUrl: string = getApiEndpoint(database, inputId) + "/public";
-    let pdbUrl: string = `${baseUrl}/structure.pdb`;
-    let predUrl: string = `${baseUrl}/prediction.json`;
-
+    const baseUrl: string = getApiEndpoint(database, identifier) + "/public";
     // Download pdb and create a model.
     let model = plugin.createTransform().add(
       plugin.root, LiteMol.Bootstrap.Entity.Transformer.Data.Download, {
-        "url": pdbUrl,
+        "url": `${baseUrl}/${structureName}`,
         "type": "String",
         "id": database
       })
       .then(LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateFromData, {
-        "format": LiteMol.Core.Formats.Molecule.SupportedFormats.PDB
+        "format": structureName.toLowerCase().endsWith(".cif") ?
+          LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF :
+          LiteMol.Core.Formats.Molecule.SupportedFormats.PDB
       }, {"isBinding": true})
       .then(LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateModel, {
         "modelIndex": 0
@@ -137,7 +139,7 @@ export function loadData(
     const predictions = model.add(
       plugin.root, LiteMol.Bootstrap.Entity.Transformer.Data.Download,
       {
-        "url": predUrl,
+        "url": `${baseUrl}/prediction.json`,
         "type": "String",
         "id": "predictions"
       }, {

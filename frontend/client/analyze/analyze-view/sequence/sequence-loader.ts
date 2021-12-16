@@ -1,6 +1,5 @@
 import LiteMol from "litemol";
 import {Sequence, SequenceListEntity, SequenceModel} from "./sequence-model";
-import compilePolymerNames = LiteMol.Core.Structure.Query.Compiler.compilePolymerNames;
 
 /**
  * LiteMol action for loading sequence from JSON.
@@ -19,6 +18,15 @@ export const LoadSequenceFromJson =
         "Create sequence entity", "Normal", async ctx => {
           await ctx.updateProgress("Creating sequence entity...");
           const structure = container.props.data.structure;
+          let scores: number[] = [];
+          let scoresLabel = "";
+          if (structure.scores["plddt"]) {
+            scores = scaleToZeroOneRange(structure.scores["plddt"]);
+            scoresLabel = "AlphaFold confidence scores";
+          } else if (structure.scores["conservation"]) {
+            scores = scaleToZeroOneRange(structure.scores["conservation"]);
+            scoresLabel = "Evolutionary conservation";
+          }
           console.log("Loading sequence from:", structure);
           // @ts-ignore
           return SequenceModel.create(transform, {
@@ -26,11 +34,17 @@ export const LoadSequenceFromJson =
             "sequence": {
               "indices": structure.indices,
               "sequence": structure.sequence,
-              "scores": structure.scores,
+              "scores": scores,
+              "scoresLabel": scoresLabel,
               "regions": structure.regions,
-              "bindingSites": structure.bindingSites,
+              "bindingSites": structure.binding,
             },
           })
         }).setReportTime(true);
     }
   );
+
+function scaleToZeroOneRange(values: number[]): number [] {
+  const max = values.reduce((left, right) => Math.max(left, right), 0);
+  return values.map(value => value / max);
+}

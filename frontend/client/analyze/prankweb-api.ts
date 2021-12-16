@@ -10,7 +10,10 @@ export interface PredictionInfo {
   created: string;
   lastChange: string;
   status: string;
-  downloadName?: string;
+  metadata: {
+    structureName: string;
+    predictionName: string;
+  }
 }
 
 export interface HttpWrap<T> {

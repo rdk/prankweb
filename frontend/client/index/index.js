@@ -155,6 +155,7 @@ function onSubmit(event) {
   }
 }
 
+// TODO Split into collect for each tab.
 function collectFormData() {
   const form = document.forms["input-form"];
   return {
@@ -164,7 +165,7 @@ function collectFormData() {
     "userFile": form["user-file"].files[0],
     "userFileChains": collectFormUserFileChains(form),
     "conservation": form["use-conservation"].checked,
-    "uniprot": form["uniprot-code"].checked,
+    "uniprot": form["uniprot-code"].value,
     "sealed": structureSealed,
   }
 }
@@ -251,7 +252,7 @@ function sendPostRequest(url, data) {
 
 function submitUniprot(formData) {
   const uniprot = formData.uniprot.toLowerCase();
-  alert("Uniprot is not available.")
+  window.location.href = createUrl("v3-alphafold", uniprot, []);
 }
 
 /**
