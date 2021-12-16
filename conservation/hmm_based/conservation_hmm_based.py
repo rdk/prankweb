@@ -232,9 +232,9 @@ def _mask_ic_file(
         for line_ic, line_freqgap in zip(ic_stream, freqgap_stream):
             index, freqgap, aa = line_freqgap.split("\t")
             if float(freqgap) > max_freqgap:
-                target_stream.write("X" + "\t".join((index, mask_string, aa)))
+                target_stream.write("\t".join((index, mask_string, aa)))
             else:
-                target_stream.write("L" + line_ic)
+                target_stream.write(line_ic)
 
 
 if __name__ == "__main__":
