@@ -1,17 +1,17 @@
 #
-# protein-utils
+# java-tools
 #
 
-FROM debian:bookworm-20211115 as protein-utils
+FROM debian:bookworm-20211115 as java-tools
 
 RUN apt-get update \
  && apt-get -y --no-install-recommends install openjdk-17-jdk
 
-WORKDIR /opt/protein-utils
-COPY ./protein-utils ./
+WORKDIR /opt/java-tools
+COPY ./java-tools ./
 
 RUN chmod +x ./gradlew && ./gradlew installDist \
-  && chmod a+x ./dist/bin/protein-utils
+  && chmod a+x ./dist/bin/java-tools
 
 #
 # alignment-based conservation
@@ -99,7 +99,7 @@ FROM debian:bookworm-20211115
 
 ARG UID=5988
 ARG GID=5988
-ARG P2RANK_URL=https://github.com/rdk/p2rank/releases/download/2.3.1/p2rank_2.3.1.tar.gz
+ARG P2RANK_URL=http://skoda.projekty.ms.mff.cuni.cz/temp/p2rank_2.4-beta.1.tar.gz
 ARG CELERY_BROKER_URL="amqp://user-develop:develop@localhost:5672"
 
 RUN apt-get update \
@@ -121,7 +121,7 @@ RUN mkdir /data \
  && mkdir /opt/hmm-based-conservation && chown user:user /opt/hmm-based-conservation \
  && mkdir /opt/hmm-based-conservation-dependencies && chown user:user /opt/hmm-based-conservation-dependencies \
  && mkdir /opt/p2rank && chown user:user /opt/p2rank \
- && mkdir /opt/protein-utils && chown user:user /opt/protein-utils \
+ && mkdir /opt/java-tools && chown user:user /opt/java-tools \
  && mkdir /opt/prankweb-executor && chown user:user /opt/prankweb-executor \
  && mkdir /tmp/pdb && chown user:user /tmp/pdb \
  && mkdir /tmp/pdb-cache && chown user:user /tmp/pdb-cache
@@ -152,7 +152,7 @@ ENV HMM_SEQUENCE_FILE="/data/conservation/hmm-based/uniref50.fasta"
 
 ENV HMMER_DIR="/opt/hmm-based-conservation-dependencies/hmmer-3.3.2/bin/"
 
-# Next lines are also used by protein-utils
+# Next lines are also used by java-tools
 ENV PDB_DIR="/tmp/pdb/"
 ENV PDB_CACHE_DIR="/tmp/pdb-cache/"
 
@@ -167,11 +167,11 @@ RUN wget -O p2rank.tar.gz $P2RANK_URL -q \
  && rm -r p2rank_*
 
 #
-# protein-utils
+# java-tools
 WORKDIR /opt
-COPY --chown=user:user --from=protein-utils /opt/protein-utils/dist ./protein-utils
+COPY --chown=user:user --from=java-tools /opt/java-tools/dist ./java-tools
 
-ENV PROTEIN_UTILS_CMD="/opt/protein-utils/bin/protein-utils"
+ENV JAVA_TOOLS_CMD="/opt/java-tools/bin/java-tools"
 
 #
 # prankweb executor
@@ -180,7 +180,7 @@ COPY --chown=user:user ./executor/requirements.txt ./
 
 RUN pip3 install -r requirements.txt
 
-COPY --chown=user:user ./executor/src ./
+COPY --chown=user:user ./executor/ ./
 RUN chmod a+x ./p2rank.sh \
  && chmod a+x ./run_p2rank.py \
  && chmod a+x ./run_p2rank_task.py

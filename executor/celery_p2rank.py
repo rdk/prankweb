@@ -23,9 +23,8 @@ def setup_celery_logging(**kwargs):
 prankweb.log.setup()
 
 
-@prankweb.task(name="prediction.run")
+@prankweb.task(name="prediction")
 def celery_run_prediction(directory: str):
-    print("Running signal ...")
     if not os.path.isdir(directory):
         print(f"Given directory does not exists {directory}")
         return

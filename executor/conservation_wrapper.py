@@ -19,7 +19,7 @@ def compute_hmm_based_conservation(
         execute_command: typing.Callable[[str], None]):
     compute_hmm_conservation(
         fasta_file,
-        os.environ.get("SEQUENCE_FILE", None),
+        os.environ.get("HMM_SEQUENCE_FILE", None),
         working_dir,
         output_file,
         execute_command,

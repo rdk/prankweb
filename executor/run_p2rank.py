@@ -7,13 +7,9 @@
 import os
 import argparse
 import sys
-import typing
 
-from p2rank_executor import \
-    ExecutorConfiguration, \
-    ConservationType, \
-    OutputType, \
-    execute
+from model import *
+from executor import execute
 
 
 def _read_arguments() -> typing.Dict[str, str]:
@@ -44,21 +40,26 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 def main():
     arguments = _read_arguments()
-    configuration = ExecutorConfiguration(
-        arguments["pdb"],
-        arguments["pdb_file"],
-        ConservationType.HMM
-        if arguments["conservation"] else ConservationType.NONE,
-        arguments["p2rank"],
-        arguments["working"],
-        arguments["output"],
-        OutputType.P2RANK,
-        [],
-        True,
-        sys.stdout,
-        sys.stderr
+    configuration = Execution(
+        p2rank=arguments["p2rank"],
+        java_tools=os.environ.get("JAVA_TOOLS_CMD", None),
+        working_directory=arguments["working"],
+        output_directory=arguments["output"],
+        output_type=OutputType.P2RANK,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        p2rank_configuration=_get_p2rank_configuration(arguments),
+        structure_code=arguments["pdb"],
+        structure_file=arguments["pdb_file"]
     )
     execute(configuration)
+
+
+def _get_p2rank_configuration(arguments):
+    if arguments["conservation"]:
+        return P2rankConfigurations.HMM.value
+    else:
+        return P2rankConfigurations.DEFAULT.value,
 
 
 if __name__ == "__main__":

@@ -3,90 +3,23 @@
 # Given a configuration executes p2rank and all components.
 #
 import json
-import enum
 import os
-import sys
-import typing
 import logging
 import requests
 import shutil
 import subprocess
-import zipfile
-import csv
-from dataclasses import dataclass
 
 import conservation_wrapper
+from model import *
 from output_prankweb import _prepare_output_prankweb
-
-
-class ConservationType(enum.Enum):
-    ALIGNMENT = "alignment"
-    HMM = "hmm"
-    NONE = "none"
-
-
-class OutputType(enum.Enum):
-    PRANKWEB = "prankweb"
-    P2RANK = "p2rank"
-
-
-@dataclass
-class Execution:
-    # Path to p2rank executable script.
-    p2rank: str
-    # Path to protein-utils
-    protein_utils: str
-    # Path to the working directory.
-    working_directory: str
-    # Path to the output directory.
-    output_directory: str
-    # Output type, determine output files.
-    output_type: OutputType
-    # Used for standard output
-    stdout: typing.TextIO
-    # Used for error output
-    stderr: typing.TextIO
-    # PDB structure code.
-    structure_code: typing.Optional[str] = None
-    # Absolute path to input structure file.
-    structure_file: typing.Optional[str] = None
-    # Uniprot structure code.
-    structure_uniprot: typing.Optional[str] = None
-    # If true the input structure is used without change.
-    structure_sealed: bool = False
-    # Allow filtering of chains. Leave empty to use all.
-    chains: typing.List[str] = list
-    # Selected configuration pipeline.
-    conservation: ConservationType = ConservationType.NONE
-    # Optional, shell execution function.
-    execute_command: typing.Optional[typing.Callable] = None
-
-
-@dataclass
-class ExecutionResult:
-    # Output structure file.
-    output_structure_file: typing.Optional[str] = None
-
-
-@dataclass
-class Structure:
-    # File as provided by the user.
-    raw_structure_file: str
-    # File to used for predictions.
-    structure_file: str
-    # Optional, collection of FASTA files for given chains.
-    sequence_files: typing.Dict[str, str]
-    # Optional, score to show on protein surface for each chain.
-    score_files: typing.Dict[str, str] = dict
-    # Optional, metadata that should be stored into output prediction file.
-    metadata: typing.Dict[str, any] = dict
-
 
 logger = logging.getLogger("prankweb.executor")
 logger.setLevel(logging.DEBUG)
 
 
 def execute(configuration: Execution) -> ExecutionResult:
+    # TODO Add configuration validation ...
+
     _prepare_directories(configuration)
     _create_execute_command(configuration)
     structure = _prepare_structure(configuration)
@@ -111,10 +44,6 @@ def _create_execute_command(configuration: Execution):
         return
 
     def execute_command(command: str):
-        # if "hmmer-3.3.2" in command:
-        #     logger.debug(f"Ignore '{command}'")
-        #     return
-
         logger.debug(f"Executing '{command}' ...")
         result = subprocess.run(
             command,
@@ -138,7 +67,8 @@ def _prepare_structure(configuration: Execution) -> Structure:
     raw_structure_file = _prepare_raw_structure_file(configuration, metadata)
     structure_file = _filter_raw_structure_file(
         raw_structure_file, configuration)
-    fasta_files = _prepare_fasta_files(structure_file, configuration)
+    # Use raw file as we need all chains for the visualisation.
+    fasta_files = _prepare_fasta_files(raw_structure_file, configuration)
     return Structure(
         raw_structure_file,
         structure_file,
@@ -150,15 +80,15 @@ def _prepare_structure(configuration: Execution) -> Structure:
 def _prepare_raw_structure_file(
         configuration: Execution, metadata:
         typing.Dict[str, any]) -> str:
-    result = os.path.join(configuration.working_directory, "structure-raw")
+    result = os.path.join(configuration.working_directory, "structure-raw.")
     if configuration.structure_code is not None:
-        result += ".pdb"
+        result += "pdb"
         _download_from_pdb(configuration.structure_code, result)
     elif configuration.structure_file is not None:
         result += _extension(configuration.structure_file)
         shutil.copy(configuration.structure_file, result)
     elif configuration.structure_uniprot is not None:
-        result += ".cif"
+        result += "cif"
         _download_from_alpha_fold(
             configuration.structure_uniprot, result, metadata)
     else:
@@ -180,7 +110,7 @@ def _download(url: str, destination: str) -> None:
 
 def _extension(file_name: str) -> str:
     """For 'name.ext' return 'ext'."""
-    return file_name[file_name.rindex("."):]
+    return file_name[file_name.rindex(".") + 1:]
 
 
 def _download_from_alpha_fold(
@@ -200,13 +130,15 @@ def _filter_raw_structure_file(
         return raw_file
     result = os.path.join(
         configuration.working_directory,
-        "structure" + _extension(raw_file)
+        "structure." + _extension(raw_file)
     )
-    command = f"{configuration.protein_utils} filter-structure" + \
-              f" --input {raw_file}" + \
-              f" --output {result} "
+    command = f"{configuration.p2rank} transform reduce-to-chains" + \
+              f" -f {raw_file}" + \
+              f" --out_file {result} "
     if configuration.chains:
-        command += "--chains=" + ",".join(configuration.chains)
+        command += "-chains " + ",".join(configuration.chains)
+    else:
+        assert False, "Structure is not sealed but no chains were selected."
     configuration.execute_command(command)
     return result
 
@@ -296,14 +228,9 @@ def _prepare_p2rank_input(
 def _execute_p2rank(
         input_structure: str, output_directory: str,
         configuration: Execution):
-    configuration_files = {
-        ConservationType.NONE: "default",
-        ConservationType.ALIGNMENT: "conservation",
-        ConservationType.HMM: "conservation_hmm"
-    }
     command = (
         f"{configuration.p2rank} predict "
-        f"-c {configuration_files[configuration.conservation]} "
+        f"-c {configuration.p2rank_configuration} "
         f"-threads 1 "
         f"-f {input_structure} "
         f"-o {output_directory} "
