@@ -58,9 +58,3 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
     if database is None:
         return "", 404
     return database.get_file(prediction_name, file_name)
-
-# More at : https://code-maven.com/hello-world-with-flask-and-python
-# Project template https://github.com/rochacbruno/flask-project-template/tree/main/project_name
-# Celery https://docs.celeryproject.org/en/stable/getting-started/first-steps-with-celery.html
-# Flask and JSON https://stackoverflow.com/questions/13081532/return-json-response-from-flask-view
-# Flask and upload file https://pythonbasics.org/flask-upload-file/

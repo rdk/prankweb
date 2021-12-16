@@ -10,7 +10,7 @@ prankweb.conf.broker_url = os.environ.get(
 
 def submit_directory_for_execution(directory):
     prankweb.send_task(
-        "prediction.run",
+        "prediction",
         args=[directory],
         queue="prankweb"
     )
