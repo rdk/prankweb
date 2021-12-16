@@ -9,7 +9,7 @@ services:
     depends_on:
       - rabbitmq
       - api-server
-#    restart: unless-stopped
+    # restart: unless-stopped
     ports:
       - "8020:80"
   rabbitmq:
@@ -20,7 +20,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "user-develop"
       RABBITMQ_DEFAULT_PASS: "develop"
-#    restart: unless-stopped
+    # restart: unless-stopped
     volumes:
       - rabbitmq:/var/lib/rabbitmq/mnesia/
   api-server:
@@ -35,7 +35,7 @@ services:
     environment:
       CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
       PRANKWEB_DATA: "/data/prankweb"
-#    restart: unless-stopped
+    # restart: unless-stopped
     volumes:
       - predictions:/data/prankweb
   executor:
@@ -49,11 +49,14 @@ services:
       - rabbitmq
     environment:
       CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
-#    restart: unless-stopped
+    # restart: unless-stopped
     volumes:
       - conservation:/data/conservation
       - predictions:/data/prankweb
 volumes:
   rabbitmq:
+    external: True
   conservation:
+    external: True
   predictions:
+    external: True
