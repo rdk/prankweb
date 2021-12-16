@@ -23,7 +23,7 @@ COPY --chown=user:user ./web-server/requirements.txt ./
 
 RUN pip3 install -r requirements.txt
 
-#USER ${UID}:${GID}
+USER ${UID}:${GID}
 
 EXPOSE 8020
 

@@ -190,6 +190,6 @@ RUN chmod a+x ./p2rank.sh \
 ENV PYTHONPATH="/opt/alignment-based-conservation:/opt/hmm-based-conservation"
 WORKDIR /opt/executor
 
-# USER ${UID}:${GID}
+USER ${UID}:${GID}
 
 CMD ["celery", "--app=celery_p2rank", "worker", "--queues=prankweb", "--concurrency=2"]
