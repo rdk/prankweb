@@ -6,6 +6,8 @@ node_modules/
 data/
 __pycache__/
 venv/
+p2rank/
+hmmer/
 
 *.iml
 .*
