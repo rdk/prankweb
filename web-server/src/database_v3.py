@@ -256,6 +256,7 @@ def _prepare_prediction_directory(prediction: Prediction):
         os.path.join(input_directory, "configuration.json"),
         {
             "p2rank_configuration": prediction.p2rank_configuration,
+            "structure_file": prediction.structure_file,
             "structure_code": prediction.structure_code,
             "structure_sealed": prediction.structure_sealed,
             "structure_uniprot": prediction.uniprot_code,
