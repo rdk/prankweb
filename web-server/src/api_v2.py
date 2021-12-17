@@ -28,13 +28,13 @@ def route_get_info(database_name: str, prediction_name: str):
 
 
 @api_v2.route(
-    "/predictions/<database_name>",
+    "/prediction/<database_name>",
     methods=["POST"]
 )
 def route_post(database_name: str):
     database = databases.get(database_name, None)
     if database is None:
-        return "Database", 404
+        return "", 404
     return database.create(flask.request.files)
 
 
