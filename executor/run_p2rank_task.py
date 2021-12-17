@@ -50,10 +50,10 @@ def main():
 def execute_directory_task(directory: str, keep_working: bool):
     log_file = os.path.join(directory, "log")
     with open(log_file, "w", encoding="utf-8") as stream:
-        handler = _create_log_handler(sys.stderr)
+        handler = _create_log_handler(stream)
         logger.addHandler(handler)
         try:
-            _execute_directory_task(directory, sys.stdout, keep_working)
+            _execute_directory_task(directory, stream, keep_working)
         finally:
             handler.flush()
             logger.removeHandler(handler)
