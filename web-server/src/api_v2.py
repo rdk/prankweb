@@ -24,7 +24,7 @@ def route_get_info(database_name: str, prediction_name: str):
     database = databases.get(database_name, None)
     if database is None:
         return "", 404
-    return database.get_info(prediction_name)
+    return database.get_info(prediction_name.upper())
 
 
 @api_v2.route(
@@ -46,7 +46,7 @@ def route_get_log(database_name: str, prediction_name: str):
     database = databases.get(database_name, None)
     if database is None:
         return "", 404
-    return database.get_log(prediction_name)
+    return database.get_log(prediction_name.upper())
 
 
 @api_v2.route(
@@ -57,4 +57,4 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
     database = databases.get(database_name, None)
     if database is None:
         return "", 404
-    return database.get_file(prediction_name, file_name)
+    return database.get_file(prediction_name, file_name.upper())

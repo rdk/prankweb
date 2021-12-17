@@ -51,6 +51,7 @@ class DatabaseV3(NestedReadOnlyDatabase):
         return super().create(files)
 
     def get_info(self, identifier: str):
+        identifier = identifier.upper()
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404
@@ -85,20 +86,20 @@ class DatabaseV3ConservationHmm(NestedReadOnlyDatabase):
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404
-        if not os.path.exists(directory):
-            pdb_code, chains = _parser_identifier(identifier)
-            prediction = Prediction(
-                directory=directory,
-                identifier=identifier,
-                database=self.name(),
-                structure_sealed=len(chains) == 0,
-                p2rank_configuration="conservation_hmm",
-                structure_code=pdb_code,
-                chains=chains,
-                conservation="hmm"
-            )
-            return _create_new_prediction(prediction)
-        return self._response_file(directory, "info.json")
+        if os.path.exists(directory):
+            return self._response_file(directory, "info.json")
+        pdb_code, chains = _parser_identifier(identifier)
+        prediction = Prediction(
+            directory=directory,
+            identifier=identifier,
+            database=self.name(),
+            structure_sealed=len(chains) == 0,
+            p2rank_configuration="conservation_hmm",
+            structure_code=pdb_code,
+            chains=chains,
+            conservation="hmm"
+        )
+        return _create_new_prediction(prediction)
 
 
 class DatabaseV3UserUpload(NestedReadOnlyDatabase):
@@ -159,18 +160,53 @@ class DatabaseV3AlphaFold(NestedReadOnlyDatabase):
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404
-        if not os.path.exists(directory):
-            prediction = Prediction(
-                directory=directory,
-                identifier=identifier,
-                database=self.name(),
-                structure_sealed=True,
-                p2rank_configuration="alphafold_conservation_hmm",
-                uniprot_code=identifier,
-                conservation="hmm"
-            )
-            return _create_new_prediction(prediction)
-        return self._response_file(directory, "info.json")
+        if os.path.exists(directory):
+            return self._response_file(directory, "info.json")
+        prediction = Prediction(
+            directory=directory,
+            identifier=identifier,
+            database=self.name(),
+            structure_sealed=True,
+            p2rank_configuration="alphafold",
+            uniprot_code=identifier,
+            conservation="none"
+        )
+        print(":", directory)
+        return _create_new_prediction(prediction)
+
+
+class DatabaseV3AlphaFoldConservationHmm(NestedReadOnlyDatabase):
+
+    def __init__(self):
+        super().__init__()
+        self.root = os.path.join(
+            self._get_database_directory(),
+            "v03-alphafold-conservation-hmm")
+
+    def name(self) -> str:
+        return "v3-alphafold-conservation-hmm"
+
+    def create(self, files):
+        # Post is not supported.
+        return super().create(files)
+
+    def get_info(self, identifier: str):
+        directory = self._get_directory(identifier)
+        if directory is None:
+            return "", 404
+        if os.path.exists(directory):
+            return self._response_file(directory, "info.json")
+        prediction = Prediction(
+            directory=directory,
+            identifier=identifier,
+            database=self.name(),
+            structure_sealed=True,
+            p2rank_configuration="alphafold_conservation_hmm",
+            uniprot_code=identifier,
+            conservation="hmm"
+        )
+        print(":", directory)
+        return _create_new_prediction(prediction)
 
 
 def _parser_identifier(identifier: str):
@@ -248,7 +284,7 @@ def _save_json(path: str, content):
 
 def _create_identifier():
     today = datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-    return today + "-" + str(uuid.uuid4())
+    return today + "-" + str(uuid.uuid4()).upper()
 
 
 def _configuration_to_prediction(
@@ -286,4 +322,7 @@ def register_database_v3() -> list[Database]:
     os.makedirs(v3_user_upload.root, exist_ok=True)
     v3_alpha_fold = DatabaseV3AlphaFold()
     os.makedirs(v3_alpha_fold.root, exist_ok=True)
-    return [v3, v3_conservation_hmm, v3_user_upload, v3_alpha_fold]
+    v3_alpha_fold_conservation_hmm = DatabaseV3AlphaFoldConservationHmm()
+    os.makedirs(v3_alpha_fold_conservation_hmm.root, exist_ok=True)
+    return [v3, v3_conservation_hmm, v3_user_upload,
+            v3_alpha_fold, v3_alpha_fold_conservation_hmm]
