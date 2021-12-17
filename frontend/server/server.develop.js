@@ -35,7 +35,7 @@ function initializeApi(app) {
   } else if (configuration["proxy-directory"]) {
     const apiDirectory = path.join(
       __dirname, configuration["proxy-directory"]);
-    app.use("/api/v2/predictions", express.static(apiDirectory));
+    app.use("/api/v2/prediction", express.static(apiDirectory));
     logger.info("Serving API from directory.", {"path": apiDirectory});
   }
 }

@@ -10,7 +10,7 @@ const common = require("./webpack.common");
 module.exports = merge(common, {
   "mode": "production",
   "output": {
-    "filename": path.join("assets", "bundle-[name]-[contenthash].js"),
+    "filename": path.join("bundle-[name]-[contenthash].js"),
   },
   "optimization": {
     "splitChunks": {
@@ -19,7 +19,7 @@ module.exports = merge(common, {
           "test": /[\\/]node_modules[\\/]/,
           "chunks": "all",
           "priority": 0,
-          "filename": path.join("assets", "bundle-commons-[contenthash].js"),
+          "filename": path.join("bundle-commons-[contenthash].js"),
         },
       },
     },
@@ -37,7 +37,7 @@ module.exports = merge(common, {
   "plugins": [
     new CleanWebpackPlugin({}),
     new MiniCssExtractPlugin({
-      "filename": "assets/style-[contenthash].css",
+      "filename": "style-[contenthash].css",
     }),
     new CopyWebpackPlugin({
       "patterns": [{
