@@ -92,14 +92,18 @@ class View {
   }
 
   getInputSection() {
-    if (this.pdbInput.checked) {
-      return View.PDB_VIEW;
+    console.log("getInputSection",
+      this.pdbInput.checked,
+      this.userInput.checked,
+      this.uniprotInput.checked);
+    if (this.uniprotInput.checked) {
+      return View.UNIPROT_VIEW;
     }
     if (this.userInput.checked) {
       return View.USER_VIEW;
     }
-    if (this.uniprotInput.checked) {
-      return View.UNIPROT_VIEW;
+    if (this.pdbInput.checked) {
+      return View.PDB_VIEW;
     }
     // Else select the first one.
     this.pdbInput.checked = true;
@@ -147,7 +151,6 @@ class View {
   getUserFileObject() {
     return this.userFile.files[0];
   }
-
 
   getUserChains() {
     return this.userChains.value;
