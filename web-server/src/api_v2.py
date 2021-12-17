@@ -57,4 +57,4 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
     database = databases.get(database_name, None)
     if database is None:
         return "", 404
-    return database.get_file(prediction_name, file_name.upper())
+    return database.get_file(prediction_name, file_name)
