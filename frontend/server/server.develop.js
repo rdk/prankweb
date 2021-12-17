@@ -30,7 +30,8 @@ function initializeApi(app) {
   if (configuration["proxy-service"]) {
     app.use("/api", proxy(
       configuration["proxy-service"], {
-        "proxyReqPathResolver": (request) => "/api" + request.url
+        "limit": "8mb",
+        "proxyReqPathResolver": (request) => "/api" + request.url,
       }));
   } else if (configuration["proxy-directory"]) {
     const apiDirectory = path.join(
