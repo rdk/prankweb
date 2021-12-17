@@ -15,16 +15,17 @@ def main():
         exit(1)
     directory = os.path.dirname(HMM_SEQUENCE_FILE)
     prepare_database(directory)
-    ...
-    # ENV SEQUENCE_FILE="/data/conservation/hmm-based/uniref50.fasta"
 
 
 def prepare_database(directory: str):
     print(f"Preparing database to '{directory}' ...")
+    print("This process may take a while.")
     tmp_file_name = "uniref50.fasta.zip"
+    print("Downloading file ...")
     execute_command(directory, f'wget "{URL}" -O {tmp_file_name}')
+    print("Unpacking file ...")
     unzip_file(os.path.join(directory, tmp_file_name), directory)
-    os.remove(tmp_file_name)
+    os.remove(os.path.join(directory, tmp_file_name))
     print(f"Preparing database to '{directory}' ... done")
 
 

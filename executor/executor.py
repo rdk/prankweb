@@ -44,6 +44,10 @@ def _create_execute_command(configuration: Execution):
         return
 
     def execute_command(command: str):
+        if "hmmer" in command and "CACHE_HMMER" in os.environ:
+            logger.debug(f"Ignore '{command}'")
+            return
+
         logger.debug(f"Executing '{command}' ...")
         result = subprocess.run(
             command,
@@ -149,7 +153,7 @@ def _prepare_fasta_files(
     output = os.path.join(configuration.working_directory, "fasta")
     os.makedirs(output, exist_ok=True)
     configuration.execute_command(
-        f"{configuration.p2rank} analyze fasta-raw"
+        f"{configuration.p2rank} analyze fasta-masked"
         f" --f {structure_file}"
         f" --o {output}"
     )

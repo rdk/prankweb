@@ -154,7 +154,10 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
         chain_scores = _read_conservation_file(conservation_file)
         index_range = range(region["start"], region["end"])
         for index, score in zip(index_range, chain_scores):
-            assert structure["sequence"][index] == score.code, \
+            # We use masked version, so there can be X in the
+            # computed conservation instead of other code.
+            assert structure["sequence"][index] == score.code and \
+                   not score.code == "X", \
                 f'{chain} {index} ' \
                 f'expected: "{structure["sequence"][index]}" ' \
                 f'actual: "{score.code}"'
@@ -170,6 +173,4 @@ def _read_conservation_file(path: str) -> typing.List[ResidueScore]:
             # We utilize 0 as the minimal value not.
             final_value = max(0, float(value))
             result.append(ResidueScore(code, final_value))
-    for item in result:
-        print(item.value)
     return result
