@@ -127,9 +127,9 @@ class DatabaseV3UserUpload(NestedReadOnlyDatabase):
         # Create prediction directories and files.
         os.makedirs(prediction.directory)
         info = _prepare_prediction_directory(prediction)
-        public_directory = os.path.join(prediction.directory, "public")
-        os.makedirs(public_directory)
-        structure_path = os.path.join(public_directory, structure_name)
+        input_directory = os.path.join(prediction.directory, "input")
+        os.makedirs(input_directory)
+        structure_path = os.path.join(input_directory, structure_name)
         files["structure"].save(structure_path)
         submit_directory_for_execution(prediction.directory)
         return flask.make_response(flask.jsonify(info), 201)
