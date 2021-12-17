@@ -6,7 +6,9 @@ import werkzeug.utils
 import abc
 
 extensions = {
-    ".json": "application/json"
+    ".json": "application/json",
+    ".csv": "text/csv",
+    ".zip": "application/zip",
 }
 
 

@@ -303,7 +303,7 @@ def _configuration_to_prediction(
         structure_sealed=user_configuration.get("structure-sealed", False),
         p2rank_configuration="conservation_hmm" if conservation else "default",
         structure_file=structure_file,
-        conservation=conservation,
+        conservation="hmm" if conservation else "none",
     )
 
 
