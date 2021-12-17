@@ -156,11 +156,12 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
         for index, score in zip(index_range, chain_scores):
             # We use masked version, so there can be X in the
             # computed conservation instead of other code.
-            assert structure["sequence"][index] == score.code and \
-                   not score.code == "X", \
+            expected_code = structure["sequence"][index]
+            actual_code = score.code
+            assert expected_code == actual_code or actual_code == "X", \
                 f'{chain} {index} ' \
-                f'expected: "{structure["sequence"][index]}" ' \
-                f'actual: "{score.code}"'
+                f'expected: "{expected_code}" ' \
+                f'actual: "{actual_code}"'
             result.append(score.value)
     return result
 
