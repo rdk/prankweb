@@ -128,7 +128,6 @@ class DatabaseV3UserUpload(NestedReadOnlyDatabase):
         os.makedirs(prediction.directory)
         info = _prepare_prediction_directory(prediction)
         input_directory = os.path.join(prediction.directory, "input")
-        os.makedirs(input_directory)
         structure_path = os.path.join(input_directory, structure_name)
         files["structure"].save(structure_path)
         submit_directory_for_execution(prediction.directory)
