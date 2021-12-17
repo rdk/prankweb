@@ -75,7 +75,7 @@ class View {
       });
     this.submit.addEventListener(
       "click",
-      () => controller.onSubmit());
+      (event) => controller.onSubmit(event));
     // Load chain list.
     if (this.getInputSection() === View.PDB_VIEW && !this.getPdbSealed()) {
       controller.initializePdbChainsAfterLoad();
@@ -405,7 +405,8 @@ class Controller {
     this.view.selectPdbChains(this.view.getChainStore());
   }
 
-  onSubmit() {
+  onSubmit(event) {
+    event.preventDefault();
     const submit = new Submit();
     switch (this.view.getInputSection()) {
       case View.PDB_VIEW:
