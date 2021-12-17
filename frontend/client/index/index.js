@@ -474,8 +474,13 @@ class Submit {
     fetch(url, {
       "method": "post",
       "body": data,
-    }).then((response) => {
-      window.location.href = response.headers.get("location");
+    }).then(async (response) => {
+      if (response.status !== 201) {
+        alert(`Can't create new task (status code: ${response.status})`);
+        return;
+      }
+      const content = await response.json();
+      window.location.href = this.createUrl("v3-user-upload", content.id, []);
     });
   }
 
