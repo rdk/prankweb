@@ -123,7 +123,8 @@ def _download_from_alpha_fold(
     entry_response = requests.get(entry_url)
     entry_content = json.loads(entry_response.content)
     metadata["alpha-fold"] = entry_content
-    assert len(entry_content) == 1
+    assert len(entry_content) == 1, \
+        "One entry expected got 'len(entry_content)'"
     cif_url = entry_content[0]["cifUrl"]
     _download(cif_url, destination)
 
