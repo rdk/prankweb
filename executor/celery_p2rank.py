@@ -28,4 +28,4 @@ def celery_run_prediction(directory: str):
     if not os.path.isdir(directory):
         print(f"Given directory does not exists {directory}")
         return
-    run_p2rank_task.execute_directory_task(directory)
+    run_p2rank_task.execute_directory_task(directory, keep_working=False)
