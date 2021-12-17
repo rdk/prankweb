@@ -28,7 +28,6 @@ class View {
     this.uniprotSection = document.getElementById("input-uniprot-block");
     this.uniprotCode = document.getElementById("uniprot-code");
     this.message = document.getElementById("message");
-    this.conservationSection = document.getElementById("conservation-block");
     this.conservation = document.getElementById("conservation");
     this.submit = document.getElementById("submit-button");
     //
