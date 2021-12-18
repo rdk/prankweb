@@ -25,6 +25,8 @@ class Prediction:
     structure_sealed: bool
     # Configuration file for p2rank.
     p2rank_configuration: str
+    # Additional metadata to save to info file.
+    metadata: typing.Dict
     # Identification of experimental structure.
     structure_code: typing.Optional[str] = None
     # File with user provided structure.
@@ -66,7 +68,8 @@ class DatabaseV3(NestedReadOnlyDatabase):
             structure_sealed=len(chains) == 0,
             p2rank_configuration="default",
             structure_code=pdb_code,
-            chains=chains
+            chains=chains,
+            metadata={},
         )
         return _create_new_prediction(prediction)
 
@@ -97,7 +100,8 @@ class DatabaseV3ConservationHmm(NestedReadOnlyDatabase):
             p2rank_configuration="conservation_hmm",
             structure_code=pdb_code,
             chains=chains,
-            conservation="hmm"
+            conservation="hmm",
+            metadata={},
         )
         return _create_new_prediction(prediction)
 
@@ -168,9 +172,11 @@ class DatabaseV3AlphaFold(NestedReadOnlyDatabase):
             structure_sealed=True,
             p2rank_configuration="alphafold",
             uniprot_code=identifier,
-            conservation="none"
+            conservation="none",
+            metadata={
+                "predictedStructure": True
+            },
         )
-        print(":", directory)
         return _create_new_prediction(prediction)
 
 
@@ -202,9 +208,11 @@ class DatabaseV3AlphaFoldConservationHmm(NestedReadOnlyDatabase):
             structure_sealed=True,
             p2rank_configuration="alphafold_conservation_hmm",
             uniprot_code=identifier,
-            conservation="hmm"
+            conservation="hmm",
+            metadata={
+                "predictedStructure": True
+            },
         )
-        print(":", directory)
         return _create_new_prediction(prediction)
 
 
@@ -274,6 +282,7 @@ def _create_info_file(prediction: Prediction):
         "created": now,
         "lastChange": now,
         "status": "queued",
+        "metadata": prediction.metadata,
     }
 
 
@@ -304,6 +313,7 @@ def _configuration_to_prediction(
         p2rank_configuration="conservation_hmm" if conservation else "default",
         structure_file=structure_file,
         conservation="hmm" if conservation else "none",
+        metadata={},
     )
 
 

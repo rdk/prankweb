@@ -13,6 +13,7 @@ export interface PredictionInfo {
   metadata: {
     structureName: string;
     predictionName: string;
+    predictedStructure?: boolean;
   }
 }
 

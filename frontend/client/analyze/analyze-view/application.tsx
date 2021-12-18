@@ -116,7 +116,7 @@ export class Application extends React.Component<{
       predictionInfo.database,
       predictionInfo.id,
       predictionInfo.metadata.structureName
-      )
+    )
       .then((data: PrankData) => DataLoader.visualizeData(plugin, data))
       .then((data: PrankData) => {
         return new LiteMol.Promise<DataLoader.PrankData>((accept, reject) => {
@@ -165,6 +165,11 @@ export class Application extends React.Component<{
             onPolymerViewChange={this.onPolymerViewChange}
             onPocketsViewChange={this.onPocketsViewChange}
           />
+          {predictionInfo.metadata["predictedStructure"] && (
+            <div className="alert alert-warning my-2" role="alert">
+              <strong>Warning:</strong> Predicted structure.
+            </div>
+          )}
           <PocketList
             pockets={this.state.pockets}
             showAll={this.onShowAll}
@@ -176,9 +181,9 @@ export class Application extends React.Component<{
         </div>
       );
     }
-    console.error(this.state.error);
+    console.error("Can't load data:", this.state.error);
     return (
-      <div style={{"textAlign":"center"}}>
+      <div style={{"textAlign": "center"}}>
         <h1 className="text-center">Can't load data</h1>
         <button className="btn btn-warning" onClick={this.loadData}>
           Force reload
