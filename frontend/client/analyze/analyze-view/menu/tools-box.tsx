@@ -110,14 +110,16 @@ function ControlBoxContent(
         <span className="fontello-icon">&#xe82d;</span>&nbsp;
         Download
       </a>
-      <button
-        type="button"
-        className="btn btn-outline-secondary"
-        onClick={props.toggleSequenceView}
-      >
-        <span className="fontello-icon">&#xe86d;</span>&nbsp;
-        Toggle sequence view
-      </button>
+      {/*
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          onClick={props.toggleSequenceView}
+        >
+          <span className="fontello-icon">&#xe86d;</span>&nbsp;
+          Toggle sequence view
+        </button>
+      */}
       <label>
         Peptide visualisation
         <select
