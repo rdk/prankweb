@@ -6,41 +6,69 @@ services:
       dockerfile: ./api-gateway/Dockerfile
       args:
         GOOGLE_ANALYTIS: "UA-136777636-1"
-      labels:
-        com.github.cusbg.project: "prankweb"
+    depends_on:
+      - rabbitmq
+      - api-server
     restart: unless-stopped
-    networks:
-      - prankweb
     ports:
       - "8020:80"
-  runtime:
+  rabbitmq:
     build:
       context: ./
-      dockerfile: ./runtime/Dockerfile
-      args:
-        UID: 1002
-        GID: 1002
-        P2RANK_DOWNLOAD_URL: "https://github.com/rdk/p2rank/releases/download/2.3.1/p2rank_2.3.1.tar.gz"
-      labels:
-        com.github.cusbg.project: "prankweb"
+      dockerfile: ./rabbitmq/Dockerfile
+    hostname: "rabbitmq"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     restart: unless-stopped
-    networks:
-      - prankweb
-    user: "1002"
     volumes:
-      - /data/conservation/blast-database:/data/conservation/blast-database
-      - /data/conservation/hssp:/data/conservation/hssp
-      - /data/prankweb:/data/prankweb/task
+      - rabbitmq:/var/lib/rabbitmq/mnesia/
+  api-server:
+    build:
+      context: ./
+      dockerfile: ./web-server/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    depends_on:
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      PRANKWEB_DATA: "/data/prankweb"
+      restart: unless-stopped
+    volumes:
+      - predictions:/data/prankweb
+  executor:
+    build:
+      context: ./
+      dockerfile: ./executor/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    depends_on:
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      restart: unless-stopped
+    volumes:
+      - conservation:/data/conservation
+      - predictions:/data/prankweb
   monitor:
     build:
       context: ./
       dockerfile: ./monitor/Dockerfile
-      args:
-        GOOGLE_ANALYTICS: "UA-136777636-2"
-      labels:
-        com.github.cusbg.project: "prankweb"
+    environment:
+      GOOGLE_ANALYTICS: "UA-136777636-2"
     restart: unless-stopped
     networks:
       - prankweb
-networks:
-  prankweb:
+volumes:
+  rabbitmq:
+    external: True
+    name: prankweb_rabbitmq
+  conservation:
+    external: True
+    name: prankweb_conservation
+  predictions:
+    external: True
+    name: prankweb_predictions
