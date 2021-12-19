@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 ResidueScore = collections.namedtuple("ResidueScore", ["code", "value"])
 
+
 @dataclasses.dataclass
 class Arguments:
     java_tools: str
@@ -29,6 +30,7 @@ class Arguments:
     visualization_directory: str
     output_directory: str
     database_name: str
+    parallel: bool
     now = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
 
@@ -56,10 +58,14 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--database", required=True,
         help="Name of target prankweb database. E.g. v1")
     parser.add_argument(
-        "--java_tools", required=True,
+        "--java-tools", required=True,
         help="Path to java-tool executable from prankweb project.")
     parser.add_argument(
         "--working", required=True,
+        help="Path to working directory.")
+    parser.add_argument(
+        "--parallel",
+        action="store_true",
         help="Path to working directory.")
     return vars(parser.parse_args())
 
@@ -67,7 +73,7 @@ def _read_arguments() -> typing.Dict[str, str]:
 def main(arguments):
     logging.basicConfig(level=logging.DEBUG)
     _import(Arguments(
-        arguments["java-tools"],
+        arguments["java_tools"],
         arguments["working"],
         arguments["conservation"],
         arguments["structure"],
@@ -75,6 +81,7 @@ def main(arguments):
         arguments["visualizations"],
         arguments["output"],
         arguments["database"],
+        arguments["parallel"],
     ))
 
 
@@ -84,18 +91,21 @@ def _import(arguments: Arguments):
         for name in os.listdir(arguments.prediction_directory)
         if name.endswith("_predictions.csv")
     ]
-    cpu_cures_to_use = multiprocessing.cpu_count() - 2
-    logger.info(f"Starting computations on {cpu_cures_to_use} cores")
-    with multiprocessing.Pool(cpu_cures_to_use) as pool:
-        failed = pool.starmap(_import_code_wrap, [
-            (arguments, code)
-            for code in codes_to_import
-        ])
-        pool.join()
-    failed = [code for code in failed if code is not None]
-    for code in failed:
-        logger.info(f"Failed to convert: {code}")
+    logger.info(f"Collected {len(codes_to_import)} codes for import")
+    if arguments.parallel:
+        cpu_cures_to_use = multiprocessing.cpu_count() - 2
+        logger.info(f"Starting computations on {cpu_cures_to_use} cores")
+        with multiprocessing.Pool(cpu_cures_to_use) as pool:
+            pool.starmap(_import_code_wrap, [
+                (arguments, code)
+                for code in codes_to_import
+            ])
+            pool.join()
+    else:
+        for code in codes_to_import:
+            _import_code_wrap(arguments, code)
     logger.info("Finished")
+
 
 def _import_code_wrap(arguments: Arguments, code: str):
     try:
@@ -103,6 +113,7 @@ def _import_code_wrap(arguments: Arguments, code: str):
         return None
     except:
         return code
+
 
 def _import_code(arguments: Arguments, code: str):
     root_dir = os.path.join(arguments.working_directory, code)
@@ -185,6 +196,10 @@ def _import_code(arguments: Arguments, code: str):
         }, stream, indent=2)
 
     os.remove(java_tools_file)
+
+    # move
+    target = os.path.join(arguments.output_directory, code.upper())
+    os.rename(root_dir, target)
 
 
 def _find_conservation(
