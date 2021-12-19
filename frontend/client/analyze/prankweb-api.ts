@@ -59,5 +59,5 @@ export async function fetchPredictionLog(
 }
 
 export function getApiDownloadUrl({database, id}: PredictionInfo) {
-  return `./api/v2/prediction/${database}/${id}/public/p2rank.zip`;
+  return `./api/v2/prediction/${database}/${id}/public/prankweb.zip`;
 }

@@ -153,13 +153,14 @@ export class Application extends React.Component<{
       );
     }
     const {predictionInfo} = this.props;
+    const downloadAs = `prankweb-${predictionInfo.metadata.predictionName}.zip`;
     if (this.state.data) {
       return (
         <div>
           <ToolsBox
             plugin={this.props.plugin}
             downloadUrl={getApiDownloadUrl(predictionInfo)}
-            downloadAs={`p2rank-${predictionInfo.metadata.predictionName}.zip`}
+            downloadAs={downloadAs}
             polymerView={this.state.polymerView}
             pocketsView={this.state.pocketsView}
             onPolymerViewChange={this.onPolymerViewChange}
