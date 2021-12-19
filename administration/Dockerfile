@@ -47,11 +47,11 @@ ENV JAVA_TOOLS_CMD="/opt/java-tools/bin/java-tools"
 #
 # prankweb administration
 WORKDIR /opt/administration
-COPY --chown=user:user ./executor/requirements.txt ./
+COPY --chown=user:user ./administration/requirements.txt ./
 
 RUN pip3 install -r requirements.txt
 
-COPY --chown=user:user ./executor/ ./
+COPY --chown=user:user ./administration/ ./
 
 USER ${UID}:${GID}
 
