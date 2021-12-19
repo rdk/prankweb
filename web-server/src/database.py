@@ -61,9 +61,17 @@ class NestedReadOnlyDatabase(Database, metaclass=abc.ABCMeta):
             return "", 404
         public_directory = os.path.join(directory, "public")
         file_name = self._secure_filename(file_name)
-        if not os.path.isfile(os.path.join(public_directory, file_name)):
-            return "", 404
-        return self._response_file(public_directory, file_name)
+        file_path = os.path.join(public_directory, file_name)
+        if os.path.isfile(file_path):
+            return self._response_file(public_directory, file_name)
+        gzip_file_name = file_name + ".gz"
+        gzip_path = os.path.join(public_directory, gzip_file_name)
+        if os.path.isfile(gzip_path):
+            return self._response_gzip_file(
+                public_directory,
+                file_name,
+                gzip_file_name)
+        return "", 404
 
     @staticmethod
     def _secure_filename(file_name: str) -> str:
@@ -79,6 +87,16 @@ class NestedReadOnlyDatabase(Database, metaclass=abc.ABCMeta):
             return None
         directory = identifier[1:3]
         return os.path.join(self.root, directory, identifier)
+
+    def _response_gzip_file(
+            self, directory: str, file_name: str, gzip_name: str,
+            mimetype=None):
+        if mimetype is None:
+            mimetype = self._mime_type(file_name)
+        response = flask.send_from_directory(
+            directory, gzip_name, mimetype=mimetype)
+        response.headers["Content-Encoding"] = "gzip"
+        return response
 
     def _response_file(self, directory: str, file_name: str, mimetype=None):
         """Respond with given file."""
@@ -104,5 +122,4 @@ def get_database_directory() -> str:
         "PRANKWEB_DATA",
         # For local development.
         os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                     "..", "..", "data", "database")
-    )
+                     "..", "..", "data", "database"))
