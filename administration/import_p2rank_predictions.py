@@ -56,8 +56,7 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--database", required=True,
         help="Name of target prankweb database. E.g. v1")
     parser.add_argument(
-        "--java-tools",
-        default=os.environ.get("JAVA_TOOLS_CMD", None),
+        "--java_tools", required=True,
         help="Path to java-tool executable from prankweb project.")
     parser.add_argument(
         "--working", required=True,
@@ -85,16 +84,25 @@ def _import(arguments: Arguments):
         for name in os.listdir(arguments.prediction_directory)
         if name.endswith("_predictions.csv")
     ]
-    failed_codes = []
     cpu_cures_to_use = multiprocessing.cpu_count() - 2
     logger.info(f"Starting computations on {cpu_cures_to_use} cores")
     with multiprocessing.Pool(cpu_cures_to_use) as pool:
-        pool.starmap(_import_code, [
+        failed = pool.starmap(_import_code_wrap, [
             (arguments, code)
             for code in codes_to_import
         ])
+        pool.join()
+    failed = [code for code in failed if code is not None]
+    for code in failed:
+        logger.info(f"Failed to convert: {code}")
     logger.info("Finished")
 
+def _import_code_wrap(arguments: Arguments, code: str):
+    try:
+        _import_code(arguments, code)
+        return None
+    except:
+        return code
 
 def _import_code(arguments: Arguments, code: str):
     root_dir = os.path.join(arguments.working_directory, code)

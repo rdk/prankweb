@@ -35,14 +35,12 @@ RUN addgroup --gid ${GID} user \
 # Since WORKDIR created with current user (root) we precreate the folders.
 RUN mkdir /data \
  && mkdir /opt/java-tools && chown user:user /opt/java-tools \
- && mkdir /opt/prankweb-administration && chown user:user /opt/prankweb-administration
+ && mkdir /opt/administration && chown user:user /opt/administration
 
 #
 # java-tools
 WORKDIR /opt
 COPY --chown=user:user --from=java-tools /opt/java-tools/dist ./java-tools
-
-ENV JAVA_TOOLS_CMD="/opt/java-tools/bin/java-tools"
 
 #
 # prankweb administration
