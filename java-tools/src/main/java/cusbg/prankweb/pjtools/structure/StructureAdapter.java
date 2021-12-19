@@ -16,6 +16,8 @@ public class StructureAdapter {
 
     private static final String PDB_GZ_EXTENSION = ".pdb.gz";
 
+    private static final String ENT_GZ_EXTENSION = ".ent.gz";
+
     private static final String CIF_EXTENSION = ".cif";
 
     private static final String CIF_GZ_EXTENSION = ".cif.gz";
@@ -27,7 +29,8 @@ public class StructureAdapter {
     protected Structure loadStructure(File structureFile) throws IOException {
         String fileName = structureFile.getName().toLowerCase();
         if (fileName.endsWith(PDB_EXTENSION)
-                || fileName.endsWith(PDB_GZ_EXTENSION)) {
+                || fileName.endsWith(PDB_GZ_EXTENSION)
+                || fileName.endsWith(ENT_GZ_EXTENSION)) {
             return loadPdbFile(structureFile);
         } else if (fileName.endsWith(CIF_EXTENSION)
                 || fileName.endsWith(CIF_GZ_EXTENSION)) {
