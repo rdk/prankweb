@@ -33,7 +33,7 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       PRANKWEB_DATA: "/data/prankweb"
       restart: unless-stopped
     volumes:
@@ -48,7 +48,7 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       restart: unless-stopped
     volumes:
       - conservation:/data/conservation
