@@ -11,7 +11,8 @@ import subprocess
 
 import conservation_wrapper
 from model import *
-from output_prankweb import _prepare_output_prankweb
+from output_prankweb import prepare_output_prankweb
+from output_p2rank import prepare_output_p2rank
 
 logger = logging.getLogger("prankweb.executor")
 logger.setLevel(logging.DEBUG)
@@ -43,7 +44,7 @@ def _create_execute_command(configuration: Execution):
     if configuration.execute_command is not None:
         return
 
-    def execute_command(command: str):
+    def execute_command(command: str, ignore_return_code: bool = True):
         if "hmmer" in command and "CACHE_HMMER" in os.environ:
             logger.debug(f"Ignore '{command}'")
             return
@@ -57,7 +58,8 @@ def _create_execute_command(configuration: Execution):
             stderr=configuration.stderr,
         )
         # Throw for non-zero (failure) return code.
-        result.check_returncode()
+        if not ignore_return_code:
+            result.check_returncode()
         logger.debug(f"Executing '{command}' ... done")
 
     configuration.execute_command = execute_command
@@ -108,6 +110,8 @@ def _download_from_pdb(code: str, destination: str) -> None:
 def _download(url: str, destination: str) -> None:
     logger.debug(f"Downloading '{url}' to '{destination}' ...")
     response = requests.get(url)
+    if not 199 < response.status_code < 299:
+        raise Exception(f"Download failed with code: {response.status_code}")
     with open(destination, "wb") as stream:
         stream.write(response.content)
 
@@ -198,6 +202,9 @@ def _prepare_conservation_for_chain(
         working_directory: str,
         output_file: str,
         configuration: Execution):
+    if os.path.exists(output_file) and configuration.lazy_execution:
+        logger.info("I'm lazy and configuration file already exists.")
+        return
     conservation_type = configuration.conservation
     if conservation_type == ConservationType.ALIGNMENT:
         conservation_wrapper.compute_alignment_based_conservation(
@@ -254,18 +261,10 @@ def _prepare_output(
         configuration: Execution) -> ExecutionResult:
     logger.info("Collecting output ...")
     if configuration.output_type == OutputType.P2RANK:
-        return _prepare_output_p2rank(p2rank_output, configuration)
+        return prepare_output_p2rank(
+            p2rank_output, structure, conservation, configuration)
     elif configuration.output_type == OutputType.PRANKWEB:
-        return _prepare_output_prankweb(
+        return prepare_output_prankweb(
             p2rank_output, structure, conservation, configuration)
     else:
         raise Exception("Invalid output type!")
-
-
-def _prepare_output_p2rank(
-        p2rank_output: str, configuration: Execution) -> ExecutionResult:
-    for file in os.listdir(p2rank_output):
-        source = os.path.join(p2rank_output, file)
-        target = os.path.join(configuration.output_directory, file)
-        os.rename(source, target)
-    return ExecutionResult()

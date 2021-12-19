@@ -53,6 +53,9 @@ class Execution:
     conservation: ConservationType = ConservationType.NONE
     # Optional, shell execution function.
     execute_command: typing.Optional[typing.Callable] = None
+    # If true and files produced by external command, the command is not
+    # executed.
+    lazy_execution: bool = False
 
 
 @dataclass

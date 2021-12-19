@@ -36,6 +36,10 @@ def _read_arguments() -> typing.Dict[str, any]:
         "--keep-working",
         action="store_true",
         help="Keep working data.")
+    parser.add_argument(
+        "--lazy-execution",
+        action="store_true",
+        help="Keep working data.")
     return vars(parser.parse_args())
 
 
@@ -44,16 +48,23 @@ def main():
     directory = arguments["directory"]
     if not os.path.exists(directory) or not os.path.isdir(directory):
         return
-    execute_directory_task(directory, arguments["keep_working"])
+    execute_directory_task(
+        directory,
+        arguments["keep_working"],
+        arguments["lazy_execution"])
 
 
-def execute_directory_task(directory: str, keep_working: bool):
+def execute_directory_task(
+        directory: str,
+        keep_working: bool = False,
+        lazy_execution: bool = False):
     log_file = os.path.join(directory, "log")
     with open(log_file, "w", encoding="utf-8") as stream:
         handler = _create_log_handler(stream)
         logger.addHandler(handler)
         try:
-            _execute_directory_task(directory, stream, keep_working)
+            _execute_directory_task(
+                directory, stream, keep_working, lazy_execution)
         finally:
             handler.flush()
             logger.removeHandler(handler)
@@ -70,7 +81,9 @@ def _create_log_handler(stream: typing.TextIO):
     return handler
 
 
-def _execute_directory_task(directory: str, stream, keep_working: bool):
+def _execute_directory_task(
+        directory: str, stream,
+        keep_working: bool, lazy_execution: bool):
     status_file = os.path.join(directory, "info.json")
     status = _load_json(status_file)
 
@@ -100,6 +113,7 @@ def _execute_directory_task(directory: str, stream, keep_working: bool):
         structure_sealed=configuration.get("structure_sealed", False),
         chains=configuration.get("chains", []),
         conservation=_conservation_type(configuration),
+        lazy_execution=lazy_execution
     )
     try:
         result = execute(execution)

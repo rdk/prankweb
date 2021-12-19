@@ -1,47 +1,55 @@
+#!/usr/bin/env python3
 import os
-import shutil
 import zipfile
 import json
 import csv
 import logging
 import collections
+import gzip
+import shutil
 
 from model import *
 
-logger = logging.getLogger("prankweb.output")
+logger = logging.getLogger("prankweb.output_prankweb")
 logger.setLevel(logging.DEBUG)
 
 ResidueScore = collections.namedtuple("ResidueScore", ["code", "value"])
 
 
-def _prepare_output_prankweb(
+def prepare_output_prankweb(
         p2rank_output: str,
         structure: Structure,
         conservation: typing.Dict[str, str],
         configuration: Execution) -> ExecutionResult:
     output_directory = configuration.output_directory
-    output_structure_file = \
-        "structure." + _extension(structure.raw_structure_file)
     os.makedirs(output_directory, exist_ok=True)
+    #
+    _copy_conservation(
+        conservation, os.path.join(p2rank_output, "conservation"))
     _zip_directory(
-        p2rank_output,
-        os.path.join(output_directory, "p2rank.zip"))
-    shutil.copy(
-        structure.raw_structure_file,
-        os.path.join(output_directory, output_structure_file))
-    shutil.copy(
-        os.path.join(p2rank_output, "structure.pdb_predictions.csv"),
-        os.path.join(output_directory, "p2rank-predictions.csv")
-    )
-    shutil.copy(
-        os.path.join(p2rank_output, "structure.pdb_residues.csv"),
-        os.path.join(output_directory, "p2rank-residues.csv")
-    )
-    prediction_file = os.path.join(output_directory, "prediction.json")
+        p2rank_output, os.path.join(output_directory, "prankweb.zip"))
+    #
+    output_structure_file = \
+        "structure." + _extension(structure.raw_structure_file + ".gz")
+    with open(structure.raw_structure_file, "rb") as input_stream, \
+            gzip.open(output_structure_file, "wb") as output_stream:
+        shutil.copyfileobj(input_stream, output_stream)
+    #
     _prepare_prediction_file(
-        prediction_file, structure, conservation,
-        p2rank_output, configuration)
+        os.path.join(output_directory, "prediction.json"),
+        structure,
+        conservation,
+        p2rank_output,
+        configuration)
     return ExecutionResult(output_structure_file=output_structure_file)
+
+
+def _copy_conservation(conservation: typing.Dict[str, str], destination: str):
+    os.makedirs(destination, exist_ok=True)
+    for source in conservation.values():
+        file_name = os.path.basename(source)
+        target = os.path.join(destination, file_name)
+        shutil.copy(source, target)
 
 
 def _zip_directory(directory_to_zip: str, output: str):
@@ -49,8 +57,7 @@ def _zip_directory(directory_to_zip: str, output: str):
         for root, dirs, files in os.walk(directory_to_zip):
             for file in files:
                 path_in_zip = os.path.relpath(
-                    os.path.join(root, file), os.path.join(directory_to_zip)
-                )
+                    os.path.join(root, file), os.path.join(directory_to_zip))
                 stream.write(os.path.join(root, file), path_in_zip)
 
 
@@ -153,15 +160,21 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
             raise RuntimeError(f"Missing conservation for '{chain}'")
         chain_scores = _read_conservation_file(conservation_file)
         index_range = range(region["start"], region["end"])
+        assert len(structure["sequence"]) == len(chain_scores), \
+            f"Sequences for chain {chain} " \
+            f"'{structure['sequence']}' " \
+            f"'{chain_scores} " \
+            " must have same size."
         for index, score in zip(index_range, chain_scores):
             # We use masked version, so there can be X in the
             # computed conservation instead of other code.
             expected_code = structure["sequence"][index]
             actual_code = score.code
-            assert expected_code == actual_code or actual_code == "X", \
-                f'{chain} {index} ' \
-                f'expected: "{expected_code}" ' \
-                f'actual: "{actual_code}"'
+            if not expected_code == actual_code and not actual_code == "X":
+                logger.debug(
+                    f'{chain} {index} '
+                    f'expected: "{expected_code}" '
+                    f'actual: "{actual_code}"')
             result.append(score.value)
     return result
 

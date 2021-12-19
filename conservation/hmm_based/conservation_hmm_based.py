@@ -10,8 +10,6 @@ HMMER_DIR = os.environ.get("HMMER_DIR", "")
 
 HMM_SEQUENCE_FILE = os.environ.get("HMM_SEQUENCE_FILE", None)
 
-DATABASE_LOCATION = "https://p2rank.cz/www/conservation/2021_03/uniref50.fasta.zip"
-
 
 def _read_arguments() -> typing.Dict[str, str]:
     parser = argparse.ArgumentParser(
@@ -21,7 +19,7 @@ def _read_arguments() -> typing.Dict[str, str]:
     parser.add_argument(
         "fasta_file",
         help="is the input sequence in FASTA format. The first line must be"
-             "the header, following lines must contain the sequcen. "
+             "the header, following lines must contain the sequence. "
              "Only a single header/sequence per file is assumed.")
     parser.add_argument(
         "database_file", default=HMM_SEQUENCE_FILE,
@@ -52,15 +50,13 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 
 def main(arguments):
-    arguments['execute_command'] = _default_execute_command()
+    arguments['execute_command'] = _default_execute_command
     compute_conservation(**arguments)
 
 
 def _default_execute_command(command: str):
-    # TODO: stdout=subprocess.DEVNULL,
-    result = subprocess.run(command, shell=True, env=os.environ.copy())
-    # Throw for non-zero (failure) return code.
-    result.check_returncode()
+    # We do not check return code here.
+    subprocess.run(command, shell=True, env=os.environ.copy())
 
 
 def compute_conservation(
@@ -163,11 +159,12 @@ def _generate_msa_sample(
 
 def _calculate_sequence_weights(
         unweighted_msa_file: str,
-        execute_command: typing.Callable[[str], None]
+        execute_command: typing.Callable[..., None]
 ) -> str:
     weighted_msa_file = unweighted_msa_file + ".w"
     cmd = f"{HMMER_DIR}esl-weight {unweighted_msa_file} > {weighted_msa_file}"
-    execute_command(cmd)
+    # This may return 25 return code, and it is actually fine
+    execute_command(cmd, ignore_return_code=True)
     return weighted_msa_file
 
 
@@ -179,8 +176,6 @@ def _calculate_information_content(
     r_file = weighted_msa_file + ".r"
     cmd = "{}esl-alistat --icinfo {} --rinfo {} --weight {}".format(
         HMMER_DIR, ic_file, r_file, weighted_msa_file)
-    # stdout=subprocess.DEVNULL,
-    # stderr=subprocess.DEVNULL,
     execute_command(cmd)
     return ic_file, r_file
 
