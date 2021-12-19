@@ -60,8 +60,6 @@ services:
     environment:
       GOOGLE_ANALYTICS: "UA-136777636-2"
     restart: unless-stopped
-    networks:
-      - prankweb
 volumes:
   rabbitmq:
     external: True
