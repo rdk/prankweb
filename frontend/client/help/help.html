@@ -17,10 +17,10 @@
   </p>
 
   <h2 id="specify-what-protein-to-analyze">
-    Specify what protein to analyze
+    Specify what structure to analyze
   </h2>
   <p>
-    There are two options to analyze a protein:
+    There are three options to obtain a structure:
   </p>
   <ul>
     <li>
@@ -28,11 +28,15 @@
       protein identification code.
     </li>
     <li>
-      A protein PDB file can be uploaded from user's computer. For description
-      of PDB format, please see its
-      <a href="http://www.wwpdb.org/documentation/file-format" target="_blank">
-        official documentation
-      </a>.
+      A structure file,
+      <a href="http://www.wwpdb.org/documentation/file-format" target="_blank">PDB</a>
+      or mmCif, can be uploaded from user's computer.
+    </li>
+    <li>
+      Provided Uniprot ID PrankWeb can download structure from
+      <a href="https://alphafold.ebi.ac.uk/">AlphaFold Protein Structure Database</a>.
+      For this option the structure visualisation is colored using
+      residue-level confidence scores.
     </li>
   </ul>
 
@@ -40,35 +44,10 @@
   <p>
     Besides selecting what protein to analyze, one can also specify whether
     evolutionary conservation should be included in the prediction model by
-    checking the <b>Run conservation analysis</b> checkbox. Note that
-    calculating conservation score for user-defined protein file can
-    significantly increase the time of analysis unless you specify its
-    PDB identification code or upload multiplesequence alignments for homology
-    calculation.
+    checking the <b>Use conservation</b> checkbox. Note that
+    calculating conservation score can significantly increase the time of
+    analysis.
   </p>
-  <p>
-    There are three ways how to calculate the conservation score for the
-    protein:
-  </p>
-  <ul>
-    <li>
-      You can specify custom alignment file, using which PrankWeb will
-      calculate the conservation score for your protein.
-    </li>
-    <li>
-      If you know the PDB code of you protein, you can specify in the the
-      textbox and PrankWeb will calculate the homology from the alignment
-      in
-      <a href="http://swift.cmbi.ru.nl/gv/hssp/" target="_blank">
-        HSSP database
-      </a>.
-    </li>
-    <li>
-      Fallback method: If any of the previous methods fails or neither pdb
-      code nor the alignment file is specified, PrankWeb will calculate the
-      conservation score automatically using alignment of similar proteins.
-    </li>
-  </ul>
 
   <h2 id="visualization">Visualization</h2>
   <p>
@@ -91,9 +70,9 @@
       are displayed with yellow.
     </li>
     <li>
-      If conservation is available, the protein atoms is colored with 11
-      shades of gray according to the conservation score of each residue.
-      Darker color depicts higher conservation score.
+      If score, either conservation or residue-level confidence, is
+      available, the protein atoms are colored with shades of gray according
+      to the score of each residue. Darker color depicts higher score.
     </li>
     <li>
       To switch between the views of the protein, use
@@ -159,8 +138,7 @@
     from the structural and sequential point of view. By default, the sequence
     view is zoomed out so that the whole protein is displayed. You can use the
     trackbar control to zoom in, or select the area with mouse and zoom to the
-    selection. A snapshot of the sequence can be captured and exported to SVG
-    (Scalable Vector Graphics) file using the rightmost button.
+    selection.
   </p>
 
   <h2 id="pocket-panel">Pocket panel</h2>
