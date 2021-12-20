@@ -29,9 +29,10 @@ def prepare_output_prankweb(
     _zip_directory(
         p2rank_output, os.path.join(output_directory, "prankweb.zip"))
     #
+    output_structure_name = "structure." + _extension(
+        structure.raw_structure_file) + ".gz"
     output_structure_file = os.path.join(
-        output_directory,
-        "structure." + _extension(structure.raw_structure_file) + ".gz")
+        output_directory, output_structure_name)
 
     with open(structure.raw_structure_file, "rb") as input_stream, \
             gzip.open(output_structure_file, "wb") as output_stream:
@@ -43,7 +44,7 @@ def prepare_output_prankweb(
         conservation,
         p2rank_output,
         configuration)
-    return ExecutionResult(output_structure_file=output_structure_file)
+    return ExecutionResult(output_structure_file=output_structure_name)
 
 
 def _copy_conservation(conservation: typing.Dict[str, str], destination: str):
