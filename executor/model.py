@@ -56,6 +56,8 @@ class Execution:
     # If true and files produced by external command, the command is not
     # executed.
     lazy_execution: bool = False
+    # For internal use, represent structure type using extension
+    structure_extension = ""
 
 
 @dataclass

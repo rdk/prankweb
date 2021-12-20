@@ -88,13 +88,17 @@ def _prepare_raw_structure_file(
         typing.Dict[str, any]) -> str:
     result = os.path.join(configuration.working_directory, "structure-raw.")
     if configuration.structure_code is not None:
-        result += "pdb"
+        configuration.structure_extension = "pdb"
+        result += configuration.structure_extension
         _download_from_pdb(configuration.structure_code, result)
     elif configuration.structure_file is not None:
-        result += _extension(configuration.structure_file)
+        configuration.structure_extension = \
+            _extension(configuration.structure_file)
+        result += configuration.structure_extension
         shutil.copy(configuration.structure_file, result)
     elif configuration.structure_uniprot is not None:
-        result += "cif"
+        configuration.structure_extension = "cif"
+        result += configuration.structure_extension
         _download_from_alpha_fold(
             configuration.structure_uniprot, result, metadata)
     else:
@@ -228,7 +232,8 @@ def _prepare_p2rank_input(
         conservation: typing.Dict[str, str]) -> str:
     directory = os.path.join(configuration.working_directory, "p2rank-input")
     os.makedirs(directory, exist_ok=True)
-    structure_file = os.path.join(directory, "structure.pdb")
+    structure_file = os.path.join(
+        directory, "structure." + configuration.structure_extension)
     shutil.copy(structure.structure_file, structure_file)
     for chain, file in conservation.items():
         shutil.copy(

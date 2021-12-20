@@ -76,7 +76,8 @@ def _prepare_prediction_file(
         p2rank_output: str,
         configuration: Execution):
     predictions_file = os.path.join(
-        p2rank_output, "structure.pdb_predictions.csv")
+        p2rank_output,
+        f"structure.{configuration.structure_extension}_predictions.csv")
 
     structure_file = os.path.join(
         configuration.working_directory, "structure-information.json")
