@@ -76,14 +76,24 @@ function initColorMapping(
   let seq = sequence.props.sequence;
   let seqIndices = seq.indices;
   let seqScores = seq.scores;
+
+  const seqScoreMin = Math.min.apply(Math, seqScores);
+  const seqScoreMax = Math.max.apply(Math, seqScores);
+  const seqScoreRange = seqScoreMax - seqScoreMin;
+
   if (seqScores != null) {
     seqIndices.forEach((seqIndex, i) => {
-      let shade = Math.round((1 - seqScores[i]) * 10); // Shade within [0,10]
+      // Scale to value [0,1].
+      let normalizedScore = (seqScores[i] - seqScoreMin) / seqScoreRange;
+      // Move [0,1] to [-1,0] and with abs [1,0]. So high values are black.
+      normalizedScore = Math.abs(normalizedScore - 1);
+      // The shade needs to be number [0, 10] from black to white.
+      const shade = 2 + Math.round(normalizedScore * 8);
+      //
       let query = residuesBySeqNums(seqIndex).compile();
       for (const atom of query(model.queryContext).unionAtomIndices()) {
         // First there is fallbackColor(0), then pocketColors(1-9) and lastly conservation colors.
         atomColorMap[atom] = shade + Colors.size + 1;
-        // First there is fallbackColor(0), then pocketColors(1-9) and lastly conservation colors.
         atomColorMapConservation[atom] = shade + Colors.size + 1;
         residueColorMap[atom] = shade + Colors.size + 1;
       }

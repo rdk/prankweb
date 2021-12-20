@@ -21,10 +21,10 @@ export const LoadSequenceFromJson =
           let scores: number[] = [];
           let scoresLabel = "";
           if (structure.scores["plddt"]) {
-            scores = scaleToZeroOneRange(structure.scores["plddt"]);
+            scores = structure.scores["plddt"];
             scoresLabel = "AlphaFold confidence scores";
           } else if (structure.scores["conservation"]) {
-            scores = scaleToZeroOneRange(structure.scores["conservation"]);
+            scores = structure.scores["conservation"];
             scoresLabel = "Evolutionary conservation";
           }
           console.log("Loading sequence from:", structure);
@@ -44,7 +44,3 @@ export const LoadSequenceFromJson =
     }
   );
 
-function scaleToZeroOneRange(values: number[]): number [] {
-  const max = values.reduce((left, right) => Math.max(left, right), 0);
-  return values.map(value => value / max);
-}
