@@ -78,7 +78,7 @@ def main(arguments):
         arguments["conservation"],
         arguments["structure"],
         arguments["prediction"],
-        arguments["visualizations"],
+        arguments["visualization"],
         arguments["output"],
         arguments["database"],
         arguments["parallel"],
@@ -110,15 +110,24 @@ def _import(arguments: Arguments):
 def _import_code_wrap(arguments: Arguments, code: str):
     try:
         _import_code(arguments, code)
-        return None
     except:
-        return code
+        # The folder stays in working directory.
+        pass
 
 
 def _import_code(arguments: Arguments, code: str):
+    target = os.path.join(
+        arguments.output_directory,
+        code.upper()[1:3],
+        code.upper()
+    )
+    if os.path.isdir(target):
+        return
+
     root_dir = os.path.join(arguments.working_directory, code)
     os.makedirs(root_dir, exist_ok=True)
     public_dir = os.path.join(root_dir, "public")
+    os.makedirs(public_dir, exist_ok=True)
 
     structure_file = os.path.join(
         arguments.structure_directory,
@@ -156,7 +165,7 @@ def _import_code(arguments: Arguments, code: str):
                 f"pdb{code}.ent.gz_points.pdb.gz"),
             **{
                 f"conservation/conservation-{chain}": path
-                for chain, path in conservation
+                for chain, path in conservation.items()
             }
         }
     )
@@ -190,7 +199,7 @@ def _import_code(arguments: Arguments, code: str):
     prediction_file = os.path.join(public_dir, "prediction.json")
     with open(prediction_file, "w", encoding="utf-8") as stream:
         json.dump({
-            "structure": _load_structure_file(structure_file, conservation),
+            "structure": _load_structure_file(java_tools_file, conservation),
             "pockets": _load_pockets(p2rank_predictions_file),
             "metadata": {},
         }, stream, indent=2)
@@ -198,7 +207,6 @@ def _import_code(arguments: Arguments, code: str):
     os.remove(java_tools_file)
 
     # move
-    target = os.path.join(arguments.output_directory, code.upper())
     os.rename(root_dir, target)
 
 
@@ -302,12 +310,20 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
             raise RuntimeError(f"Missing conservation for '{chain}'")
         chain_scores = _read_conservation_file(conservation_file)
         index_range = range(region["start"], region["end"])
-        assert len(structure["sequence"]) == len(chain_scores), \
-            f"Sequences for chain {chain} " \
-            f"'{structure['sequence']}' " \
-            f"'{chain_scores} " \
-            " must have same size."
+        expected = ''.join(structure["sequence"][
+                           region["start"]:region["end"] + 1])
+        actual = ''.join([item.code for item in chain_scores
+                          if item.code not in ['n', 'u', 'l']])
+        if not len(expected) == len(actual):
+            logger.error(
+                f"Chain {chain} "
+                f"expected: {len(expected)} actual: {len(actual)} "
+                f"\n{expected}"
+                f"\n{actual}")
+            raise RuntimeError()
         for index, score in zip(index_range, chain_scores):
+            if score.code in ['n', 'u', 'l']:
+                continue
             result.append(score.value)
     return result
 
