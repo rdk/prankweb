@@ -30,9 +30,9 @@ def prepare_output_prankweb(
         p2rank_output, os.path.join(output_directory, "prankweb.zip"))
     #
     output_structure_name = "structure." + _extension(
-        structure.raw_structure_file) + ".gz"
+        structure.raw_structure_file)
     output_structure_file = os.path.join(
-        output_directory, output_structure_name)
+        output_directory, output_structure_name + ".gz")
 
     with open(structure.raw_structure_file, "rb") as input_stream, \
             gzip.open(output_structure_file, "wb") as output_stream:
