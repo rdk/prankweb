@@ -6,11 +6,22 @@ import celery.signals
 import run_p2rank_task
 
 prankweb = celery.Celery("prankweb")
-prankweb.conf.broker_url = os.environ.get(
-    "CELERY_BROKER_URL",
-    "amqp://user-develop:develop@localhost:5672"
-)
-prankweb.conf.task_default_queue = 'prankweb'
+
+if "CELERY_BROKER_URL" in os.environ:
+    prankweb.conf.broker_url = os.environ["CELERY_BROKER_URL"]
+else:
+    prankweb.conf.update({
+        'broker_url': 'filesystem://',
+        'broker_transport_options': {
+            'data_folder_in': '/data/prankweb/broker/queue/',
+            'data_folder_out': '/data/prankweb/broker/queue/',
+            'data_folder_processed': '/data/prankweb/broker/processed'
+        },
+        'result_persistent': False,
+        'task_serializer': 'json',
+        'result_serializer': 'json',
+        'accept_content': ['json']}
+    )
 
 
 @celery.signals.setup_logging.connect

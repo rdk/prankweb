@@ -7,22 +7,22 @@ services:
       args:
         GOOGLE_ANALYTIS: "UA-136777636-1"
     depends_on:
-      - rabbitmq
+#      - rabbitmq
       - api-server
     restart: unless-stopped
     ports:
       - "8020:80"
-  rabbitmq:
-    build:
-      context: ./
-      dockerfile: ./rabbitmq/Dockerfile
-    hostname: "rabbitmq"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-    restart: unless-stopped
-    volumes:
-      - rabbitmq:/var/lib/rabbitmq/mnesia/
+#  rabbitmq:
+#    build:
+#      context: ./
+#      dockerfile: ./rabbitmq/Dockerfile
+#    hostname: "rabbitmq"
+#    environment:
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    restart: unless-stopped
+#    volumes:
+#      - rabbitmq:/var/lib/rabbitmq/mnesia/
   api-server:
     build:
       context: ./
@@ -30,10 +30,10 @@ services:
       args:
         UID: ${UID}
         GID: ${GID}
-    depends_on:
-      - rabbitmq
+#    depends_on:
+#      - rabbitmq
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+#      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       PRANKWEB_DATA: "/data/prankweb"
       restart: unless-stopped
     volumes:
@@ -48,7 +48,7 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+#      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       restart: unless-stopped
     volumes:
       - conservation:/data/conservation
