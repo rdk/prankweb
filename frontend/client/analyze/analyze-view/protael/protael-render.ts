@@ -1,5 +1,6 @@
 // @ts-nocheck
 import {Protael} from "./protael.js";
+import {ProtaelContent} from "./protael-model";
 
 import "./protael.css";
 
