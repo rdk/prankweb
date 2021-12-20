@@ -73,7 +73,7 @@ RUN apt-get update \
  && apt-get -y --no-install-recommends install \
  wget curl ca-certificates \
  python3 python3-pip \
- make g++ zlib1g-dev libgomp1
+ make g++ zlib1g-dev libgomp1 vim
 
 RUN wget http://eddylab.org/software/hmmer/hmmer-3.3.2.tar.gz -q \
  && tar -xzf hmmer-3.3.2.tar.gz \
@@ -122,7 +122,7 @@ RUN mkdir /data \
  && mkdir /opt/hmm-based-conservation-dependencies && chown user:user /opt/hmm-based-conservation-dependencies \
  && mkdir /opt/p2rank && chown user:user /opt/p2rank \
  && mkdir /opt/java-tools && chown user:user /opt/java-tools \
- && mkdir /opt/prankweb-executor && chown user:user /opt/prankweb-executor \
+ && mkdir /opt/executor && chown user:user /opt/executor \
  && mkdir /tmp/pdb && chown user:user /tmp/pdb \
  && mkdir /tmp/pdb-cache && chown user:user /tmp/pdb-cache
 
@@ -192,4 +192,4 @@ WORKDIR /opt/executor
 
 USER ${UID}:${GID}
 
-CMD ["celery", "--app=celery_p2rank", "worker", "--queues=prankweb", "--concurrency=2"]
+CMD ["celery", "--app=celery_p2rank", "worker", "--concurrency=2"]

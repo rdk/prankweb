@@ -11,7 +11,7 @@ ENV PRANKWEB_DATA="/data/database"
 RUN apt-get update \
  && apt-get -y --no-install-recommends install \
  wget curl \
- python3 python3-pip
+ python3 python3-pip vim
 
 RUN addgroup --gid ${GID} user \
  && useradd --uid ${UID} --gid ${GID} user
