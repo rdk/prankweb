@@ -73,7 +73,7 @@ RUN apt-get update \
  && apt-get -y --no-install-recommends install \
  wget curl ca-certificates \
  python3 python3-pip \
- make g++ zlib1g-dev libgomp1 vim
+ make g++ zlib1g-dev libgomp1
 
 RUN wget http://eddylab.org/software/hmmer/hmmer-3.3.2.tar.gz -q \
  && tar -xzf hmmer-3.3.2.tar.gz \
@@ -107,7 +107,7 @@ RUN apt-get update \
  wget curl \
  python3 python3-pip \
  openjdk-17-jre-headless \
- libgomp1
+ libgomp1 vim
 
 RUN addgroup --gid ${GID} user \
  && useradd --uid ${UID} --gid ${GID} user
