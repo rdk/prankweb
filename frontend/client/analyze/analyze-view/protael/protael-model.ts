@@ -39,14 +39,6 @@ export class ProtaelContent {
       features: pocketFeatures
     }]
     this.overlayfeatures = {label: "Chains", features: chains};
-    if (score != null && score.length > 0) {
-      this.qtracks = [{
-        label: scoreLabel,
-        color: "gray",
-        type: "column",
-        values: score
-      }]
-    }
     if (bindingSites != null && bindingSites.length > 0) {
       this.ftracks.push({
         label: "Binding sites",
@@ -55,6 +47,14 @@ export class ProtaelContent {
         allowOverlap: false,
         features: bindingSites
       });
+    }
+    if (score != null && score.length > 0) {
+      this.qtracks = [{
+        label: scoreLabel,
+        color: "gray",
+        type: "column",
+        values: score
+      }]
     }
   }
 
