@@ -45,10 +45,6 @@ def _create_execute_command(configuration: Execution):
         return
 
     def execute_command(command: str, ignore_return_code: bool = True):
-        if "hmmer" in command and "CACHE_HMMER" in os.environ:
-            logger.debug(f"Ignore '{command}'")
-            return
-
         logger.debug(f"Executing '{command}' ...")
         result = subprocess.run(
             command,
