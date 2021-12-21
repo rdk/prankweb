@@ -1256,7 +1256,7 @@ export const Protael = (function () {
         max = qtrack.displayMax ? qtrack.displayMax : Math.max.apply(null, vv),
         min = qtrack.displayMin ? qtrack.displayMin : Math.min.apply(null, vv),
         zero = (max === min) ? 0 : (-min) / (max - min) * 100, // for gradient
-        ky = (max === min) ? 0 : height / (max - min), // for coords
+        yScale = (max === min) ? 0 : height / (max - min), // for coords
         path = "",
         // different chart types
         spline = "spline",
@@ -1269,6 +1269,7 @@ export const Protael = (function () {
         paper = this.paper,
         chart2,
         parent = this.protael;
+
       // pad values aray with 0
       for (i = vv.length; i <= width; i++) {
         vv[i] = 0;
@@ -1293,17 +1294,17 @@ export const Protael = (function () {
       }
 
       if (type === area || type === line || type === areaspline || type === spline) {
-        path = "M0 " + (height + min * ky);
+        path = "M0 " + (height + min * yScale);
         if (type === area || type === line) {
           // no smoothing required, just connect the dots
           for (j = 0; j < W; j++) {
             X = j;
-            Y = height - (vv[j] - min) * ky;
+            Y = height - (vv[j] - min) * yScale;
             if (j !== jj - 1) {
               path = path + "L" + X + ", " + Y;
             }
           }
-          path = path + "L" + (W) + " " + (height + min * ky) + " Z";
+          path = path + "L" + (W) + " " + (height + min * yScale) + " Z";
         } else if (type === areaspline || type === spline) {
           /*grab (x,y) coordinates of the control points*/
           var xx = new Array(),
@@ -1311,7 +1312,7 @@ export const Protael = (function () {
           for (i = 0; i < W; i++) {
             /*use parseInt to convert string to int*/
             xx[i] = i;
-            yy[i] = height - (vv[i] - min) * ky;
+            yy[i] = height - (vv[i] - min) * yScale;
           }
 
           /*computes control points p1 and p2 for x and y direction*/
@@ -1322,7 +1323,7 @@ export const Protael = (function () {
             path +=
               this.path(xx[i], yy[i], px.p1[i], py.p1[i], px.p2[i], py.p2[i], xx[i + 1], yy[i + 1]);
           }
-          path = path + "L" + (W) + " " + (height + min * ky) + " Z";
+          path = path + "L" + (W) + " " + (height + min * yScale) + " Z";
         }
 
         chart2 = paper.path(path).attr({
@@ -1338,12 +1339,15 @@ export const Protael = (function () {
           });
         }
       } else if (qtrack.type === column) {
-        var y0 = height + min * ky;
+        // This used to be height + min * ky;
+        // but we do not need scaling here as this should
+        // always be at the bottom.
+        var y0 = height;
         var points = [];
         points.push(0, y0);
         for (j = 0; j < W; j++) {
           X = j;
-          Y = height - (vv[j] - min) * ky;
+          Y = height - (vv[j] - min) * yScale;
           points.push(X, Y, X + 1, Y);
         }
         points.push(W, y0);
@@ -1352,7 +1356,6 @@ export const Protael = (function () {
           "fill": fill,
           "class": "pl-chart-area",
         });
-
         this.viewSet.push(chart2);
       } else {
         console.log("Unknown chart type :" + type);
@@ -1365,12 +1368,13 @@ export const Protael = (function () {
       }
 
       var bgrect = paper.rect(0, 0, W, height).attr({"opacity": .0}),
-        tooltip = paper.text(.1, 0, max).attr({"class": "pl-chart-tooltip"}).hide(),
+        // Put this a little down bellow the track's label. It may overlap
+        // with the content but better than overlap with the label.
+        tooltip = paper.text(.1, 10, max).attr({"class": "pl-chart-tooltip"}).hide(),
         label = paper.text(.1, -.1, qtrack.label).attr({"class": "pl-chart-label"}),
         topLine = paper.line(0, 0, W, 0).attr({"class": "pl-chart-top"}),
-        cLine = paper.line(0, max * ky, W, max * ky).attr({"class": "pl-chart-center"}),
         bottomLine = paper.line(0, height, W, height).attr({"class": "pl-chart-bottom"}),
-        g = paper.g(chart2, topLine, bottomLine, cLine, label, tooltip, bgrect)
+        g = paper.g(chart2, topLine, bottomLine, label, tooltip, bgrect)
           .attr({
             "id": "qtrack_" + qtrack.label,
             "class": "pl-chart"
@@ -1412,7 +1416,6 @@ export const Protael = (function () {
       this.viewSet.push(bgrect);
       this.viewSet.push(topLine);
       this.viewSet.push(bottomLine);
-      this.viewSet.push(cLine);
       this.viewSet.push(chart2);
       this.textSet.push(label);
       this.textSet.push(tooltip);

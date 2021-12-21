@@ -19,7 +19,8 @@ export class ProtaelContent {
     label: string,
     color: string,
     type: string,
-    values: number[]
+    values: number[],
+    displayMin: number,
   }> = []
 
   constructor(
@@ -53,7 +54,8 @@ export class ProtaelContent {
         label: scoreLabel,
         color: "gray",
         type: "column",
-        values: score
+        values: score,
+        displayMin: 0,
       }]
     }
   }
