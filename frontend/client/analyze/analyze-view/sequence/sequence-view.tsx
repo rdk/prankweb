@@ -209,45 +209,6 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
         ".lm-plugin .lm-layout-main"),
       updateTop);
 
-    return;
-
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-standard-outside .lm-layout-bottom"),
-    //   updateHeightAndTop);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-standard-landscape .lm-layout-main"),
-    //   updateTop);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-standard-landscape .lm-layout-top"),
-    //   updateHeight);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-standard-portrait .lm-layout-main"),
-    //   updateTop);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-standard-portrait .lm-layout-top"),
-    //   updateHeight);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-standard-portrait .lm-layout-bottom"),
-    //   updateHeight);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-expanded .lm-layout-main"),
-    //   updateHeight);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-expanded .lm-layout-top"),
-    //   updateHeight);
-    // forEachElement(
-    //   document.querySelectorAll(
-    //     ".lm-plugin .lm-layout-expanded .lm-layout-bottom"),
-    //   updateHeight);
-
     this.controller.context.scene.scene.resized();
     this.selectAndDisplayToastLetter(this.lastNumber, false);
   }

@@ -346,26 +346,26 @@ export const Protael = (function () {
       .change(function () {
         r.setColoringScheme($(this).val());
       }));
-    if (!showControls)
-      toolbar.hide();
-    //        toolbar.a('&nbsp;&VerticalLine;&nbsp;');
-    //        toolbar.a($(
-    //            '<input type="checkbox" id="chkTooltip" checked="true"><label for="chkTooltip">Cursor tooltips</label>')
-    //            .change(
-    //                function () {
-    //                    r.setShowCursorTooltips($("#chkTooltip").is(':checked'));
-    //                }));
-    toolbar.a("&nbsp;&VerticalLine;&nbsp;");
-    toolbar.a($("<button id=\"pl-export-svg-btn\">Export SVG</button>").button({
-      "text": false,
-      "icons": {
-        "primary": "ui-icon ui-icon-image",
-      },
-    }).click(function () {
-      r.saveAsSVG();
-    }));
-    //         toolbar.append('ScreenX: <input type="text" id="sx_inp" readonly/>');
-    //         toolbar.append('RealX: <input type="text" id="rx_inp" readonly/>');
+    // if (!showControls)
+    //   toolbar.hide();
+    // toolbar.a('&nbsp;&VerticalLine;&nbsp;');
+    // toolbar.a($(
+    //      '<input type="checkbox" id="chkTooltip" checked="true"><label for="chkTooltip">Cursor tooltips</label>')
+    //      .change(
+    //          function () {
+    //              r.setShowCursorTooltips($("#chkTooltip").is(':checked'));
+    //          }));
+    // toolbar.a("&nbsp;&VerticalLine;&nbsp;");
+    // toolbar.a($("<button id=\"pl-export-svg-btn\">Export SVG</button>").button({
+    //   "text": false,
+    //   "icons": {
+    //     "primary": "ui-icon ui-icon-image",
+    //   },
+    // }).click(function () {
+    //   r.saveAsSVG();
+    // }));
+    // toolbar.append('ScreenX: <input type="text" id="sx_inp" readonly/>');
+    // toolbar.append('RealX: <input type="text" id="rx_inp" readonly/>');
   }
 
   /**
@@ -405,8 +405,7 @@ export const Protael = (function () {
         .append("<div id=\"" + container + "_xdialog\" title=\"Export selection\"><form><fieldset><input type=\"checkbox\" id=\"" + container + "_cbFullselection\">Include data from all graphs and sequences<br/><br/><textarea id=\"" + container + "_xarea\" cols=\"40\" rows=\"10\"></textarea></fieldset></form></div>");
       createToolbarBtns(this, toolbar, controls);
     }
-    newDiv
-      .append("<div id=\"propsdialog\" title=\"Properties\"></div>");
+    newDiv.append("<div id=\"propsdialog\" title=\"Properties\"></div>");
     // Dialog to display xternal links
     $("#propsdialog").dialog({
       "modal": true,
@@ -419,17 +418,15 @@ export const Protael = (function () {
       },
     });
     this.selectedx = [-1, -1]; // selection minX-maxX
-
     this.svgDiv = $("#" + container + " .protael_svg");
     this.selectInput = $("#" + container + " .protael_selection_inp");
     // need this flag to implement "strechable" sequence
-    this.isChrome = (browser.indexOf("Chrome") >= 0 || browser
-      .indexOf("Opera") >= 0);
+    this.isChrome = (browser.indexOf("Chrome") >= 0 || browser.indexOf("Opera") >= 0);
     // need this for safari mask+gradient workaround
     this.isSafari = /constructor/i.test(window.HTMLElement) || (function (p) {
       return p.toString() === "[object SafariRemoteNotification]";
     })(!window["safari"] || safari.pushNotification);
-    //        console.log("Can use stretchable seq: " + this.isChrome);
+    // .log("Can use stretchable seq: " + this.isChrome);
     this.currScale = 1;
     this.currShift = 0;
     this.showCursorTooltips = true;
@@ -444,7 +441,6 @@ export const Protael = (function () {
       });
     }
   }
-
 
   /**
    * Paper object for drawing.
@@ -710,6 +706,7 @@ export const Protael = (function () {
       thegap.add(p.line(dx, y, 0, y - dy));
       thegap.toDefs();
     };
+
     /**
      * Adds marker definition.
      * @param {type} defpath path describing the marker
@@ -731,6 +728,7 @@ export const Protael = (function () {
 
       d.toDefs();
     };
+
     /**
      *
      * @param {string} defid Marker ID
@@ -752,6 +750,7 @@ export const Protael = (function () {
       this.viewSet.push(el);
       return g;
     };
+
     paperproto.setWidth = function (width) {
       var ww, vb = this.paper.attr("viewBox");
       vb.width = "".concat(width);// + 20).concat('px');
@@ -761,6 +760,7 @@ export const Protael = (function () {
         "viewBox": vb,
       });
     };
+
     paperproto.proteinSeqBG = function (chars, scolors, yy, showSequence, offset, label) {
       offset = offset * 1 - 1 || 0;
       var inst = this.protael,
@@ -813,6 +813,7 @@ export const Protael = (function () {
           self.seqBGSet.add(allrects);
         }, 10);
     };
+
     paperproto.proteinSequence = function (chars, y, showSequence, alignment) {
       alignment = alignment || {};
       y = y || 10;
@@ -881,12 +882,14 @@ export const Protael = (function () {
         }
       }
     };
+
     paperproto.clearColoring = function () {
       //TODO: use forEach()
       for (var c in this.seqBGSet)
         this.viewSet.exclude(this.seqBGSet[c]);
       this.seqBGSet.clear();
     };
+
     paperproto.setColoringScheme = function (CS) {
       this.clearColoring();
       if (CS.toLowerCase() === "none") {
@@ -966,9 +969,11 @@ export const Protael = (function () {
           }
       }
     };
+
     paperproto.addColoringScheme = function (name, schema) {
       ColoringSchemes.addSChema(name, schema);
     };
+
     paperproto.featureTrack = function (ftrack, topY, height, allowOverlaps, showLabels, isOverlay) {
       //   console.log("Drawing ftrack: " + ftrack.label);
       var paper = this.paper,
@@ -1052,12 +1057,13 @@ export const Protael = (function () {
       if (!isOverlay) {
         var label = paper.text(.1, -4, ftrack.label).attr({"class": "pl-ftrack-label"});
         g.append(label);
-        //                this.addOutsideLabel(label);
+        // this.addOutsideLabel(label);
       }
       g.transform("translate(0, " + topY + ")");
       g.dragVertical();
       return lastLevel;
     };
+
     paperproto.feature = function (feature, color, display, topY, height, g, showLabel, allowOverlaps, isOverlay) {
       var s = feature.start - 1,
         e = feature.end,
@@ -1104,6 +1110,7 @@ export const Protael = (function () {
       this.viewSet.push(shape);
       return shapeGr;
     };
+
     /**
      * Creates formated path string for SVG cubic path element
      * @param {type} x1
@@ -1237,7 +1244,6 @@ export const Protael = (function () {
     }
 
     paperproto.quantTrack = function (qtrack, topY, width, height) {
-      //    console.log("Drawing qtrack: " + qtrack.values);
       // data will be used for
       var data = Array.isArray(qtrack.values) ?
         qtrack.values : Utils.splitData(qtrack.values),
@@ -1385,6 +1391,7 @@ export const Protael = (function () {
           ox = parent.toOriginalX(x),
           bb = tooltip.getBBox(),
           txt = typeof data[ox - 1] !== "undefined" ? data[ox - 1] : "N/A";
+        // X must be bound to the size of data and it is not
         if (bb.x2 > bgrect.getBBox().width / 2) {
           tooltip.attr({"text-anchor": "end"});
         } else {
@@ -1409,10 +1416,11 @@ export const Protael = (function () {
       this.viewSet.push(chart2);
       this.textSet.push(label);
       this.textSet.push(tooltip);
-      //            this.addOutsideLabel(label);
+      // this.addOutsideLabel(label);
 
       return g;
     };
+
     paperproto.proteinMarkers = function (markers, topY) {
       var markerGp = this.paper.g().attr({
           "id": "gMarkers",
@@ -1462,6 +1470,7 @@ export const Protael = (function () {
         markerGp.add(mark);
       }
     };
+
     paperproto.proteinBridges = function (bridges, topY) {
       var group = this.paper.g().attr({
           "id": "gBridges",
@@ -1540,6 +1549,7 @@ export const Protael = (function () {
         group.add(gb);
       }
     };
+
     paperproto.draw = function (protein) {
       var scolors = [],
         chars = protein.sequence.toUpperCase().split(""),
@@ -1716,6 +1726,7 @@ export const Protael = (function () {
 
       this.viewSet.push(r);
     };
+
     /**
      * Returns content of the paper as SVG string
      * @returns {string} SVG string representing current paper content
@@ -1752,6 +1763,7 @@ export const Protael = (function () {
   Protael.prototype.Utils.splitData = function (data) {
     return (data.indexOf(",") > 0) ? data.split(",") : data.split("");
   };
+
   /**
    * Returns array of colors, one per residue
    * @param {type} chars
@@ -1765,9 +1777,11 @@ export const Protael = (function () {
     }
     return scolors;
   };
+
   var Utils = Protael.prototype.Utils; // shortcut
 
   (function (protaelproto) {
+
     protaelproto.draw = function () {
       this.paper.draw(this.protein);
       if (!this.CS) {
@@ -1782,6 +1796,7 @@ export const Protael = (function () {
       this.onClick(null);
       return this;
     };
+
     protaelproto.setSelection = function (minx, maxx) {
       minx = Math.max(1, minx);
       maxx = Math.min(this.protein.sequence.length, maxx);
@@ -1798,6 +1813,7 @@ export const Protael = (function () {
       }
       return this;
     };
+
     protaelproto.clearSelection = function (x) {
       this.selectedx = [-1, -1];
       this.paper.selector.attr({
@@ -1817,23 +1833,28 @@ export const Protael = (function () {
       }
       return this;
     };
+
     protaelproto.translate = function (dx) {
       this.svgDiv.scrollLeft(this.svgDiv.scrollLeft() + dx);
       return this;
     };
+
     protaelproto.zoomIn = function () {
       this.setZoom(this.currScale + 0.1);
       return this;
     };
+
     protaelproto.zoomOut = function () {
       this.setZoom(this.currScale - 0.1);
       return this;
     };
+
     protaelproto.zoomToFit = function () {
       var w = this.svgDiv.width();
       this.setZoom(w / this.W);
       return this;
     };
+
     protaelproto.zoomToSelection = function () {
       if (this.selectedx[1] === -1)
         return;
@@ -1843,13 +1864,16 @@ export const Protael = (function () {
       this.svgDiv.scrollLeft(s);
       return this;
     };
+
     protaelproto.setPaperWidth = function (width) {
       this.paper.setWidth(width);
       return this;
     };
+
     protaelproto.currentScale = function () {
       return this.currScale;
     };
+
     /*
      * Returns FASTA-formatted construct. If needFuul = true, will
      * return also corresponding data for qtracks and alignments
@@ -1918,10 +1942,11 @@ export const Protael = (function () {
     }
 
     protaelproto.toOriginalX = function (x) {
-      var y = Math.round((x + this.currShift) / this.currScale + .5);
-      // console.log("toOrig (" + x + ") = Math.round((" + x + " + " + this.currShift + ") / " + this.currScale + ")=" + y);
+      var xAsNumber = parseFloat(x);
+      var y = Math.round((xAsNumber + this.currShift) / this.currScale + .5);
       return y;
     };
+
     protaelproto.toScreenX = function (x) {
       return Math.round(x * this.currScale - this.currShift);
     };
@@ -2015,6 +2040,7 @@ export const Protael = (function () {
       this.CS = CS;
       return this;
     };
+
     /**
      * Wrapper ro Snap.slectAll to make it look more jquery-like
      * @param {type} query
@@ -2022,6 +2048,7 @@ export const Protael = (function () {
     protaelproto.select = function (query) {
       return Snap.selectAll(query);
     };
+
     /**
      * Get current vew as SVG string.
      * @returns SVG string
@@ -2029,6 +2056,7 @@ export const Protael = (function () {
     protaelproto.toSVGString = function () {
       return this.paper.toSVGString();
     };
+
     protaelproto.saveAsSVG = function () {
       //TODO: have to separate style for graph elements and ui elements
       // and use only graph styles for export
@@ -2043,6 +2071,7 @@ export const Protael = (function () {
       // from FileSaver.js
       saveAs(blob, "protael_export.svg");
     };
+
     // save all page styles as inline styles
     // see http://spin.atomicobject.com/2014/01/21/convert-svg-to-png/
     function isExternal(url) {
@@ -2136,6 +2165,7 @@ export const Protael = (function () {
 
       });
     };
+
   }(Protael.prototype));
 
   return Protael;
