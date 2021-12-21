@@ -8,7 +8,7 @@ import time
 import uuid
 import re
 from .database import Database, NestedReadOnlyDatabase
-from .submission import submit_directory_for_execution
+from .celery_client import submit_directory_for_execution
 
 
 @dataclasses.dataclass
