@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
 import os
-import celery.signals
-import run_p2rank_task
+import celery
 
 prankweb = celery.Celery("prankweb")
 
@@ -24,19 +22,5 @@ elif "CELERY_BROKER_PATH" in os.environ:
     })
 
 
-@celery.signals.setup_logging.connect
-def setup_celery_logging(**kwargs):
-    # We do nothing here to disable logging.
-    ...
-
-
-# https://github.com/celery/celery/issues/2509
-prankweb.log.setup()
-
-
-@prankweb.task(name="prediction")
-def celery_run_prediction(directory: str):
-    if os.path.isdir(directory):
-        run_p2rank_task.execute_directory_task(directory, keep_working=False)
-    else:
-        print(f"Given directory does not exist {directory}")
+def submit_directory_for_execution(directory):
+    prankweb.send_task("prediction", args=[directory])
