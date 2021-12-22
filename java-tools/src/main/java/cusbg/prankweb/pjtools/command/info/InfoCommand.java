@@ -122,7 +122,7 @@ public class InfoCommand implements CliCommand {
         for (Group group : chain.getAtomGroups(GroupType.AMINOACID)) {
             String groupCode = getGroupCode(group);
             if (groupCode == null) {
-                continue;
+                groupCode = "X";
             }
             model.indices.add(group.getResidueNumber().printFull());
             model.sequence.add(groupCode);
