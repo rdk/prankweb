@@ -12,8 +12,9 @@ import dataclasses
 import datetime
 import subprocess
 import collections
-import csv
 import multiprocessing
+
+import output_prankweb
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class Arguments:
     visualization_directory: str
     output_directory: str
     database_name: str
-    parallel: bool
+    parallel: int
     now = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
 
@@ -64,14 +65,16 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--working", required=True,
         help="Path to working directory.")
     parser.add_argument(
-        "--parallel",
-        action="store_true",
-        help="Path to working directory.")
+        "--thread", default=1,
+        help="Number of threads to use.")
     return vars(parser.parse_args())
 
 
 def main(arguments):
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        format="%(asctime)s [%(levelname)s] - %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+        level=logging.DEBUG)
     _import(Arguments(
         arguments["java_tools"],
         arguments["working"],
@@ -81,62 +84,63 @@ def main(arguments):
         arguments["visualization"],
         arguments["output"],
         arguments["database"],
-        arguments["parallel"],
+        min(arguments["thread"], 1),
     ))
 
 
-def _import(arguments: Arguments):
-    codes_to_import = [
-        name[3:7]
-        for name in os.listdir(arguments.prediction_directory)
-        if name.endswith("_predictions.csv")
-    ]
+def _import(args: Arguments):
+    logger.info("Collecting codes for import ...")
+    codes_to_import = _collect_codes_for_import(args)
     logger.info(f"Collected {len(codes_to_import)} codes for import")
-    if arguments.parallel:
-        cpu_cures_to_use = multiprocessing.cpu_count() - 2
-        logger.info(f"Starting computations on {cpu_cures_to_use} cores")
-        with multiprocessing.Pool(cpu_cures_to_use) as pool:
-            pool.starmap(_import_code_wrap, [
-                (arguments, code)
-                for code in codes_to_import
-            ])
-            pool.join()
-    else:
-        for code in codes_to_import:
-            _import_code_wrap(arguments, code)
+    logger.info("Preparing data to working directory ...")
+    _execute_map_with_args(
+        args, _import_data_into_working_directory, codes_to_import)
+    logger.info("Running java-tools ...")
+
+    logger.info("Processing and importing to output directory  ...")
+    _execute_map_with_args(
+        args, _import_data_to_target_directory, codes_to_import)
     logger.info("Finished")
 
 
-def _import_code_wrap(arguments: Arguments, code: str):
-    try:
-        _import_code(arguments, code)
-    except:
-        # The folder stays in working directory.
-        pass
+def _collect_codes_for_import(args: Arguments):
+    return [
+        name[3:7]
+        for name in os.listdir(args.prediction_directory)
+        if name.endswith("_predictions.csv")
+    ]
 
 
-def _import_code(arguments: Arguments, code: str):
-    target = os.path.join(
-        arguments.output_directory,
-        code.upper()[1:3],
-        code.upper()
-    )
-    if os.path.isdir(target):
-        return
+def _execute_map_with_args(args: Arguments, callback, arguments):
+    result = []
+    if args.parallel > 1:
+        cpu_cures_to_use = args.parallel
+        logger.info(f"Starting computations on {cpu_cures_to_use} cores")
+        with multiprocessing.Pool(cpu_cures_to_use) as pool:
+            call_arguments = [(args, code) for code in arguments]
+            result = pool.starmap(callback, call_arguments)
+    else:
+        logger.info(f"Starting using single cores")
+        for code in arguments:
+            result.append(callback(args, code))
+    logger.info("All executed")
+    return result
 
-    root_dir = os.path.join(arguments.working_directory, code)
+
+def _import_data_into_working_directory(args: Arguments, code: str) -> str:
+    root_dir = os.path.join(args.working_directory, code)
     os.makedirs(root_dir, exist_ok=True)
     public_dir = os.path.join(root_dir, "public")
     os.makedirs(public_dir, exist_ok=True)
 
     structure_file = os.path.join(
-        arguments.structure_directory,
+        args.structure_directory,
         f"pdb{code}.ent.gz")
 
-    conservation = _find_conservation(arguments, code)
+    conservation = _find_conservation(args, code)
 
     p2rank_predictions_file = os.path.join(
-        arguments.prediction_directory,
+        args.prediction_directory,
         f"pdb{code}.ent.gz_predictions.csv")
 
     # public/structure.pdb.gz
@@ -152,16 +156,16 @@ def _import_code(arguments: Arguments, code: str):
             "structure.pdb_predictions.csv":
                 p2rank_predictions_file,
             "structure.pdb_residues.csv": os.path.join(
-                arguments.prediction_directory,
+                args.prediction_directory,
                 f"pdb{code}.ent.gz_residues.csv"),
             "visualizations/structure.pdb.pml": os.path.join(
-                arguments.visualization_directory,
+                args.visualization_directory,
                 f"pdb{code}.ent.gz.pml"),
             "visualizations/data/structure.pdb": os.path.join(
-                arguments.visualization_directory, "data",
+                args.visualization_directory, "data",
                 f"pdb{code}.ent.gz"),
             "structure.pdb_points.pdb.gz": os.path.join(
-                arguments.visualization_directory, "data",
+                args.visualization_directory, "data",
                 f"pdb{code}.ent.gz_points.pdb.gz"),
             **{
                 f"conservation/conservation-{chain}": path
@@ -178,9 +182,9 @@ def _import_code(arguments: Arguments, code: str):
     with open(info_file, "w", encoding="utf-8") as stream:
         json.dump({
             "id": code,
-            "database": arguments.database_name,
-            "created": arguments.now,
-            "lastChange": arguments.now,
+            "database": args.database_name,
+            "created": args.now,
+            "lastChange": args.now,
             "status": "successful",
             "metadata": {
                 "predictionName": code.upper(),
@@ -190,28 +194,13 @@ def _import_code(arguments: Arguments, code: str):
 
     # prediction.json
     java_tools_file = os.path.join(root_dir, "java-tools.json")
-    _execute_command(
-        f"{arguments.java_tools} structure-info"
-        f" --input={structure_file}"
-        f" --output={java_tools_file}"
-    )
-
-    prediction_file = os.path.join(public_dir, "prediction.json")
-    with open(prediction_file, "w", encoding="utf-8") as stream:
-        json.dump({
-            "structure": _load_structure_file(java_tools_file, conservation),
-            "pockets": _load_pockets(p2rank_predictions_file),
-            "metadata": {},
-        }, stream, indent=2)
-
-    os.remove(java_tools_file)
-
-    # move
-    os.rename(root_dir, target)
+    return f"structure-info  " \
+           f"--input={structure_file}  " \
+           f"--output={java_tools_file}"
 
 
 def _find_conservation(
-        arguments: Arguments, code: str) -> typing.Dict[str, str]:
+        args: Arguments, code: str) -> typing.Dict[str, str]:
     """Dictionary with chain and file path."""
 
     def select_chain(name: str) -> str:
@@ -219,8 +208,8 @@ def _find_conservation(
 
     return {
         select_chain(file_name):
-            os.path.join(arguments.conservation_directory, file_name)
-        for file_name in _list_directory(arguments.conservation_directory)
+            os.path.join(args.conservation_directory, file_name)
+        for file_name in _list_directory(args.conservation_directory)
         if code in file_name
     }
 
@@ -236,110 +225,47 @@ def _zip_directory(output_path: str, entries: typing.Dict[str, str]):
             stream.write(path, path_in_zip)
 
 
-def _execute_command(command: str):
+def _execute_java_tools(args: Arguments, commands: typing.List[str]):
+    command_file = os.path.join(args.working_directory, "commands.txt")
+    with open(command_file, "w") as stream:
+        stream.writelines(commands)
+    command = f"{args.java_tools} exec --input {command_file}"
     result = subprocess.run(command, shell=True, env=os.environ.copy())
     result.check_returncode()
 
 
-# region From output_prankweb.py
+def _import_data_to_target_directory(args: Arguments, code: str) -> None:
+    root_dir = os.path.join(args.working_directory, code)
+    java_tools_file = os.path.join(root_dir, "java-tools.json")
 
+    if not os.path.exists(java_tools_file):
+        logger.error(f"Missing structure information file: {java_tools_file}")
+        return
 
-def _load_pockets(predictions_file: str):
-    with open(predictions_file) as stream:
-        reader = csv.reader(stream)
-        head = [value.strip() for value in next(reader)]
-        predictions = [{
-            key: value.strip()
-            for key, value in zip(head, row)
-        } for row in reader]
-    return [
-        {
-            "name": prediction["name"],
-            "rank": prediction["rank"],
-            "score": prediction["score"],
-            "probability": prediction["probability"],
-            "center": [
-                prediction["center_x"],
-                prediction["center_y"],
-                prediction["center_z"]
-            ],
-            "residues": prediction["residue_ids"].split(" "),
-            "surface": prediction["surf_atom_ids"].split(" ")
-        }
-        for prediction in predictions
-    ]
+    public_dir = os.path.join(root_dir, "public")
+    conservation = _find_conservation(args, code)
+    p2rank_predictions_file = os.path.join(
+        args.prediction_directory,
+        f"pdb{code}.ent.gz_predictions.csv")
 
+    prediction_file = os.path.join(public_dir, "prediction.json")
+    with open(prediction_file, "w", encoding="utf-8") as stream:
+        json.dump({
+            "structure": output_prankweb.load_structure_file(
+                java_tools_file, conservation),
+            "pockets": output_prankweb.load_pockets(
+                p2rank_predictions_file),
+            "metadata": {},
+        }, stream, indent=2)
 
-def _load_structure_file(
-        structure_file: str, conservation: typing.Dict[str, str]):
-    with open(structure_file, encoding="utf-8") as stream:
-        structure = json.load(stream)
+    os.remove(java_tools_file)
 
-    scores = {
-        **structure["scores"]
-    }
-
-    if conservation := _prepare_conservation(structure, conservation):
-        scores["conservation"] = conservation
-
-    return {
-        "indices": structure["indices"],
-        "sequence": structure["sequence"],
-        "binding": structure["binding"],
-        "regions": [
-            {
-                "name": region["name"],
-                "start": region["start"],
-                "end": region["end"],
-            }
-            for region in structure["regions"]
-        ],
-        "scores": scores
-    }
-
-
-def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
-    if len(conservation) == 0:
-        return None
-    result = []
-    # We know regions are sorted.
-    for region in structure["regions"]:
-        chain = region["name"]
-        conservation_file = conservation.get(chain, None)
-        if not conservation_file:
-            raise RuntimeError(f"Missing conservation for '{chain}'")
-        chain_scores = _read_conservation_file(conservation_file)
-        index_range = range(region["start"], region["end"])
-        expected = ''.join(structure["sequence"][
-                           region["start"]:region["end"] + 1])
-        actual = ''.join([item.code for item in chain_scores
-                          if item.code not in ['n', 'u', 'l']])
-        if not len(expected) == len(actual):
-            logger.error(
-                f"Chain {chain} "
-                f"expected: {len(expected)} actual: {len(actual)} "
-                f"\n{expected}"
-                f"\n{actual}")
-            raise RuntimeError()
-        for index, score in zip(index_range, chain_scores):
-            if score.code in ['n', 'u', 'l']:
-                continue
-            result.append(score.value)
-    return result
-
-
-def _read_conservation_file(path: str) -> typing.List[ResidueScore]:
-    result = []
-    with open(path, encoding="utf-8") as stream:
-        for index, line in enumerate(stream):
-            index, value, code = line.strip().split("\t")
-            # We utilize 0 as the minimal value not.
-            final_value = max(0, float(value))
-            result.append(ResidueScore(code, final_value))
-    return result
-
-
-# endregion
+    target = os.path.join(
+        args.output_directory,
+        code.upper()[1:3],
+        code.upper()
+    )
+    os.rename(root_dir, target)
 
 if __name__ == "__main__":
     main(_read_arguments())

@@ -50,6 +50,7 @@ COPY --chown=user:user ./administration/requirements.txt ./
 RUN pip3 install -r requirements.txt
 
 COPY --chown=user:user ./administration/ ./
+COPY --chown=user:user ./executor/output_prankweb.py ./
 
 USER ${UID}:${GID}
 

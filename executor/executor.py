@@ -83,6 +83,9 @@ def _prepare_raw_structure_file(
         configuration: Execution, metadata:
         typing.Dict[str, any]) -> str:
     result = os.path.join(configuration.working_directory, "structure-raw.")
+    if configuration.lazy_execution and os.path.exists(result):
+        logger.info("I'm lazy and structure file already exists")
+        return result
     if configuration.structure_code is not None:
         configuration.structure_extension = "pdb"
         result += configuration.structure_extension

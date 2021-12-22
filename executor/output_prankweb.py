@@ -90,15 +90,15 @@ def _prepare_prediction_file(
 
     with open(output_file, "w", encoding="utf-8") as stream:
         json.dump({
-            "structure": _load_structure_file(structure_file, conservation),
-            "pockets": _load_pockets(predictions_file),
+            "structure": load_structure_file(structure_file, conservation),
+            "pockets": load_pockets(predictions_file),
             "metadata": {
                 **structure.metadata,
             },
         }, stream, indent=2)
 
 
-def _load_pockets(predictions_file: str):
+def load_pockets(predictions_file: str):
     with open(predictions_file) as stream:
         reader = csv.reader(stream)
         head = [value.strip() for value in next(reader)]
@@ -124,7 +124,7 @@ def _load_pockets(predictions_file: str):
     ]
 
 
-def _load_structure_file(
+def load_structure_file(
         structure_file: str, conservation: typing.Dict[str, str]):
     with open(structure_file, encoding="utf-8") as stream:
         structure = json.load(stream)
@@ -163,12 +163,22 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
         if not conservation_file:
             raise RuntimeError(f"Missing conservation for '{chain}'")
         chain_scores = _read_conservation_file(conservation_file)
-        index_range = range(region["start"], region["end"])
-        assert len(structure["sequence"]) == len(chain_scores), \
-            f"Sequences for chain {chain} " \
-            f"'{structure['sequence']}' " \
-            f"'{chain_scores} " \
-            " must have same size."
+        region_start = region["start"]
+        region_end = region["end"] + 1
+        region_size = region_end - region_start
+        if not region_size == len(chain_scores):
+            expected_sequence = ''.join(
+                [structure['sequence'][index] for index in index_range])
+            actual_sequence = ''.join(
+                [item.code for item in chain_scores])
+            message = f"Sequences for chain {chain} " \
+                      f"expected: '{expected_sequence}' " \
+                      f"actual: '{actual_sequence} " \
+                      "must have same size " \
+                      f"({region_size}, {len(chain_scores)})."
+            raise RuntimeError(message)
+        index_range = range(region_start, region_end)
+
         for index, score in zip(index_range, chain_scores):
             # We use masked version, so there can be X in the
             # computed conservation instead of other code.

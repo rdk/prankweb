@@ -40,6 +40,10 @@ def _read_arguments() -> typing.Dict[str, any]:
         "--lazy-execution",
         action="store_true",
         help="Keep working data.")
+    parser.add_argument(
+        "--stdout",
+        action="store_true",
+        help="Log to stdout instead of a file.")
     return vars(parser.parse_args())
 
 
@@ -51,15 +55,19 @@ def main():
     execute_directory_task(
         directory,
         arguments["keep_working"],
-        arguments["lazy_execution"])
+        arguments["lazy_execution"],
+        arguments["stdout"])
 
 
 def execute_directory_task(
         directory: str,
         keep_working: bool = False,
-        lazy_execution: bool = False):
+        lazy_execution: bool = False,
+        stdout: bool = False):
     log_file = os.path.join(directory, "log")
     with open(log_file, "w", encoding="utf-8") as stream:
+        if stdout:
+            stream = sys.stdout
         handler = _create_log_handler(stream)
         logger.addHandler(handler)
         try:
