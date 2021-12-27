@@ -3,15 +3,15 @@ services:
   gateway:
     build:
       context: ./
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./gateway/Dockerfile
       args:
         GOOGLE_ANALYTIS: "UA-136777636-1"
     depends_on:
-      - api-server
+      - web-server
     restart: unless-stopped
     ports:
       - "8020:80"
-  api-server:
+  web-server:
     build:
       context: ./
       dockerfile: ./web-server/Dockerfile
