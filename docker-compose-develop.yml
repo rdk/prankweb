@@ -3,12 +3,13 @@ services:
   gateway:
     build:
       context: ./
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./gateway/Dockerfile
       args:
         GOOGLE_ANALYTICS: ""
+        WEB_SERVICE_USER: ${WEB_SERVICE_USER}
+        WEB_SERVICE_PASSWORD: ${WEB_SERVICE_PASSWORD}
     depends_on:
-      - rabbitmq
-      - api-server
+      - web-server
     ports:
       - "8020:80"
   rabbitmq:
@@ -17,21 +18,28 @@ services:
       dockerfile: ./rabbitmq/Dockerfile
     hostname: "rabbitmq"
     environment:
-      RABBITMQ_DEFAULT_USER: "user-develop"
-      RABBITMQ_DEFAULT_PASS: "develop"
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     volumes:
-      - rabbitmq:/var/lib/rabbitmq/mnesia/
-  api-server:
+      - rabbitmq:/var/lib/rabbitmq/
+  flower:
+    build: https://github.com/mher/flower.git
+    command: "celery flower --url_prefix=service/flower"
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+    depends_on:
+      - rabbitmq
+  web-server:
     build:
       context: ./
       dockerfile: ./web-server/Dockerfile
       args:
-        UID: ${UID-5988}
-        GID: ${GID-5988}
+        UID: ${UID}
+        GID: ${GID}
     depends_on:
       - rabbitmq
     environment:
-      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       PRANKWEB_DATA: "/data/prankweb"
     volumes:
       - predictions:/data/prankweb
@@ -40,12 +48,12 @@ services:
       context: ./
       dockerfile: ./executor/Dockerfile
       args:
-        UID: ${UID-5988}
-        GID: ${GID-5988}
+        UID: ${UID}
+        GID: ${GID}
     depends_on:
       - rabbitmq
     environment:
-      CELERY_BROKER_URL: "amqp://user-develop:develop@rabbitmq:5672"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
     volumes:
       - conservation:/data/conservation
       - predictions:/data/prankweb
