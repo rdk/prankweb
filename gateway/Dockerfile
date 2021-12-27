@@ -35,7 +35,6 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=frontend /opt/frontend/dist /opt/prankweb-frontend
 COPY --from=htpasswd /opt/htpasswd/.htpasswd /etc/apache2/.htpasswd
 
-COPY ./api-gateway/nginx/gateway.conf /etc/nginx/conf.d/
-COPY ./api-gateway/nginx/cors.conf /etc/nginx/
-COPY ./api-gateway/nginx/restricted.conf /etc/nginx/
-
+COPY ./gateway/nginx/gateway.conf /etc/nginx/conf.d/
+COPY ./gateway/nginx/cors.conf /etc/nginx/
+COPY ./gateway/nginx/restricted.conf /etc/nginx/
