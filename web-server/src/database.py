@@ -122,4 +122,4 @@ def get_database_directory() -> str:
         "PRANKWEB_DATA",
         # For local development.
         os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                     "..", "..", "data", "database"))
+                     "..", "..", "data", "predictions"))
