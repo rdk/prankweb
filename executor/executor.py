@@ -187,15 +187,22 @@ def _prepare_conservation(
         "conservation")
     os.makedirs(output_directory, exist_ok=True)
     result = {}
+    cache = {}
     for chain, fasta_file in structure.sequence_files.items():
         working_directory = os.path.join(
             configuration.working_directory,
             f"conservation-{chain}")
         os.makedirs(working_directory, exist_ok=True)
         output_file = os.path.join(output_directory, f"conservation-{chain}")
-        _prepare_conservation_for_chain(
-            fasta_file, working_directory, output_file,
-            configuration)
+        fasta = _read_fasta(fasta_file)
+        if fasta in cache:
+            logger.info("We already have conservation for given chain.")
+            shutil.copy(cache[fasta], output_file)
+        else:
+            _prepare_conservation_for_chain(
+                fasta_file, working_directory, output_file,
+                configuration)
+            cache[fasta] = output_file
         result[chain] = output_file
     return result
 
@@ -206,7 +213,7 @@ def _prepare_conservation_for_chain(
         output_file: str,
         configuration: Execution):
     if os.path.exists(output_file) and configuration.lazy_execution:
-        logger.info("I'm lazy and configuration file already exists.")
+        logger.info("I'm lazy and conservation file already exists.")
         return
     conservation_type = configuration.conservation
     if conservation_type == ConservationType.ALIGNMENT:
@@ -219,6 +226,12 @@ def _prepare_conservation_for_chain(
             configuration.execute_command)
     else:
         raise Exception("Unknown conservation type!")
+
+
+def _read_fasta(path):
+    with open(path, "r") as stream:
+        stream.readline()
+        return stream.read()
 
 
 # endregion
