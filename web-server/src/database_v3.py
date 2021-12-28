@@ -318,9 +318,10 @@ def _configuration_to_prediction(
 
 
 def _is_prediction_valid(prediction: Prediction) -> bool:
-    if len(prediction.chains) and not prediction.structure_sealed:
-        return False
-    return True
+    if prediction.structure_sealed:
+        return len(prediction.chains) == 0
+    else:
+        return len(prediction.chains) > 0
 
 
 def register_database_v3() -> list[Database]:
