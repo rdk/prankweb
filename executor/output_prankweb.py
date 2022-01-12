@@ -8,7 +8,7 @@ import collections
 import gzip
 import shutil
 
-from model import *
+from .model import *
 
 logger = logging.getLogger("prankweb.output_prankweb")
 logger.setLevel(logging.DEBUG)

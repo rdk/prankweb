@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 def _read_arguments() -> typing.Dict[str, str]:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Import predictions from prankweb version 1 and 2")
     parser.add_argument(
         "--input", required=True,
         help="Input folder with v1 predictions.")

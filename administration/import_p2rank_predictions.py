@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+import abc
 import argparse
 import os
 import typing
 import logging
 import shutil
-import pathlib
 import json
 import zipfile
 import functools
@@ -13,8 +13,9 @@ import datetime
 import subprocess
 import collections
 import multiprocessing
+import gzip
 
-import output_prankweb
+import executor.output_prankweb as output_prankweb
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +27,56 @@ class Arguments:
     java_tools: str
     working_directory: str
     conservation_directory: str
-    structure_directory: str
     prediction_directory: str
-    visualization_directory: str
+    structure_directory: str
     output_directory: str
+    failed_directory: str
     database_name: str
     parallel: int
+    input_type: str
     now = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
+
+
+class AbstractContext(abc.ABC):
+
+    def predictions_dir(self) -> str:
+        ...
+
+    def visualization_directory(self) -> str:
+        ...
+
+    def structure_file(self, code) -> str:
+        """Path to source structure file."""
+        ...
+
+    def structure_file_name(self) -> str:
+        """Name of a structure in target directory."""
+        ...
+
+
+class PdbContext(AbstractContext):
+
+    def __init__(self, args: Arguments):
+        self._args = args
+
+    def predictions_dir(self):
+        return os.path.join(
+            self._args.prediction_directory,
+            "predictions")
+
+    def visualization_directory(self):
+        return os.path.join(
+            self._args.prediction_directory,
+            "visualizations")
+
+    def structure_file(self, code):
+        return os.path.join(
+            self._args.structure_directory,
+            code[1:3],
+            f"pdb{code}.ent.gz")
+
+    def structure_file_name(self) -> str:
+        return "structure.pdb"
 
 
 def _read_arguments() -> typing.Dict[str, str]:
@@ -41,17 +85,11 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--conservation", required=True,
         help="Directory with conservations in format 'pdb{code}_{chain}.hom'.")
     parser.add_argument(
-        "--structure", required=True,
-        help="Directory with structure files in format 'pdb{code}.ent.gz'")
-    parser.add_argument(
         "--prediction", required=True,
-        help="Directory with computed predictions in format "
-             "'pdb{code}.ent.gz_predictions.csv' and "
-             "'pdb{code}.ent.gz_residues.csv")
+        help="Directory with predictions. Content given by input-type.")
     parser.add_argument(
-        "--visualization", required=True,
-        help="Directory with p2rank visualisation output. Must contains "
-             "the data folder and files in format 'pdb{code}.ent.gz.pml'.")
+        "--structure", required=True,
+        help="Directory with structures. Content given by input-type.")
     parser.add_argument(
         "--output", required=True,
         help="Output folder with predictions. E.g. /database/v01")
@@ -65,107 +103,130 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--working", required=True,
         help="Path to working directory.")
     parser.add_argument(
+        "--failed", required=True,
+        help="Path to directory where failed imports should be moved.")
+    parser.add_argument(
         "--thread", default=1,
         help="Number of threads to use.")
+    parser.add_argument(
+        "--input-type", default="pdb",
+        help="'pdb', 'alphafold'")
     return vars(parser.parse_args())
-
 
 def main(arguments):
     logging.basicConfig(
         format="%(asctime)s [%(levelname)s] - %(message)s",
         datefmt="%Y-%m-%dT%H:%M:%S",
         level=logging.DEBUG)
+
     _import(Arguments(
         arguments["java_tools"],
         arguments["working"],
         arguments["conservation"],
-        arguments["structure"],
         arguments["prediction"],
-        arguments["visualization"],
+        arguments["structure"],
         arguments["output"],
+        arguments["failed"],
         arguments["database"],
         min(arguments["thread"], 1),
+        arguments["input_type"]
     ))
 
 
 def _import(args: Arguments):
+    os.makedirs(args.output_directory, exist_ok=True)
+    os.makedirs(args.failed_directory, exist_ok=True)
+    #
     logger.info("Collecting codes for import ...")
     codes_to_import = _collect_codes_for_import(args)
     logger.info(f"Collected {len(codes_to_import)} codes for import")
     logger.info("Preparing data to working directory ...")
     _execute_map_with_args(
-        args, _import_data_into_working_directory, codes_to_import)
+        args, codes_to_import, _import_data_into_working_directory)
     logger.info("Running java-tools ...")
-
+    _execute_java_tools(args, codes_to_import)
     logger.info("Processing and importing to output directory  ...")
     _execute_map_with_args(
-        args, _import_data_to_target_directory, codes_to_import)
+        args, codes_to_import, _import_data_to_target_directory)
     logger.info("Finished")
 
 
 def _collect_codes_for_import(args: Arguments):
+    """Return PDB codes available for import."""
     return [
         name[3:7]
-        for name in os.listdir(args.prediction_directory)
+        for name in os.listdir(_with_context(args).predictions_dir())
         if name.endswith("_predictions.csv")
     ]
 
 
-def _execute_map_with_args(args: Arguments, callback, arguments):
+def _with_context(args: Arguments) -> AbstractContext:
+    if args.input_type == "pdb":
+        return PdbContext(args)
+    else:
+        raise RuntimeError("Unknown input type")
+
+
+def _execute_map_with_args(args: Arguments, codes: typing.List[str], callback):
+    """Execute callback for with args and one code."""
     result = []
     if args.parallel > 1:
         cpu_cures_to_use = args.parallel
         logger.info(f"Starting computations on {cpu_cures_to_use} cores")
         with multiprocessing.Pool(cpu_cures_to_use) as pool:
-            call_arguments = [(args, code) for code in arguments]
+            call_arguments = [(args, code) for code in codes]
             result = pool.starmap(callback, call_arguments)
     else:
         logger.info(f"Starting using single cores")
-        for code in arguments:
+        for code in codes:
             result.append(callback(args, code))
     logger.info("All executed")
     return result
 
 
-def _import_data_into_working_directory(args: Arguments, code: str) -> str:
-    root_dir = os.path.join(args.working_directory, code)
+def _import_data_into_working_directory(args: Arguments, code: str):
+    """Collect files to the working code directory."""
+    root_dir = os.path.join(args.working_directory, code.upper())
     os.makedirs(root_dir, exist_ok=True)
     public_dir = os.path.join(root_dir, "public")
     os.makedirs(public_dir, exist_ok=True)
+    ctx = _with_context(args)
 
-    structure_file = os.path.join(
-        args.structure_directory,
-        f"pdb{code}.ent.gz")
-
-    conservation = _find_conservation(args, code)
+    conservation = _find_conservation(args.conservation_directory, code)
 
     p2rank_predictions_file = os.path.join(
-        args.prediction_directory,
+        ctx.predictions_dir(),
         f"pdb{code}.ent.gz_predictions.csv")
 
-    # public/structure.pdb.gz
+    # public/structure.*.gz
     shutil.copy(
-        structure_file,
-        os.path.join(public_dir, "structure.pdb.gz")
+        ctx.structure_file(code),
+        os.path.join(public_dir, ctx.structure_file_name() + ".gz")
+    )
+
+    # structure.*.gz - for java-tools
+    _gunzip(
+        ctx.structure_file(code),
+        os.path.join(root_dir, ctx.structure_file_name())
     )
 
     # prediction.zip
     _zip_directory(
-        os.path.join(public_dir, "prediction.zip"),
+        os.path.join(public_dir, "prankweb.zip"),
         {
             "structure.pdb_predictions.csv":
                 p2rank_predictions_file,
             "structure.pdb_residues.csv": os.path.join(
-                args.prediction_directory,
+                ctx.predictions_dir(),
                 f"pdb{code}.ent.gz_residues.csv"),
             "visualizations/structure.pdb.pml": os.path.join(
-                args.visualization_directory,
+                ctx.visualization_directory(),
                 f"pdb{code}.ent.gz.pml"),
             "visualizations/data/structure.pdb": os.path.join(
-                args.visualization_directory, "data",
+                ctx.visualization_directory(), "data",
                 f"pdb{code}.ent.gz"),
-            "structure.pdb_points.pdb.gz": os.path.join(
-                args.visualization_directory, "data",
+            "visualizations/data/structure.pdb_points.pdb.gz": os.path.join(
+                ctx.visualization_directory(), "data",
                 f"pdb{code}.ent.gz_points.pdb.gz"),
             **{
                 f"conservation/conservation-{chain}": path
@@ -175,7 +236,8 @@ def _import_data_into_working_directory(args: Arguments, code: str) -> str:
     )
 
     # log
-    pathlib.Path(os.path.join(root_dir, "log")).touch()
+    with open(os.path.join(root_dir, "log"), "w", encoding="utf-8") as stream:
+        stream.write("Imported using 'import_p2rank_predictions.py'.")
 
     # info.json
     info_file = os.path.join(root_dir, "info.json")
@@ -188,19 +250,13 @@ def _import_data_into_working_directory(args: Arguments, code: str) -> str:
             "status": "successful",
             "metadata": {
                 "predictionName": code.upper(),
-                "structureName": "structure.pdb"
+                "structureName": ctx.structure_file_name()
             }
         }, stream)
 
-    # prediction.json
-    java_tools_file = os.path.join(root_dir, "java-tools.json")
-    return f"structure-info  " \
-           f"--input={structure_file}  " \
-           f"--output={java_tools_file}"
-
 
 def _find_conservation(
-        args: Arguments, code: str) -> typing.Dict[str, str]:
+        conservation_directory: str, code: str) -> typing.Dict[str, str]:
     """Dictionary with chain and file path."""
 
     def select_chain(name: str) -> str:
@@ -208,8 +264,8 @@ def _find_conservation(
 
     return {
         select_chain(file_name):
-            os.path.join(args.conservation_directory, file_name)
-        for file_name in _list_directory(args.conservation_directory)
+            os.path.join(conservation_directory, file_name)
+        for file_name in _list_directory(conservation_directory)
         if code in file_name
     }
 
@@ -219,13 +275,41 @@ def _list_directory(path: str):
     return os.listdir(path)
 
 
+def _gunzip(source: str, target: str):
+    with gzip.open(source, "rb") as input_stream:
+        with open(target, "wb") as output_stream:
+            shutil.copyfileobj(input_stream, output_stream)
+
+
 def _zip_directory(output_path: str, entries: typing.Dict[str, str]):
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as stream:
         for path_in_zip, path in entries.items():
             stream.write(path, path_in_zip)
 
 
-def _execute_java_tools(args: Arguments, commands: typing.List[str]):
+def _execute_java_tools(args: Arguments, codes_to_import: typing.List[str]):
+    ctx = _with_context(args)
+
+    def java_tools_input(code: str) -> str:
+        return os.path.join(
+            args.working_directory,
+            code.upper(),
+            ctx.structure_file_name())
+
+    def java_tools_output(code: str) -> str:
+        return os.path.join(
+            args.working_directory,
+            code.upper(),
+            "java-tools.json")
+
+    commands = [
+        f"structure-info"
+        f" -i {java_tools_input(code)}"
+        f" -o {java_tools_output(code)}"
+        for code in codes_to_import
+        if not os.path.exists(java_tools_output(code))
+    ]
+
     command_file = os.path.join(args.working_directory, "commands.txt")
     with open(command_file, "w") as stream:
         stream.writelines(commands)
@@ -235,37 +319,60 @@ def _execute_java_tools(args: Arguments, commands: typing.List[str]):
 
 
 def _import_data_to_target_directory(args: Arguments, code: str) -> None:
+    """Process java-tools output and move to target directory."""
+    ctx = _with_context(args)
     root_dir = os.path.join(args.working_directory, code)
     java_tools_file = os.path.join(root_dir, "java-tools.json")
 
     if not os.path.exists(java_tools_file):
         logger.error(f"Missing structure information file: {java_tools_file}")
+        target_path = os.path.join(args.failed_directory, code)
+        shutil.move(root_dir, target_path)
         return
 
     public_dir = os.path.join(root_dir, "public")
-    conservation = _find_conservation(args, code)
+    conservation = _find_conservation(args.conservation_directory, code)
     p2rank_predictions_file = os.path.join(
-        args.prediction_directory,
+        ctx.predictions_dir(),
         f"pdb{code}.ent.gz_predictions.csv")
 
     prediction_file = os.path.join(public_dir, "prediction.json")
-    with open(prediction_file, "w", encoding="utf-8") as stream:
-        json.dump({
+    try:
+        content = {
             "structure": output_prankweb.load_structure_file(
                 java_tools_file, conservation),
             "pockets": output_prankweb.load_pockets(
                 p2rank_predictions_file),
             "metadata": {},
-        }, stream, indent=2)
+        }
+    except RuntimeError:
+        os.rename(root_dir, os.path.join(
+            args.failed_directory,
+            code.upper()
+        ))
+        return
 
+    with open(prediction_file, "w", encoding="utf-8") as stream:
+        json.dump(content, stream, indent=2)
+
+    # Remove temporary files.
     os.remove(java_tools_file)
+    os.remove(os.path.join(
+        args.working_directory,
+        code.upper(),
+        ctx.structure_file_name()))
+    # Move to target
+    os.makedirs(
+        os.path.join(args.output_directory, code.upper()[1:3]),
+        exist_ok=True)
+    os.rename(
+        root_dir,
+        os.path.join(
+            args.output_directory,
+            code.upper()[1:3],
+            code.upper()
+        ))
 
-    target = os.path.join(
-        args.output_directory,
-        code.upper()[1:3],
-        code.upper()
-    )
-    os.rename(root_dir, target)
 
 if __name__ == "__main__":
     main(_read_arguments())
