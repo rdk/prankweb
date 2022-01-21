@@ -121,7 +121,7 @@ function gtag() {
   window.dataLayer.push(arguments);
 }
 gtag(\\"js\\", new Date());
-gtag(\\"config\\", ${ga}, {\\"anonymize_ip\\": true});
+gtag(\\"config\\", \\"${ga}\\", {\\"anonymize_ip\\": true});
 </script>
 '`.replaceAll("\n", " "); // Result must be one liner else get compilation error.
 }
