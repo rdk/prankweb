@@ -44,7 +44,7 @@ export async function fetchPrediction(
 }
 
 export function getApiEndpoint(database: string, code: string) {
-  return `./api/v2/prediction/${database}/${code}`;
+  return `./api/v2/prediction/${database}/${code.toUpperCase()}`;
 }
 
 export async function fetchPredictionLog(
