@@ -13,23 +13,23 @@ services:
     restart: unless-stopped
     ports:
       - "8020:80"
-  rabbitmq:
-    build:
-      context: ./
-      dockerfile: ./rabbitmq/Dockerfile
-    hostname: "rabbitmq"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-    volumes:
-      - rabbitmq:/var/lib/rabbitmq/
-  flower:
-    build: https://github.com/mher/flower.git
-    command: "celery flower --url_prefix=service/flower"
-    environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
-    depends_on:
-      - rabbitmq
+#  rabbitmq:
+#    build:
+#      context: ./
+#      dockerfile: ./rabbitmq/Dockerfile
+#    hostname: "rabbitmq"
+#    environment:
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    volumes:
+#      - rabbitmq:/var/lib/rabbitmq/
+#  flower:
+#    build: https://github.com/mher/flower.git
+#    command: "celery flower --url_prefix=service/flower"
+#    environment:
+#      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+#    depends_on:
+#      - rabbitmq
   web-server:
     build:
       context: ./
@@ -38,8 +38,8 @@ services:
         UID: ${UID}
         GID: ${GID}
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
-      PRANKWEB_DATA: "/data/prankweb"
+#      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      CELERY_BROKER_PATH: "/data/prankweb/broker"
     restart: unless-stopped
     volumes:
       - predictions:/data/prankweb
@@ -51,7 +51,8 @@ services:
         UID: ${UID}
         GID: ${GID}
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+#      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      CELERY_BROKER_PATH: "/data/prankweb/broker"
     restart: unless-stopped
     volumes:
       - conservation:/data/conservation
