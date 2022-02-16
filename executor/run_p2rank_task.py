@@ -39,7 +39,7 @@ def _read_arguments() -> typing.Dict[str, any]:
     parser.add_argument(
         "--lazy-execution",
         action="store_true",
-        help="Keep working data.")
+        help="If true use existing files from external commands.")
     parser.add_argument(
         "--stdout",
         action="store_true",

@@ -156,7 +156,6 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
     if len(conservation) == 0:
         return None
     result = []
-    # We know regions are sorted.
     for region in structure["regions"]:
         chain = region["name"]
         conservation_file = conservation.get(chain, None)
@@ -174,6 +173,7 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
             actual_sequence = ''.join(
                 [item.code for item in chain_scores])
             message = f"Sequences for chain {chain} " \
+                      f"region ({region_start}, {region_end}) " \
                       f"expected: '{expected_sequence}' " \
                       f"actual: '{actual_sequence}' " \
                       "must have same size " \
