@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 
-from .model import *
+from model import *
 
 
 def prepare_output_p2rank(
