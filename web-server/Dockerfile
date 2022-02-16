@@ -27,4 +27,4 @@ USER ${UID}:${GID}
 
 EXPOSE 8020
 
-ENTRYPOINT ["gunicorn" ,"-w", "4", "-b", ":8020 ", "wsgi:app"]
+CMD ["gunicorn" ,"-w", "4", "-b", ":8020 ", "wsgi:app"]

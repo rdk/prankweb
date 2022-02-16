@@ -39,6 +39,7 @@ services:
         GID: ${GID}
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      PRANKWEB_DATA: "/data/prankweb"
 #      CELERY_BROKER_PATH: "/data/prankweb/broker"
     restart: unless-stopped
     volumes:
