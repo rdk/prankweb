@@ -63,6 +63,7 @@ public class ExecCommand implements CliCommand {
             LOG.warn("Ignoring unknown command: {}", line);
             return;
         }
+        LOG.info("Executing command: {}", command);
         executor.executeCommand(command, tokens);
     }
 

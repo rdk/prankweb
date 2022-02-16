@@ -91,10 +91,26 @@ public class InfoCommand implements CliCommand {
     private InfoOutputModel createModel(Structure structure, MmCifFile mmCif) {
         InfoOutputModel result = new InfoOutputModel();
         Set<ResidueNumber> binding = selectBindingSites(structure);
-        structure.getChains().stream()
-                .filter(this::shouldProcessChain)
-                .forEach(chain -> addChainInformation(binding, chain, result));
-
+        Set<String> visited = new HashSet<>();
+        for (Chain chain : structure.getChains()) {
+            if (!shouldProcessChain(chain)) {
+                continue;
+            }
+            // We have issue with 2EXT where java-tools produces:
+            // {"name":"A","start":0,"end":62}
+            // {"name":"B","start":63,"end":128}
+            // {"name":"C","start":129,"end":194}
+            // {"name":"B","start":195,"end":195}
+            // {"name":"B","start":196,"end":196}
+            // {"name":"B","start":197,"end":197}
+            // As a solution we ignore the second version of the chain.
+            String chainId = getChainPdbName(chain);
+            if (visited.contains(chainId)) {
+                continue;
+            }
+            visited.add(chainId);
+            addChainInformation(binding, chain, chainId, result);
+        }
         var maQaMetric = loadMaQaMetric(mmCif);
         addDataToModel(result, maQaMetric, "plddt", 0);
         return result;
@@ -107,6 +123,11 @@ public class InfoCommand implements CliCommand {
         return chain.getAtomGroups(GroupType.AMINOACID).size() > 0;
     }
 
+    private String getChainPdbName(Chain chain) {
+        String id = chain.getName();
+        return id.trim().isEmpty() ? "A" : id;
+    }
+
     private Set<ResidueNumber> selectBindingSites(Structure structure) {
         Set<ResidueNumber> result = new HashSet<>();
         for (Ligand ligand : LigandSelector.selectLigands(structure)) {
@@ -116,8 +137,8 @@ public class InfoCommand implements CliCommand {
     }
 
     private void addChainInformation(
-            Set<ResidueNumber> binding, Chain chain, InfoOutputModel model) {
-        String chainId = getChainPdbName(chain);
+            Set<ResidueNumber> binding, Chain chain, String chainId,
+            InfoOutputModel model) {
         int startIndex = model.indices.size();
         for (Group group : chain.getAtomGroups(GroupType.AMINOACID)) {
             String groupCode = getGroupCode(group);
@@ -136,11 +157,6 @@ public class InfoCommand implements CliCommand {
         int endIndex = model.indices.size() - 1;
         var region = new InfoOutputModel.Region(chainId, startIndex, endIndex);
         model.regions.add(region);
-    }
-
-    private String getChainPdbName(Chain chain) {
-        String id = chain.getName();
-        return id.trim().isEmpty() ? "A" : id;
     }
 
     private String getGroupCode(Group group) {
