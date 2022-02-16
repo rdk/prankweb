@@ -166,6 +166,8 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
         region_start = region["start"]
         region_end = region["end"] + 1
         region_size = region_end - region_start
+        index_range = range(region_start, region_end)
+
         if not region_size == len(chain_scores):
             expected_sequence = ''.join(
                 [structure['sequence'][index] for index in index_range])
@@ -173,11 +175,10 @@ def _prepare_conservation(structure, conservation: typing.Dict[str, str]):
                 [item.code for item in chain_scores])
             message = f"Sequences for chain {chain} " \
                       f"expected: '{expected_sequence}' " \
-                      f"actual: '{actual_sequence} " \
+                      f"actual: '{actual_sequence}' " \
                       "must have same size " \
                       f"({region_size}, {len(chain_scores)})."
             raise RuntimeError(message)
-        index_range = range(region_start, region_end)
 
         for index, score in zip(index_range, chain_scores):
             # We use masked version, so there can be X in the
