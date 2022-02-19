@@ -2,6 +2,7 @@ package cusbg.prankweb.pjtools.structure;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.io.CifFileReader;
+import org.biojava.nbio.structure.io.LocalPDBDirectory;
 import org.biojava.nbio.structure.io.PDBFileReader;
 
 import java.io.File;
@@ -43,6 +44,7 @@ public class StructureAdapter {
 
     protected Structure loadPdbFile(File pdbFile) throws IOException {
         PDBFileReader reader = new PDBFileReader();
+        reader.setFetchBehavior(LocalPDBDirectory.FetchBehavior.LOCAL_ONLY);
         try (InputStream inputStream = openStream(pdbFile)) {
             return reader.getStructure(inputStream);
         }
@@ -50,6 +52,7 @@ public class StructureAdapter {
 
     protected Structure loadCifFile(File pdbFile) throws IOException {
         CifFileReader reader = new CifFileReader();
+        reader.setFetchBehavior(LocalPDBDirectory.FetchBehavior.LOCAL_ONLY);
         try (InputStream inputStream = openStream(pdbFile)) {
             return reader.getStructure(inputStream);
         }

@@ -30,6 +30,7 @@ public class ApplicationEntry {
             LOG.error("No command found!");
             return 1;
         }
+        setup();
         LOG.info("Running command: {}",
                 command.getCliCommandParser().getCommand());
         Instant start = Instant.now();
@@ -42,6 +43,8 @@ public class ApplicationEntry {
         return result;
     }
 
+    private void setup() {
 
+    }
 
 }

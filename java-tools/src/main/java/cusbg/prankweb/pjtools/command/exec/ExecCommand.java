@@ -1,6 +1,5 @@
 package cusbg.prankweb.pjtools.command.exec;
 
-import cusbg.prankweb.pjtools.ApplicationEntry;
 import cusbg.prankweb.pjtools.Executor;
 import cusbg.prankweb.pjtools.cli.CliCommand;
 import cusbg.prankweb.pjtools.cli.CliCommandParser;
@@ -41,6 +40,7 @@ public class ExecCommand implements CliCommand {
     @Override
     public void execute(String[] argsAsString) throws Exception {
         var args = loadArgs(argsAsString);
+        LOG.info("Executing commands from {}", args.commands());
         try (Stream<String> stream = Files.lines(args.commands().toPath())) {
             stream.forEach(this::executeLine);
         }
@@ -63,7 +63,7 @@ public class ExecCommand implements CliCommand {
             LOG.warn("Ignoring unknown command: {}", line);
             return;
         }
-        LOG.info("Executing command: {}", command);
+        LOG.info("Executing command: {}", line);
         executor.executeCommand(command, tokens);
     }
 
