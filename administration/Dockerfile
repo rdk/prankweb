@@ -35,7 +35,8 @@ RUN addgroup --gid ${GID} user \
 # Since WORKDIR created with current user (root) we precreate the folders.
 RUN mkdir /data \
  && mkdir /opt/java-tools && chown user:user /opt/java-tools \
- && mkdir /opt/administration && chown user:user /opt/administration
+ && mkdir /opt/administration && chown user:user /opt/administration \
+ && mkdir /opt/executor && chown user:user /opt/executor
 
 #
 # java-tools
@@ -43,16 +44,18 @@ WORKDIR /opt
 COPY --chown=user:user --from=java-tools /opt/java-tools/dist ./java-tools
 
 #
+# prankweb executor
+WORKDIR /opt/executor
+COPY --chown=user:user ./executor/ ./
+
+#
 # prankweb administration
 WORKDIR /opt/administration
 COPY --chown=user:user ./administration/requirements.txt ./
-
 RUN pip3 install -r requirements.txt
-
 COPY --chown=user:user ./administration/ ./
-COPY --chown=user:user ./executor/model.py ./
-COPY --chown=user:user ./executor/ ./executor/
 
 USER ${UID}:${GID}
+ENV PYTHONPATH=$PYTHONPATH:/opt/executor
 
 CMD ["bash"]

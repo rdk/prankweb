@@ -15,7 +15,7 @@ import collections
 import multiprocessing
 import gzip
 
-import executor.output_prankweb as output_prankweb
+import output_prankweb as output_prankweb
 
 logger = logging.getLogger(__name__)
 
@@ -305,7 +305,7 @@ def _execute_java_tools(args: Arguments, codes_to_import: typing.List[str]):
     commands = [
         f"structure-info"
         f" -i {java_tools_input(code)}"
-        f" -o {java_tools_output(code)}"
+        f" -o {java_tools_output(code)}\n"
         for code in codes_to_import
         if not os.path.exists(java_tools_output(code))
     ]
