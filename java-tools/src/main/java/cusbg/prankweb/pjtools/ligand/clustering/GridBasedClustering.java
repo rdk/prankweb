@@ -2,12 +2,15 @@ package cusbg.prankweb.pjtools.ligand.clustering;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
- * We start with each element in it's own cluster.
- * Then for each cluster we try to merge it with all other.
+ * We start with each element in its own cluster.
+ * Then for each cluster we try to merge it with all others.
  * <p>
  * We start by wrapping up the elements into NamedClusters. One cluster
  * per element. Next we put the clusters into grid. Next we start merging
@@ -22,18 +25,36 @@ public class GridBasedClustering<T> implements Clustering<T> {
 
         Integer id;
 
+        /**
+         * Original cluster position set by the first element inserted
+         * into the cluster.
+         */
         final double[] position;
+
+        /**
+         * I.e. all named clusters that are part of this cluster. When
+         * merging clusters together we also need to update IDs af all
+         * other clusters.
+         */
+        List<NamedCluster<T>> parts = new ArrayList<>();
 
         public NamedCluster(int id, T element, double[] position) {
             super(element);
             this.id = id;
             this.position = position;
+            this.parts.add(this);
         }
 
         public void mergeWith(NamedCluster<T> other) {
             this.items.addAll(other.items);
-            other.id = this.id;
-            other.items = this.items;
+            // Propagate to all members of the other cluster.
+            List<NamedCluster<T>> otherParts = other.parts;
+            for (NamedCluster<T> part : otherParts) {
+                part.id = this.id;
+                part.items = this.items;
+                part.parts = this.parts;
+            }
+            this.parts.addAll(otherParts);
         }
 
     }
@@ -70,7 +91,8 @@ public class GridBasedClustering<T> implements Clustering<T> {
     public List<Cluster<T>> cluster(
             List<T> elements, double minDist, Distance<T> distanceFunction) {
         wrapElementsToClusters(elements);
-        createGrid(minDist * 2);
+        double resolution = minDist * 2;
+        createGrid(resolution);
         mergeClusters(minDist, distanceFunction);
         return collectClusters();
     }
@@ -88,18 +110,21 @@ public class GridBasedClustering<T> implements Clustering<T> {
         }
     }
 
-    private void createGrid(double distance) {
+    private void createGrid(double resolution) {
         this.cells = new ArrayList<>();
         for (NamedCluster<T> cluster : clusters) {
-            Cell<T> cell = getCell(cluster.position, distance);
+            Cell<T> cell = getCell(cluster.position, resolution);
             cell.content.add(cluster);
         }
     }
 
-    private Cell<T> getCell(double[] position, double distance) {
-        int x = (int) (position[0] / distance);
-        int y = (int) (position[1] / distance);
-        int z = (int) (position[2] / distance);
+    /**
+     * Return a cell for given position.
+     */
+    private Cell<T> getCell(double[] position, double resolution) {
+        int x = (int) (position[0] / resolution);
+        int y = (int) (position[1] / resolution);
+        int z = (int) (position[2] / resolution);
         for (Cell<T> cell : cells) {
             if (cell.x == x && cell.y == y && cell.z == z) {
                 return cell;
@@ -118,12 +143,15 @@ public class GridBasedClustering<T> implements Clustering<T> {
         }
     }
 
+    /**
+     * For each cell return all cells in distance of one.
+     */
     private List<Cell<T>> getNeighbourCell(Cell<T> center) {
         List<Cell<T>> result = new ArrayList<>(8);
         for (Cell<T> cell : cells) {
-            if (Math.abs(cell.x - center.x) < 1
-                    && Math.abs(cell.y - center.y) < 1
-                    && Math.abs(cell.z - center.z) < 1) {
+            if (Math.abs(cell.x - center.x) <= 1
+                    && Math.abs(cell.y - center.y) <= 1
+                    && Math.abs(cell.z - center.z) <= 1) {
                 result.add(cell);
             }
         }
@@ -133,14 +161,24 @@ public class GridBasedClustering<T> implements Clustering<T> {
     private void mergeCells(
             double minDist, Distance<T> distanceFunction,
             Cell<T> left, Cell<T> right) {
+        // There can be multiple instances of the same clusters in a
+        // cell (right) in order to avoid testing duplicities
+        // in testing we keep tract of what we have already tried to merge.
+        Set<Integer> tested = new HashSet<>();
         for (NamedCluster<T> leftItem : left.content) {
+            tested.clear();
             for (NamedCluster<T> rightItem : right.content) {
-                if (leftItem.id == rightItem.id) {
+                if (Objects.equals(leftItem.id, rightItem.id)) {
                     // Same cluster.
                     continue;
                 }
-                double distance = distanceFunction.apply(
-                        leftItem, rightItem);
+                if (tested.contains(rightItem.id)) {
+                    // We have already tried to merge those two clusters,
+                    // and it was not working.
+                    continue;
+                }
+                tested.add(rightItem.id);
+                double distance = distanceFunction.apply(leftItem, rightItem);
                 if (distance <= minDist) {
                     leftItem.mergeWith(rightItem);
                 }

@@ -9,8 +9,12 @@ public class ClusterDistanceFunction {
 
     }
 
-    public static <T> Clustering.Distance<T> minDistance(
-            ElementDistance<T> distanceFunction) {
+    /**
+     * Return and find distance that is either smaller than the threshold
+     * or minimum distance.
+     */
+    public static <T> Clustering.Distance<T> minDistanceOrThreshold(
+            ElementDistance<T> distanceFunction, double threshold) {
         return (Clustering.Cluster<T> left, Clustering.Cluster<T> right) -> {
             double result = Double.POSITIVE_INFINITY;
             for (T leftItem : left.getItems()) {
@@ -18,6 +22,9 @@ public class ClusterDistanceFunction {
                     result = Math.min(
                             distanceFunction.apply(leftItem, rightItem),
                             result);
+                }
+                if (result < threshold) {
+                    return result;
                 }
             }
             return result;

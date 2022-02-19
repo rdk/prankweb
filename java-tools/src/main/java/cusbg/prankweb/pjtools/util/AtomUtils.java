@@ -32,10 +32,14 @@ public class AtomUtils {
     }
 
     public static double atomEuclideanDistance(Atom left, Atom right) {
+        return Math.sqrt(atomEuclideanDistanceSquare(left, right));
+    }
+
+    public static double atomEuclideanDistanceSquare(Atom left, Atom right) {
         double x = left.getX() - right.getX();
         double y = left.getY() - right.getY();
         double z = left.getZ() - right.getZ();
-        return Math.sqrt(x * x + y * y + z * z);
+        return x * x + y * y + z * z;
     }
 
     public static Set<Group> getDistinctGroups(List<Atom> atoms) {

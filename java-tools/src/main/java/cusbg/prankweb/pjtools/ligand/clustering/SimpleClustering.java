@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * We start with each element in it's own cluster.
- * Then for each cluster we try to merge it with all other.
+ * We start with each element in its own cluster.
+ * Then for each cluster we try to merge it with all others.
  */
 public class SimpleClustering<T> implements Clustering<T> {
 

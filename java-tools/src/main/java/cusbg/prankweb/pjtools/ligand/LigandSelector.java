@@ -29,10 +29,12 @@ public class LigandSelector {
     private static List<Clustering.Cluster<Atom>> detectLigandsByClustering(
             List<Atom> atoms) {
         Clustering<Atom> clustering = new GridBasedClustering<>(Atom::getCoords);
-        var distanceFunction = ClusterDistanceFunction.minDistance(
-                AtomUtils::atomEuclideanDistance);
-        return clustering.cluster(
-                atoms, COVALENT_BOND_SIZE, distanceFunction);
+        // We used square of the Euclidean distance, as a result we need to use,
+        // square of the required distance as minimum distance.
+        double distance = COVALENT_BOND_SIZE * COVALENT_BOND_SIZE;
+        var distanceFunction = ClusterDistanceFunction.minDistanceOrThreshold(
+                AtomUtils::atomEuclideanDistanceSquare, distance);
+        return clustering.cluster(atoms, distance, distanceFunction);
     }
 
     private static List<Ligand> createFromAtoms(List<List<Atom>> ligandGroups) {
