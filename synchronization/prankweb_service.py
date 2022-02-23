@@ -53,7 +53,7 @@ def _retrieve_info_directory(pdb_code: str) -> PrankWebResponse:
         _server_directory, pdb_code[1:3].upper(), pdb_code.upper(),
         "info.json")
     if os.path.exists(path):
-        with open(path, "w", encoding="utf-8") as stream:
+        with open(path, "r", encoding="utf-8") as stream:
             return json.load(stream)
     else:
         return _retrieve_info_url(pdb_code)
