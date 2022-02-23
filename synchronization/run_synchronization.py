@@ -26,7 +26,10 @@ def _read_arguments() -> typing.Dict[str, str]:
     parser.add_argument(
         "--server",
         default="https://prankweb.cz/",
-        help="prankweb server URL")
+        help="URL of prankweb server.")
+    parser.add_argument(
+        "--server-directory",
+        help="Optional path to prediction directory.")
     parser.add_argument(
         "--data",
         help="Path to database directory.")
@@ -51,7 +54,7 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 
 def main(args):
-    data_directory = os.path.join(args["data"], "funpdbe")
+    data_directory = os.path.join(args["data"], "content")
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
     logger.info("Fetching PDB records from '" + args["from"] + "' ...")
@@ -64,14 +67,17 @@ def main(args):
     database_service.save_database(data_directory, database)
     logger.info("Downloading result from prankweb server ...")
     prepare_funpdbe_files(
-        args["server"], args["p2rank_version"],
+        args["server"], args["server_directory"], args["p2rank_version"],
         data_directory, database)
     database_service.save_database(data_directory, database)
-    logger.info("Uploading to FTP server ...")
-    upload_to_funpdbe(
-        args["ftp_url"], args["ftp_user"], args["ftp_password"],
-        data_directory, database)
-    database_service.save_database(data_directory, database)
+    if args["ftp_url"] is None:
+        logger.info("Skipping upload to FTP server")
+    else:
+        logger.info("Uploading to FTP server ...")
+        upload_to_funpdbe(
+            args["ftp_url"], args["ftp_user"], args["ftp_password"],
+            data_directory, database)
+        database_service.save_database(data_directory, database)
     logger.info("All done")
 
 
@@ -120,49 +126,85 @@ def synchronize_prankweb(server: str, database):
 
 
 def prepare_funpdbe_files(
-        server: str, p2rank_version: str, data_directory: str, database):
+        server_url: str, server_directory: typing.Optional[str],
+        p2rank_version: str, data_directory: str, database):
     ftp_directory = get_ftp_directory(data_directory)
     os.makedirs(ftp_directory, exist_ok=True)
-    configuration = funpdbe_configuration(server, p2rank_version)
+    configuration = funpdbe_configuration(server_url, p2rank_version)
     os.makedirs(os.path.join(data_directory, "working"), exist_ok=True)
     for code, record in database["data"].items():
-        if not record["status"] == EntryStatus.PREDICTED.value:
-            continue
-        working_directory = os.path.join(data_directory, "working", code)
-        os.makedirs(working_directory, exist_ok=True)
-        download_path = os.path.join(working_directory, f"{code}.zip")
-        try:
-            prankweb_service.retrieve_archive(server, code, download_path)
-        except:
-            logger.exception(f"Can't download {code}, record ignored.")
-            return
-        unpack_from_zip(
-            download_path,
-            {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
-            working_directory
-        )
-        predictions_file = os.path.join(
-            working_directory,
-            "structure.pdb_predictions.csv")
-        residues_file = os.path.join(
-            working_directory,
-            "structure.pdb_residues.csv")
-        target_directory = os.path.join(ftp_directory, code.lower()[1:3])
-        os.makedirs(target_directory, exist_ok=True)
-        try:
-            p2rank_to_funpdbe.convert_p2rank_to_pdbe(
-                configuration, code, predictions_file, residues_file,
-                os.path.join(target_directory, f"{code.lower()}.json"))
-        except:
-            logger.exception(f"Can't convert {code}, record ignored.")
-            record["status"] = EntryStatus.FUNPDBE_FAILED.value
-            return
-        record["status"] = EntryStatus.CONVERTED.value
-        shutil.rmtree(working_directory)
+        prepare_funpdbe_file(
+            server_url, server_directory, ftp_directory, data_directory,
+            configuration, code, record)
+
+
+def prepare_funpdbe_file(
+        server_url: str, server_directory: typing.Optional[str],
+        ftp_directory: str, data_directory: str,
+        configuration: p2rank_to_funpdbe.Configuration,
+        code: str, record):
+    if not record["status"] == EntryStatus.PREDICTED.value:
+        return
+    working_directory = os.path.join(data_directory, "working", code)
+    os.makedirs(working_directory, exist_ok=True)
+    predictions_file, residues_file = retrieve_prediction_files(
+        server_url, server_directory, working_directory, code)
+    if residues_file is None or residues_file is None:
+        logger.exception(f"Can't obtain prediction files for {code}, "
+                         f"record ignored.")
+        return
+    target_directory = os.path.join(ftp_directory, code.lower()[1:3])
+    os.makedirs(target_directory, exist_ok=True)
+    try:
+        p2rank_to_funpdbe.convert_p2rank_to_pdbe(
+            configuration, code, predictions_file, residues_file,
+            os.path.join(target_directory, f"{code.lower()}.json"))
+    except:
+        logger.exception(f"Can't convert {code}, record ignored.")
+        record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        return
+    record["status"] = EntryStatus.CONVERTED.value
+    shutil.rmtree(working_directory)
 
 
 def get_ftp_directory(data_directory: str):
     return os.path.join(data_directory, "ftp")
+
+
+def retrieve_prediction_files(
+        server: str, server_directory: typing.Optional[str],
+        working_directory: str, code: str):
+    # TODO We can use server_directory here to obtain the data.
+    zip_path = retrieve_archive(server, working_directory, code)
+    if zip_path is None:
+        logger.exception(f"Can't obtain {code} archive, record ignored.")
+        return None, None
+    unpack_from_zip(
+        zip_path,
+        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
+        working_directory
+    )
+    unpack_from_zip(
+        zip_path,
+        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
+        working_directory
+    )
+    predictions_file = os.path.join(
+        working_directory,
+        "structure.pdb_predictions.csv")
+    residues_file = os.path.join(
+        working_directory,
+        "structure.pdb_residues.csv")
+    return predictions_file, residues_file
+
+
+def retrieve_archive(server: str, working_directory: str, code: str):
+    download_path = os.path.join(working_directory, f"{code}.zip")
+    try:
+        prankweb_service.retrieve_archive(server, code, download_path)
+        return download_path
+    except:
+        return None
 
 
 def unpack_from_zip(zip_path: str, extract: typing.Set[str], destination: str):

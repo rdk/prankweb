@@ -49,6 +49,11 @@ WORKDIR /opt/executor
 COPY --chown=user:user ./executor/ ./
 
 #
+# prankweb synchronization
+WORKDIR /opt/synchronization
+COPY --chown=user:user ./synchronization/ ./
+
+#
 # prankweb administration
 WORKDIR /opt/administration
 COPY --chown=user:user ./administration/requirements.txt ./

@@ -18,7 +18,7 @@ def _read_arguments() -> typing.Dict[str, str]:
         description="Create/update an index file from prankweb prediction "
                     "directory.")
     parser.add_argument(
-        "--predictions",
+        "--server-directory",
         help="Path to prankweb prediction directory to import.")
     parser.add_argument(
         "--data",
@@ -30,7 +30,7 @@ def main(args):
     data_directory = os.path.join(args["data"], "funpdbe")
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
-    codes = list_predictions(args["predictions"])
+    codes = list_predictions(args["server_directory"])
     add_pdb_to_database(database, codes)
     database_service.save_database(data_directory, database)
     logger.info("All done")

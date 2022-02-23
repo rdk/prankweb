@@ -321,7 +321,7 @@ def _execute_java_tools(args: Arguments, codes_to_import: typing.List[str]):
 def _import_data_to_target_directory(args: Arguments, code: str) -> None:
     """Process java-tools output and move to target directory."""
     ctx = _with_context(args)
-    root_dir = os.path.join(args.working_directory, code)
+    root_dir = os.path.join(args.working_directory, code.upper())
     java_tools_file = os.path.join(root_dir, "java-tools.json")
 
     if not os.path.exists(java_tools_file):
