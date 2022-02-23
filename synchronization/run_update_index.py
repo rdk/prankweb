@@ -27,7 +27,7 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 
 def main(args):
-    data_directory = os.path.join(args["data"])
+    data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
     codes = list_predictions(args["server_directory"])
