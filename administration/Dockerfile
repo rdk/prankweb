@@ -52,6 +52,7 @@ COPY --chown=user:user ./executor/ ./
 # prankweb synchronization
 WORKDIR /opt/synchronization
 COPY --chown=user:user ./synchronization/ ./
+RUN pip3 install -r requirements.txt
 
 #
 # prankweb administration
