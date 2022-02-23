@@ -58,17 +58,16 @@ def main(args):
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
     logger.info("Fetching PDB records from '" + args["from"] + "' ...")
-    new_pdb_records = []  # pdb_service.get_deposited_from(args["from"])
+    new_pdb_records = pdb_service.get_deposited_from(args["from"])
     add_pdb_to_database(database, new_pdb_records)
     database_service.save_database(data_directory, database)
     logger.info("Synchronizing with prankweb server ...")
-    synchronize_prankweb(args["server"], database)
+    prankweb_service.initialize(args["server"], args["server_directory"])
+    synchronize_prankweb(database)
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
     logger.info("Downloading result from prankweb server ...")
-    prepare_funpdbe_files(
-        args["server"], args["server_directory"], args["p2rank_version"],
-        data_directory, database)
+    prepare_funpdbe_files(args["p2rank_version"], data_directory, database)
     database_service.save_database(data_directory, database)
     if args["ftp_url"] is None:
         logger.info("Skipping upload to FTP server")
@@ -94,7 +93,7 @@ def add_pdb_to_database(
         }
 
 
-def synchronize_prankweb(server: str, database):
+def synchronize_prankweb(database):
     status_to_update = [
         EntryStatus.NEW.value,
         EntryStatus.PRANKWEB_QUEUED.value,
@@ -103,7 +102,7 @@ def synchronize_prankweb(server: str, database):
         if record["status"] not in status_to_update:
             continue
         logger.info(f"Checking prankweb for '{code}'")
-        response = prankweb_service.retrieve_info(server, code)
+        response = prankweb_service.retrieve_info(code)
         if response.status == -1:
             # This indicates error with the connection.
             continue
@@ -125,21 +124,17 @@ def synchronize_prankweb(server: str, database):
             ...
 
 
-def prepare_funpdbe_files(
-        server_url: str, server_directory: typing.Optional[str],
-        p2rank_version: str, data_directory: str, database):
+def prepare_funpdbe_files(p2rank_version: str, data_directory: str, database):
     ftp_directory = get_ftp_directory(data_directory)
     os.makedirs(ftp_directory, exist_ok=True)
-    configuration = funpdbe_configuration(server_url, p2rank_version)
+    configuration = funpdbe_configuration(p2rank_version)
     os.makedirs(os.path.join(data_directory, "working"), exist_ok=True)
     for code, record in database["data"].items():
         prepare_funpdbe_file(
-            server_url, server_directory, ftp_directory, data_directory,
-            configuration, code, record)
+            ftp_directory, data_directory, configuration, code, record)
 
 
 def prepare_funpdbe_file(
-        server_url: str, server_directory: typing.Optional[str],
         ftp_directory: str, data_directory: str,
         configuration: p2rank_to_funpdbe.Configuration,
         code: str, record):
@@ -148,7 +143,7 @@ def prepare_funpdbe_file(
     working_directory = os.path.join(data_directory, "working", code)
     os.makedirs(working_directory, exist_ok=True)
     predictions_file, residues_file = retrieve_prediction_files(
-        server_url, server_directory, working_directory, code)
+        working_directory, code)
     if residues_file is None or residues_file is None:
         logger.exception(f"Can't obtain prediction files for {code}, "
                          f"record ignored.")
@@ -171,11 +166,8 @@ def get_ftp_directory(data_directory: str):
     return os.path.join(data_directory, "ftp")
 
 
-def retrieve_prediction_files(
-        server: str, server_directory: typing.Optional[str],
-        working_directory: str, code: str):
-    # TODO We can use server_directory here to obtain the data.
-    zip_path = retrieve_archive(server, working_directory, code)
+def retrieve_prediction_files(working_directory: str, code: str):
+    zip_path = retrieve_archive(working_directory, code)
     if zip_path is None:
         logger.exception(f"Can't obtain {code} archive, record ignored.")
         return None, None
@@ -198,10 +190,10 @@ def retrieve_prediction_files(
     return predictions_file, residues_file
 
 
-def retrieve_archive(server: str, working_directory: str, code: str):
+def retrieve_archive(working_directory: str, code: str):
     download_path = os.path.join(working_directory, f"{code}.zip")
     try:
-        prankweb_service.retrieve_archive(server, code, download_path)
+        prankweb_service.retrieve_archive(code, download_path)
         return download_path
     except:
         return None
