@@ -148,17 +148,21 @@ def prepare_funpdbe_file(
         logger.exception(f"Can't obtain prediction files for {code}, "
                          f"record ignored.")
         return
-    target_directory = os.path.join(ftp_directory, code.lower()[1:3])
-    os.makedirs(target_directory, exist_ok=True)
+
+    working_output = os.path.join(working_directory, f"{code.lower()}.json")
     try:
         p2rank_to_funpdbe.convert_p2rank_to_pdbe(
             configuration, code, predictions_file, residues_file,
-            os.path.join(target_directory, f"{code.lower()}.json"))
+            working_output)
+        record["status"] = EntryStatus.CONVERTED.value
     except:
         logger.exception(f"Can't convert {code}, record ignored.")
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
         return
-    record["status"] = EntryStatus.CONVERTED.value
+    target_directory = os.path.join(ftp_directory, code.lower()[1:3])
+    os.makedirs(target_directory, exist_ok=True)
+    target_output = os.path.join(target_directory, f"{code.lower()}.json")
+    shutil.move(working_output, target_output)
     shutil.rmtree(working_directory)
 
 

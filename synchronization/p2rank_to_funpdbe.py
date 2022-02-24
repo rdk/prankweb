@@ -43,8 +43,8 @@ def convert_p2rank_to_pdbe(
     for pocket in pockets:
         site = _create_site(pocket)
         sites.append(site)
-        for residue in _iterate_site_residues(pocket, residues,
-                                              site["site_id"]):
+        for residue in _iterate_site_residues(
+                pocket, residues, site["site_id"]):
             _add_residue_to_chains(residue, chains_dictionary)
     chains = _flat_chains_dictionary(chains_dictionary)
 
