@@ -89,5 +89,5 @@ def _retrieve_archive_directory(pdb_code: str, destination: str):
     shutil.copy(path, destination)
 
 
-def prediction_url_template(server: str) -> str:
-    return f"{server}/analyze/?database={database()}&code=" + "{}"
+def prediction_url_template() -> str:
+    return f"{_server_url}/analyze/?database={database()}&code=" + "{}"

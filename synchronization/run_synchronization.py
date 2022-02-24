@@ -213,7 +213,7 @@ def funpdbe_configuration(p2rank_version: str)\
         "p2rank",
         "3.0",
         datetime.date.today().strftime("%d/%m/%Y"),
-        prankweb_service.prediction_url_template(server),
+        prankweb_service.prediction_url_template(),
         p2rank_version
     )
 
