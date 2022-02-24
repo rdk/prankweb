@@ -207,8 +207,8 @@ def unpack_from_zip(zip_path: str, extract: typing.Set[str], destination: str):
             zip_file.extract(file_name, destination)
 
 
-def funpdbe_configuration(
-        server: str, p2rank_version: str) -> p2rank_to_funpdbe.Configuration:
+def funpdbe_configuration(p2rank_version: str)\
+        -> p2rank_to_funpdbe.Configuration:
     return p2rank_to_funpdbe.Configuration(
         "p2rank",
         "3.0",
