@@ -192,11 +192,17 @@ def validate_file(data_resource: str, pdbe_file: str):
     validator.load_json(pdbe_file)
     if not validator.basic_checks():
         logger.error(validator.error_log)
-        raise RuntimeError("Basic checks failed for {}:".format(pdbe_file))
+        raise RuntimeError(
+            "Basic checks failed for {}\n{}".format(
+                pdbe_file, validator.error_log))
     if not validator.validate_against_schema():
         logger.error(validator.error_log)
-        raise RuntimeError("Invalid schema for {}".format(pdbe_file))
+        raise RuntimeError(
+            "Invalid schema for {}\n{}".format(
+                pdbe_file, validator.error_log))
     residue_indexes = ResidueIndexes(validator.json_data)
     if not residue_indexes.check_every_residue():
         logger.error(residue_indexes.mismatches)
-        raise RuntimeError("Invalid residues: {}".format(pdbe_file))
+        raise RuntimeError(
+            "Invalid residues: {}\n{}".format(
+                pdbe_file, validator.error_log))

@@ -36,7 +36,8 @@ RUN addgroup --gid ${GID} user \
 RUN mkdir /data \
  && mkdir /opt/java-tools && chown user:user /opt/java-tools \
  && mkdir /opt/administration && chown user:user /opt/administration \
- && mkdir /opt/executor && chown user:user /opt/executor
+ && mkdir /opt/executor && chown user:user /opt/executor \
+ && mkdir /opt/synchronization && chown user:user /opt/synchronization
 
 #
 # java-tools
