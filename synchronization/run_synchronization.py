@@ -69,8 +69,8 @@ def main(args):
     logger.info("Downloading result from prankweb server ...")
     prepare_funpdbe_files(args["p2rank_version"], data_directory, database)
     database_service.save_database(data_directory, database)
-    if args["ftp_url"] is None:
-        logger.info("Skipping upload to FTP server")
+    if args["ftp_user"] is None:
+        logger.info("Skipping upload to FTP server as no user is provided.")
     else:
         logger.info("Uploading to FTP server ...")
         upload_to_funpdbe(
@@ -155,9 +155,12 @@ def prepare_funpdbe_file(
             configuration, code, predictions_file, residues_file,
             working_output)
         record["status"] = EntryStatus.CONVERTED.value
-    except:
+    except Exception as ex:
         logger.exception(f"Can't convert {code}, record ignored.")
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        error_log_file = os.path.join(working_directory, "error.log")
+        with open(error_log_file, "w") as stream:
+            stream.write(str(ex))
         return
     target_directory = os.path.join(ftp_directory, code.lower()[1:3])
     os.makedirs(target_directory, exist_ok=True)
@@ -231,9 +234,9 @@ def upload_to_funpdbe(
         if not record["status"] == EntryStatus.CONVERTED.value:
             continue
         logger.info(f"Uploading {code}")
-        target_directory = os.path.join(ftp_directory, code.lower()[1:3])
+        source_directory = os.path.join(ftp_directory, code.lower()[1:3])
         try:
-            pdbe_service.upload_to_ftp(configuration, code, target_directory)
+            pdbe_service.upload_to_ftp(configuration, code, source_directory)
         except:
             logger.exception(f"Can't upload {code}.")
             continue

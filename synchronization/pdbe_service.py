@@ -13,10 +13,10 @@ class Configuration:
     password: str
 
 
-def upload_to_ftp(configuration: Configuration, code: str, file_path: str):
+def upload_to_ftp(configuration: Configuration, code: str, local_path: str):
     with _create_ftp_client(configuration) as ftp:
         remote_path = f"{code[1:3]}/{code}.json"
-        with open(file_path, "rb") as stream:
+        with open(local_path, "rb") as stream:
             ftp.storbinary(f"STOR {remote_path}", stream)
 
 
