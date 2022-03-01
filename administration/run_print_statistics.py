@@ -85,14 +85,15 @@ def print_statistics(predictions: typing.List[Prediction]):
     by_pockets = collections.defaultdict(int)
     for prediction in predictions:
         by_status[str(prediction.status)] += 1
-        by_pockets[str(prediction.predicted_sites)] += 1
-    print("Loaded: ", len(by_status))
+        by_pockets[prediction.predicted_sites] += 1
+    print("Loaded: ", len(predictions))
     print("Status")
     for key, value in by_status.items():
         print(f"  {key} : {value}")
     print("Pockets")
     for key in sorted(by_pockets.keys()):
-        print(f"  {key} : {by_pockets[key]}")
+        value = by_pockets[key]
+        print(f"  {str(key).rjust(6)} : {str(value).rjust(6)}")
 
 
 if __name__ == "__main__":
