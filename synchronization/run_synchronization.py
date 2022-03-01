@@ -17,8 +17,6 @@ import p2rank_to_funpdbe
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-logging.basicConfig()
-
 
 def _read_arguments() -> typing.Dict[str, str]:
     from_date = datetime.datetime.today() - datetime.timedelta(weeks=2)
@@ -54,6 +52,7 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 
 def main(args):
+    _init_logging()
     data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
@@ -78,6 +77,18 @@ def main(args):
             data_directory, database)
         database_service.save_database(data_directory, database)
     logger.info("All done")
+
+
+def _init_logging():
+    formatter = logging.Formatter(
+        "%(asctime)s %(name)s [%(levelname)s] : %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S")
+
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
 
 
 def add_pdb_to_database(
@@ -105,14 +116,17 @@ def synchronize_prankweb(database):
         response = prankweb_service.retrieve_info(code)
         if response.status == -1:
             # This indicates error with the connection.
+            logging.info("Can't connect to server.")
             continue
         if not 199 < response.status < 299:
             record["status"] = EntryStatus.PRANKWEB_FAILED.value
-            print(f"> {code} {response.status}\n   {response.body}")
+            logger.info(
+                f"Request failed {code} {response.status}\n   {response.body}")
             continue
         # Make the time same as for the rest of the application.
         record["prankwebCreatedDate"] = response.body["created"] + "Z"
         record["prankwebCheckDate"] = response.body["lastChange"] + "Z"
+        logger.info("Status:" + record["status"])
         if response.body["status"] == "successful":
             record["status"] = EntryStatus.PREDICTED.value
             continue
@@ -214,7 +228,7 @@ def unpack_from_zip(zip_path: str, extract: typing.Set[str], destination: str):
             zip_file.extract(file_name, destination)
 
 
-def funpdbe_configuration(p2rank_version: str)\
+def funpdbe_configuration(p2rank_version: str) \
         -> p2rank_to_funpdbe.Configuration:
     return p2rank_to_funpdbe.Configuration(
         "p2rank",

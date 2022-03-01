@@ -10,6 +10,7 @@ import zipfile
 import functools
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def _read_arguments() -> typing.Dict[str, str]:
@@ -34,7 +35,7 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 
 def main(arguments):
-    logging.basicConfig(level=logging.DEBUG)
+    _init_logging()
     files = os.listdir(arguments["input"])
     for index, directory_name in enumerate(files):
         source_directory = os.path.join(
@@ -48,36 +49,48 @@ def main(arguments):
             directory_name)
         logger.info(f"Converting {index + 1}/{len(files)} : {directory_name}")
         try:
-            _import(source_directory,
-                    target_directory,
-                    arguments["database"],
-                    arguments.get("pdbe", None))
+            import_prediction(source_directory,
+                              target_directory,
+                              arguments["database"],
+                              arguments.get("pdbe", None))
         except:
             shutil.rmtree(target_directory)
             logger.exception(f"Import failed for: {directory_name}")
 
 
-def _import(
+def _init_logging():
+    formatter = logging.Formatter(
+        "%(asctime)s %(name)s [%(levelname)s] : %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S")
+
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
+
+
+def import_prediction(
         source: str,
         target: str,
         database: str,
         pdb_directory: typing.Optional[str]):
     os.makedirs(target, exist_ok=True)
-    code = _import_info(source, target, database)
+    code = import_info(source, target, database)
     os.makedirs(os.path.join(target, "public"), exist_ok=True)
-    _import_public(source, target, code, pdb_directory)
-    _import_stdout(source, target)
+    import_public_directory(source, target, code, pdb_directory)
+    import_stdout(source, target)
 
 
-def _import_public(
+def import_public_directory(
         source_dir: str, target_dir: str, code: str,
         funpdbe_directory: typing.Optional[str]):
     shutil.copy(
         os.path.join(source_dir, "public", "structure.pdb.gz"),
         os.path.join(target_dir, "public"))
-    sequence = _load_json(
+    sequence = load_json(
         os.path.join(source_dir, "public", "sequence.json"))
-    prediction = _load_json(
+    prediction = load_json(
         os.path.join(source_dir, "public", "prediction.json"))
     content = {
         "structure": {
@@ -117,20 +130,17 @@ def _import_public(
         content["structure"]["scores"]["conservation"] = sequence["scores"]
 
     if funpdbe_directory is not None:
-        _create_prankweb(target_dir, code, funpdbe_directory)
+        create_prankweb(target_dir, code, funpdbe_directory)
 
-    _save_json(os.path.join(target_dir, "public", "prediction.json"), content)
+    save_json(os.path.join(target_dir, "public", "prediction.json"), content)
 
 
-def _load_json(path: str):
+def load_json(path: str):
     with open(path) as stream:
         return json.load(stream)
 
 
-def _create_prankweb(
-        target_dir: str,
-        code: str,
-        funpdbe_directory: str):
+def create_prankweb(target_dir: str, code: str, funpdbe_directory: str):
     code = code.lower()
     prediction_file = os.path.join(
         funpdbe_directory, "p2rank-predictions", f"{code}.pdb_predictions.csv")
@@ -141,7 +151,7 @@ def _create_prankweb(
     conservation_files = {
         "conservation-" + name[4: name.index(".")]:
             os.path.join(conservation_directory, name)
-        for name in _list_files(conservation_directory)
+        for name in list_files(conservation_directory)
         if name.startswith(code)
     }
 
@@ -158,17 +168,17 @@ def _create_prankweb(
 
 
 @functools.lru_cache(maxsize=2)
-def _list_files(path: str):
+def list_files(path: str):
     return os.listdir(path)
 
 
-def _save_json(path: str, content):
+def save_json(path: str, content):
     with open(path, "w", encoding="utf-8") as stream:
         json.dump(content, stream, ensure_ascii=False)
 
 
-def _import_info(source_dir: str, target_dir: str, database: str):
-    source = _load_json(os.path.join(source_dir, "status.json"))
+def import_info(source_dir: str, target_dir: str, database: str):
+    source = load_json(os.path.join(source_dir, "status.json"))
     code = source["id"]
     info_content = {
         "id": code.upper(),
@@ -181,11 +191,11 @@ def _import_info(source_dir: str, target_dir: str, database: str):
             "structureName": "structure.pdb",
         }
     }
-    _save_json(os.path.join(target_dir, "info.json"), info_content)
+    save_json(os.path.join(target_dir, "info.json"), info_content)
     return code.lower()
 
 
-def _import_stdout(source_dir: str, target_dir: str):
+def import_stdout(source_dir: str, target_dir: str):
     # We just create an empty file.
     pathlib.Path(os.path.join(target_dir, "log")).touch()
 

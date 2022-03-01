@@ -10,8 +10,6 @@ from database_service import EntryStatus
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-logging.basicConfig()
-
 
 def _read_arguments() -> typing.Dict[str, str]:
     parser = argparse.ArgumentParser(
@@ -27,6 +25,7 @@ def _read_arguments() -> typing.Dict[str, str]:
 
 
 def main(args):
+    _init_logging()
     data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
@@ -34,6 +33,18 @@ def main(args):
     add_pdb_to_database(database, codes)
     database_service.save_database(data_directory, database)
     logger.info("All done")
+
+
+def _init_logging():
+    formatter = logging.Formatter(
+        "%(asctime)s %(name)s [%(levelname)s] : %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S")
+
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
 
 
 def list_predictions(predictions_directory: str) -> typing.List[str]:

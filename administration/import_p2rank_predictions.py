@@ -18,6 +18,7 @@ import gzip
 import output_prankweb as output_prankweb
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 ResidueScore = collections.namedtuple("ResidueScore", ["code", "value"])
 
@@ -113,13 +114,11 @@ def _read_arguments() -> typing.Dict[str, str]:
         help="'pdb', 'alphafold'")
     return vars(parser.parse_args())
 
-def main(arguments):
-    logging.basicConfig(
-        format="%(asctime)s [%(levelname)s] - %(message)s",
-        datefmt="%Y-%m-%dT%H:%M:%S",
-        level=logging.DEBUG)
 
-    _import(Arguments(
+def main(arguments):
+    _init_logging()
+
+    import_predictions(Arguments(
         arguments["java_tools"],
         arguments["working"],
         arguments["conservation"],
@@ -133,41 +132,53 @@ def main(arguments):
     ))
 
 
-def _import(args: Arguments):
+def _init_logging():
+    formatter = logging.Formatter(
+        "%(asctime)s %(name)s [%(levelname)s] : %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S")
+
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
+
+
+def import_predictions(args: Arguments):
     os.makedirs(args.output_directory, exist_ok=True)
     os.makedirs(args.failed_directory, exist_ok=True)
     #
     logger.info("Collecting codes for import ...")
-    codes_to_import = _collect_codes_for_import(args)
+    codes_to_import = collect_codes_for_import(args)
     logger.info(f"Collected {len(codes_to_import)} codes for import")
     logger.info("Preparing data to working directory ...")
-    _execute_map_with_args(
-        args, codes_to_import, _import_data_into_working_directory)
+    execute_map_with_args(
+        args, codes_to_import, import_data_into_working_directory)
     logger.info("Running java-tools ...")
-    _execute_java_tools(args, codes_to_import)
+    execute_java_tools(args, codes_to_import)
     logger.info("Processing and importing to output directory  ...")
-    _execute_map_with_args(
-        args, codes_to_import, _import_data_to_target_directory)
+    execute_map_with_args(
+        args, codes_to_import, import_data_to_target_directory)
     logger.info("Finished")
 
 
-def _collect_codes_for_import(args: Arguments):
+def collect_codes_for_import(args: Arguments):
     """Return PDB codes available for import."""
     return [
         name[3:7]
-        for name in os.listdir(_with_context(args).predictions_dir())
+        for name in os.listdir(with_context(args).predictions_dir())
         if name.endswith("_predictions.csv")
     ]
 
 
-def _with_context(args: Arguments) -> AbstractContext:
+def with_context(args: Arguments) -> AbstractContext:
     if args.input_type == "pdb":
         return PdbContext(args)
     else:
         raise RuntimeError("Unknown input type")
 
 
-def _execute_map_with_args(args: Arguments, codes: typing.List[str], callback):
+def execute_map_with_args(args: Arguments, codes: typing.List[str], callback):
     """Execute callback for with args and one code."""
     result = []
     if args.parallel > 1:
@@ -184,15 +195,15 @@ def _execute_map_with_args(args: Arguments, codes: typing.List[str], callback):
     return result
 
 
-def _import_data_into_working_directory(args: Arguments, code: str):
+def import_data_into_working_directory(args: Arguments, code: str):
     """Collect files to the working code directory."""
     root_dir = os.path.join(args.working_directory, code.upper())
     os.makedirs(root_dir, exist_ok=True)
     public_dir = os.path.join(root_dir, "public")
     os.makedirs(public_dir, exist_ok=True)
-    ctx = _with_context(args)
+    ctx = with_context(args)
 
-    conservation = _find_conservation(args.conservation_directory, code)
+    conservation = find_conservation(args.conservation_directory, code)
 
     p2rank_predictions_file = os.path.join(
         ctx.predictions_dir(),
@@ -205,13 +216,13 @@ def _import_data_into_working_directory(args: Arguments, code: str):
     )
 
     # structure.*.gz - for java-tools
-    _gunzip(
+    gunzip(
         ctx.structure_file(code),
         os.path.join(root_dir, ctx.structure_file_name())
     )
 
     # prediction.zip
-    _zip_directory(
+    zip_directory(
         os.path.join(public_dir, "prankweb.zip"),
         {
             "structure.pdb_predictions.csv":
@@ -255,7 +266,7 @@ def _import_data_into_working_directory(args: Arguments, code: str):
         }, stream)
 
 
-def _find_conservation(
+def find_conservation(
         conservation_directory: str, code: str) -> typing.Dict[str, str]:
     """Dictionary with chain and file path."""
 
@@ -265,30 +276,30 @@ def _find_conservation(
     return {
         select_chain(file_name):
             os.path.join(conservation_directory, file_name)
-        for file_name in _list_directory(conservation_directory)
+        for file_name in list_directory(conservation_directory)
         if code in file_name
     }
 
 
 @functools.lru_cache(maxsize=2)
-def _list_directory(path: str):
+def list_directory(path: str):
     return os.listdir(path)
 
 
-def _gunzip(source: str, target: str):
+def gunzip(source: str, target: str):
     with gzip.open(source, "rb") as input_stream:
         with open(target, "wb") as output_stream:
             shutil.copyfileobj(input_stream, output_stream)
 
 
-def _zip_directory(output_path: str, entries: typing.Dict[str, str]):
+def zip_directory(output_path: str, entries: typing.Dict[str, str]):
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as stream:
         for path_in_zip, path in entries.items():
             stream.write(path, path_in_zip)
 
 
-def _execute_java_tools(args: Arguments, codes_to_import: typing.List[str]):
-    ctx = _with_context(args)
+def execute_java_tools(args: Arguments, codes_to_import: typing.List[str]):
+    ctx = with_context(args)
 
     def java_tools_input(code: str) -> str:
         return os.path.join(
@@ -318,9 +329,9 @@ def _execute_java_tools(args: Arguments, codes_to_import: typing.List[str]):
     result.check_returncode()
 
 
-def _import_data_to_target_directory(args: Arguments, code: str) -> None:
+def import_data_to_target_directory(args: Arguments, code: str) -> None:
     """Process java-tools output and move to target directory."""
-    ctx = _with_context(args)
+    ctx = with_context(args)
     root_dir = os.path.join(args.working_directory, code.upper())
     java_tools_file = os.path.join(root_dir, "java-tools.json")
 
@@ -331,7 +342,7 @@ def _import_data_to_target_directory(args: Arguments, code: str) -> None:
         return
 
     public_dir = os.path.join(root_dir, "public")
-    conservation = _find_conservation(args.conservation_directory, code)
+    conservation = find_conservation(args.conservation_directory, code)
     p2rank_predictions_file = os.path.join(
         ctx.predictions_dir(),
         f"pdb{code}.ent.gz_predictions.csv")
