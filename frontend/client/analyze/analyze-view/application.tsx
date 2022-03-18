@@ -61,6 +61,7 @@ export class Application extends React.Component<{
   polymerView: PolymerViewType,
   pocketsView: PocketsViewType,
   pockets: PocketViewData[],
+  isShowOnlyPredicted: boolean,
 }> {
 
   state = {
@@ -70,6 +71,7 @@ export class Application extends React.Component<{
     "polymerView": PolymerViewType.Surface,
     "pocketsView": PocketsViewType.Surface,
     "pockets": [],
+    "isShowOnlyPredicted": false,
   };
 
   data = {
@@ -88,11 +90,12 @@ export class Application extends React.Component<{
     this.onNodeUpdated = this.onNodeUpdated.bind(this);
     this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
     this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
-    this.onShowAll = this.onShowAll.bind(this);
+    this.onShowAllPockets = this.onShowAllPockets.bind(this);
     this.onSetPocketVisibility = this.onSetPocketVisibility.bind(this);
     this.onShowOnlyPocket = this.onShowOnlyPocket.bind(this);
     this.onFocusPocket = this.onFocusPocket.bind(this);
     this.onHighlightPocket = this.onHighlightPocket.bind(this);
+    this.onShowConfidentChange = this.onShowConfidentChange.bind(this);
   }
 
   componentDidMount() {
@@ -117,7 +120,11 @@ export class Application extends React.Component<{
       predictionInfo.id,
       predictionInfo.metadata.structureName
     )
-      .then((data: PrankData) => DataLoader.visualizeData(plugin, data))
+      .then((data: PrankData) => {
+        const isPredicted =
+          predictionInfo.metadata["predictedStructure"] === true;
+        return DataLoader.visualizeData(plugin, data, isPredicted);
+      })
       .then((data: PrankData) => {
         return new LiteMol.Promise<DataLoader.PrankData>((accept, reject) => {
           if (DataLoader.colorProtein(plugin)) {
@@ -155,6 +162,7 @@ export class Application extends React.Component<{
     const {predictionInfo} = this.props;
     const downloadAs = `prankweb-${predictionInfo.metadata.predictionName}.zip`;
     if (this.state.data) {
+      const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
           <ToolsBox
@@ -165,15 +173,18 @@ export class Application extends React.Component<{
             pocketsView={this.state.pocketsView}
             onPolymerViewChange={this.onPolymerViewChange}
             onPocketsViewChange={this.onPocketsViewChange}
+            isPredicted={isPredicted}
+            isShowOnlyPredicted={this.state.isShowOnlyPredicted}
+            onShowConfidentChange={this.onShowConfidentChange}
           />
-          {predictionInfo.metadata["predictedStructure"] && (
+          {isPredicted && (
             <div className="alert alert-warning my-2" role="alert">
               <strong>Warning:</strong> Predicted structure.
             </div>
           )}
           <PocketList
             pockets={this.state.pockets}
-            showAll={this.onShowAll}
+            showAll={this.onShowAllPockets}
             setPocketVisibility={this.onSetPocketVisibility}
             showOnlyPocket={this.onShowOnlyPocket}
             focusPocket={this.onFocusPocket}
@@ -221,7 +232,7 @@ export class Application extends React.Component<{
 
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
-    updatePolymerView(this.props.plugin, value);
+    updatePolymerView(this.props.plugin, value, this.state.isShowOnlyPredicted);
   }
 
   onPocketsViewChange(value: PocketsViewType) {
@@ -236,7 +247,7 @@ export class Application extends React.Component<{
     this.data.updateInProgress = false;
   }
 
-  onShowAll() {
+  onShowAllPockets() {
     const pockets = this.state.pockets.map((item: PocketViewData) => ({
       ...item,
       "isVisible": true
@@ -338,6 +349,15 @@ export class Application extends React.Component<{
     }
   }
 
+  onShowConfidentChange() {
+    const isShowOnlyPredicted= !this.state.isShowOnlyPredicted;
+    this.setState({
+      "isShowOnlyPredicted": isShowOnlyPredicted
+    });
+    updatePolymerView(
+      this.props.plugin, this.state.polymerView, isShowOnlyPredicted);
+  }
+
 }
 
 function createPocketList(
@@ -395,20 +415,9 @@ function getPocketSelection(
 }
 
 function updatePolymerView(
-  plugin: LiteMol.Plugin.Controller, polymerView: PolymerViewType) {
-  const surface = plugin.selectEntities(
-    LiteMol.Bootstrap.Tree.Selection.byRef(DataLoader.TREE_REF_SURFACE)
-      .subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
-  const cartoon = plugin.selectEntities(
-    LiteMol.Bootstrap.Tree.Selection.byRef(DataLoader.TREE_REF_CARTOON)
-      .subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
-  const atoms = plugin.selectEntities(
-    LiteMol.Bootstrap.Tree.Selection.byRef(DataLoader.TREE_REF_ATOMS)
-      .subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
-  if (!surface || !cartoon || !atoms) {
-    console.error("Can't select required definitions.");
-    return;
-  }
+  plugin: LiteMol.Plugin.Controller, polymerView: PolymerViewType,
+  useConfident = false
+) {
   let showAtoms = false;
   let showCartoon = false;
   let showSurface = false;
@@ -425,17 +434,46 @@ function updatePolymerView(
   }
   // We can modify only changed here, but we do all
   // to mitigate any user interaction with LiteMol directly.
+  setEntityVisibility(plugin, DataLoader.TREE_REF_SURFACE, showSurface && !useConfident);
+  setEntityVisibility(plugin, DataLoader.TREE_REF_CARTOON, showCartoon && !useConfident);
+  setEntityVisibility(plugin, DataLoader.TREE_REF_ATOMS, showAtoms && !useConfident);
+  // Changes to confident regions are optional, as they may not be present.
+  setEntityVisibilityOptional(plugin, DataLoader.TREE_REF_CONFIDENT_SURFACE, showSurface && useConfident);
+  setEntityVisibilityOptional(plugin, DataLoader.TREE_REF_CONFIDENT_CARTOON, showCartoon && useConfident);
+  setEntityVisibilityOptional(plugin, DataLoader.TREE_REF_CONFIDENT_ATOMS, showAtoms && useConfident);
+}
+
+function setEntityVisibility(
+  plugin: LiteMol.Plugin.Controller, ref: string, visible: boolean,
+) {
+  const entity = geEntityByRef(plugin, ref);
+  if (!entity) {
+    console.error(`Can't select ${ref} definitions.`);
+    return;
+  }
   LiteMol.Bootstrap.Command.Entity.SetVisibility.dispatch(plugin.context, {
-    "entity": atoms,
-    "visible": showAtoms,
+    "entity": entity,
+    "visible": visible,
   });
+}
+
+function geEntityByRef(plugin: LiteMol.Plugin.Controller, ref: string)
+  : LiteMol.Bootstrap.Entity.Any {
+  return plugin.selectEntities(
+    LiteMol.Bootstrap.Tree.Selection.byRef(ref)
+      .subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
+}
+
+function setEntityVisibilityOptional(
+  plugin: LiteMol.Plugin.Controller, ref: string, visible: boolean,
+) {
+  const entity = geEntityByRef(plugin, ref);
+  if (!entity) {
+    return;
+  }
   LiteMol.Bootstrap.Command.Entity.SetVisibility.dispatch(plugin.context, {
-    "entity": surface,
-    "visible": showSurface,
-  });
-  LiteMol.Bootstrap.Command.Entity.SetVisibility.dispatch(plugin.context, {
-    "entity": cartoon,
-    "visible": showCartoon,
+    "entity": entity,
+    "visible": visible,
   });
 }
 

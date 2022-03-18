@@ -11,7 +11,10 @@ export default class ToolsBox extends React.Component<{
   polymerView: PolymerViewType,
   pocketsView: PocketsViewType,
   onPolymerViewChange: (value: PolymerViewType) => void,
-  onPocketsViewChange: (value: PocketsViewType) => void
+  onPocketsViewChange: (value: PocketsViewType) => void,
+  isPredicted: boolean,
+  isShowOnlyPredicted: boolean,
+  onShowConfidentChange: () => void,
 }, {
   /**
    * True for expanded component false for minimized component.
@@ -21,6 +24,7 @@ export default class ToolsBox extends React.Component<{
 
   state = {
     "visible": true,
+    "showConfident": false,
   };
 
   constructor(props: any) {
@@ -61,7 +65,11 @@ export default class ToolsBox extends React.Component<{
             polymerView={this.props.polymerView}
             onPolymerViewChange={this.props.onPolymerViewChange}
             pocketsView={this.props.pocketsView}
-            onPocketsViewChange={this.props.onPocketsViewChange}/>
+            onPocketsViewChange={this.props.onPocketsViewChange}
+            isPredicted={this.props.isPredicted}
+            isShowOnlyPredicted={this.props.isShowOnlyPredicted}
+            onShowConfidentChange={this.props.onShowConfidentChange}
+          />
         </div>
         }
       </div>
@@ -98,7 +106,10 @@ function ControlBoxContent(
     polymerView: PolymerViewType,
     onPolymerViewChange: (value: PolymerViewType) => void,
     pocketsView: PocketsViewType,
-    onPocketsViewChange: (value: PocketsViewType) => void
+    onPocketsViewChange: (value: PocketsViewType) => void,
+    isPredicted: boolean,
+    isShowOnlyPredicted: boolean,
+    onShowConfidentChange: () => void,
   }) {
   return (
     <div className="d-grid gap-2">
@@ -110,16 +121,6 @@ function ControlBoxContent(
         <span className="fontello-icon">&#xe82d;</span>&nbsp;
         Download
       </a>
-      {/*
-        <button
-          type="button"
-          className="btn btn-outline-secondary"
-          onClick={props.toggleSequenceView}
-        >
-          <span className="fontello-icon">&#xe86d;</span>&nbsp;
-          Toggle sequence view
-        </button>
-      */}
       <label>
         Peptide visualisation
         <select
@@ -147,6 +148,17 @@ function ControlBoxContent(
           <option value="1">Surface</option>
         </select>
       </label>
+      {props.isPredicted && (
+        <button
+          type="button"
+          className="btn btn-predicted"
+          onClick={props.onShowConfidentChange}
+        >
+          {props.isShowOnlyPredicted ?
+            "Show all regions" :
+            "Show confident regions"}
+        </button>
+      )}
     </div>
   )
 }

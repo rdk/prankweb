@@ -27,6 +27,19 @@ export const TREE_REF_ATOMS: string = 'polymer-visual-atoms';
 
 export const TREE_REF_CARTOON: string = 'polymer-visual-cartoon';
 
+export const CONFIDENT_REF_PREFIX: string = 'confidence-';
+
+export const TREE_REF_CONFIDENT_SURFACE: string =
+  CONFIDENT_REF_PREFIX + 'polymer-visual-surface';
+
+export const TREE_REF_CONFIDENT_ATOMS: string =
+  CONFIDENT_REF_PREFIX + 'polymer-visual-atoms';
+
+export const TREE_REF_CONFIDENT_CARTOON: string =
+  CONFIDENT_REF_PREFIX + 'polymer-visual-cartoon';
+
+const TEMP_FACTOR_THRESHOLD: number = 70;
+
 export function residuesBySeqNums(...seqNums: string[]) {
   return LiteMol.Core.Structure.Query.residues(...seqNums.map(seqNum => {
     let parsedObject = seqNum.trim().match(/^([A-Z]*)_?([0-9]+)([A-Z])*$/);
@@ -61,64 +74,6 @@ const ligandColors = LiteMol.Bootstrap.Immutable.Map<string, LiteMol.Visualizati
   .set('Uniform', LiteMol.Visualization.Color.fromHex(0xe5cf42))
   .set('Selection', LiteMol.Visualization.Theme.Default.SelectionColor)
   .set('Highlight', LiteMol.Visualization.Theme.Default.HighlightColor);
-
-function initColorMapping(
-  modelContainer: LiteMol.Bootstrap.Entity.Molecule.Model,
-  prediction: PocketListEntity, sequence: SequenceListEntity): Coloring {
-  //
-  const model = modelContainer.props.model;
-  console.log("Model", model);
-  const atomColorMapConservation = new Uint8Array(model.data.atoms.count);
-  const atomColorMap = new Uint8Array(model.data.atoms.count);
-  const residueColorMap = new Uint8Array(model.data.atoms.count);
-
-  console.log("Sequence", sequence);
-  let seq = sequence.props.sequence;
-  let seqIndices = seq.indices;
-  let seqScores = seq.scores;
-
-  const seqScoreMin = Math.min.apply(Math, seqScores);
-  const seqScoreMax = Math.max.apply(Math, seqScores);
-  const seqScoreRange = seqScoreMax - seqScoreMin;
-
-  if (seqScores != null) {
-    seqIndices.forEach((seqIndex, i) => {
-      // Scale to value [0,1].
-      let normalizedScore = (seqScores[i] - seqScoreMin) / seqScoreRange;
-      // Move [0,1] to [-1,0] and with abs [1,0]. So high values are black.
-      normalizedScore = Math.abs(normalizedScore - 1);
-      // The shade needs to be number [0, 10] from black to white.
-      const shade = 2 + Math.round(normalizedScore * 8);
-      //
-      let query = residuesBySeqNums(seqIndex).compile();
-      for (const atom of query(model.queryContext).unionAtomIndices()) {
-        // First there is fallbackColor(0), then pocketColors(1-9) and lastly conservation colors.
-        atomColorMap[atom] = shade + Colors.size + 1;
-        atomColorMapConservation[atom] = shade + Colors.size + 1;
-        residueColorMap[atom] = shade + Colors.size + 1;
-      }
-    });
-  }
-
-  let pockets = prediction.props.pockets;
-  pockets.forEach((pocket, i) => {
-    let pocketQuery = LiteMol.Core.Structure.Query.atomsById.apply(null, pocket.surfAtomIds).compile()
-    let pocketResQuery = residuesBySeqNums(...pocket.residueIds).compile()
-    // Index of color that we want for the particular atom. i.e. Colors.get(i%Colors.size);
-    const colorIndex = (i % Colors.size) + 1;
-    for (const atom of pocketQuery(model.queryContext).unionAtomIndices()) {
-      atomColorMap[atom] = colorIndex;
-    }
-    for (const atom of pocketResQuery(model.queryContext).unionAtomIndices()) {
-      residueColorMap[atom] = colorIndex;
-    }
-  });
-  return {
-    "atoms": atomColorMap,
-    "atomsConservation": atomColorMapConservation,
-    "residues": residueColorMap,
-  };
-}
 
 export function loadData(
   plugin: LiteMol.Plugin.Controller,
@@ -178,10 +133,10 @@ export function loadData(
           "\n  prediction:", prediction,
           "\n  sequence:", sequence);
 
-        const mappings = initColorMapping(model, prediction, sequence);
-        setAtomColorMapping(plugin, model, mappings.atoms);
-        setConservationAtomColorMapping(plugin, model, mappings.atomsConservation);
-        setResidueColorMapping(plugin, model, mappings.residues);
+       const mappings = initColorMapping(model, prediction, sequence);
+       setAtomColorMapping(plugin, model, mappings.atoms);
+       setConservationAtomColorMapping(plugin, model, mappings.atomsConservation);
+       setResidueColorMapping(plugin, model, mappings.residues);
         if (!prediction)
           reject("Unable to load predictions.");
         else if (!sequence)
@@ -189,19 +144,84 @@ export function loadData(
         else {
           accept({model, prediction, sequence});
         }
-      }).catch(function (e) {
-      return reject(e);
-    });
+      })
+      .catch((e) => reject(e));
   });
 }
 
-export function visualizeData(plugin: LiteMol.Plugin.Controller, data: PrankData) {
+function initColorMapping(
+  modelContainer: LiteMol.Bootstrap.Entity.Molecule.Model,
+  prediction: PocketListEntity, sequence: SequenceListEntity): Coloring {
+  //
+  const model = modelContainer.props.model;
+  const atomColorMapConservation = new Uint8Array(model.data.atoms.count);
+  const atomColorMap = new Uint8Array(model.data.atoms.count);
+  const residueColorMap = new Uint8Array(model.data.atoms.count);
+
+  let seq = sequence.props.sequence;
+  let seqIndices = seq.indices;
+  let seqScores = seq.scores;
+
+  const seqScoreMin = Math.min.apply(Math, seqScores);
+  const seqScoreMax = Math.max.apply(Math, seqScores);
+  const seqScoreRange = seqScoreMax - seqScoreMin;
+
+  if (seqScores != null) {
+    seqIndices.forEach((seqIndex, i) => {
+      // Scale to value [0,1].
+      let normalizedScore = (seqScores[i] - seqScoreMin) / seqScoreRange;
+      // Move [0,1] to [-1,0] and with abs [1,0]. So high values are black.
+      normalizedScore = Math.abs(normalizedScore - 1);
+      // The shade needs to be number [0, 10] from black to white.
+      const shade = 2 + Math.round(normalizedScore * 8);
+      //
+      let query = residuesBySeqNums(seqIndex).compile();
+      for (const atom of query(model.queryContext).unionAtomIndices()) {
+        // First there is fallbackColor(0), then pocketColors(1-9) and lastly conservation colors.
+        atomColorMap[atom] = shade + Colors.size + 1;
+        atomColorMapConservation[atom] = shade + Colors.size + 1;
+        residueColorMap[atom] = shade + Colors.size + 1;
+      }
+    });
+  }
+
+  let pockets = prediction.props.pockets;
+  pockets.forEach((pocket, i) => {
+    let pocketQuery = LiteMol.Core.Structure.Query.atomsById.apply(null, pocket.surfAtomIds).compile()
+    let pocketResQuery = residuesBySeqNums(...pocket.residueIds).compile()
+    // Index of color that we want for the particular atom. i.e. Colors.get(i%Colors.size);
+    const colorIndex = (i % Colors.size) + 1;
+    for (const atom of pocketQuery(model.queryContext).unionAtomIndices()) {
+      atomColorMap[atom] = colorIndex;
+    }
+    for (const atom of pocketResQuery(model.queryContext).unionAtomIndices()) {
+      residueColorMap[atom] = colorIndex;
+    }
+  });
+  return {
+    "atoms": atomColorMap,
+    "atomsConservation": atomColorMapConservation,
+    "residues": residueColorMap,
+  };
+}
+
+/**
+ * As all data are loaded this creates records in LiteMol.
+ */
+export function visualizeData(
+  plugin: LiteMol.Plugin.Controller, data: PrankData, crateConfident: boolean
+) {
   return new LiteMol.Promise<PrankData>((accept, reject) => {
     let action = plugin.createTransform();
+
     createPolymerGroups(data, action);
+    if (crateConfident) {
+      createConfidentPolymerGroups(data, action);
+    }
     createWaterGroup(data, action);
     createLigandGroup(data, action);
     createPocketsGroup(data, action, data.prediction.props.pockets);
+
     plugin.applyTransform(action)
       .then(() => accept(data))
       .catch((error) => reject(error));
@@ -210,7 +230,7 @@ export function visualizeData(plugin: LiteMol.Plugin.Controller, data: PrankData
 
 function createPolymerGroups(
   data: PrankData, action: LiteMol.Bootstrap.Tree.Transform.Builder) {
-  let polymer = action.add(
+  const polymer = action.add(
     data.model,
     LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateSelectionFromQuery,
     {
@@ -221,29 +241,33 @@ function createPolymerGroups(
       "isBinding": true,
       "ref": "polymer"
     });
+
+  addPolymerVisualisations(polymer);
+}
+
+function addPolymerVisualisations(polymer: LiteMol.Bootstrap.Tree.Transform.Builder, refPrefix = "") {
   // Add visual styles for Polymer.
-  let colPolymerGroup = polymer.then(
+  const colPolymerGroup = polymer.then(
     LiteMol.Bootstrap.Entity.Transformer.Basic.CreateGroup, {
       "label": "Color view",
       "description": "Colored views"
     });
+  // Cartoon
   colPolymerGroup.then(
     LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateVisual,
     {"style": createCartoonStyle()},
-    {"ref": TREE_REF_CARTOON}
+    {"ref": refPrefix + TREE_REF_CARTOON}
   );
+  // Surface
   colPolymerGroup.then(
     LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateVisual,
     {"style": createSurfaceStyle()},
-    {"ref": TREE_REF_SURFACE});
+    {"ref": refPrefix + TREE_REF_SURFACE});
+  // Balls and sticks
   colPolymerGroup.then(
-    // @ts-ignore
     LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateVisual,
-    {
-      "style": LiteMol.Bootstrap.Visualization.Molecule.Default
-        .ForType.get("BallsAndSticks")
-    },
-    {"ref": TREE_REF_ATOMS});
+    {"style": createBallsAndSticksStyle()},
+    {"ref": refPrefix + TREE_REF_ATOMS});
 }
 
 function createCartoonStyle(): LiteMol.Bootstrap.Visualization.Molecule.Style<any> {
@@ -277,6 +301,36 @@ function createSurfaceStyle(): LiteMol.Bootstrap.Visualization.Molecule.Style<Li
     }
   }
 }
+
+function createBallsAndSticksStyle(): LiteMol.Bootstrap.Visualization.Molecule.Style<any> {
+  return LiteMol.Bootstrap.Visualization.Molecule.Default
+    .ForType.get("BallsAndSticks") as any;
+}
+
+function createConfidentPolymerGroups(
+  data: PrankData, action: LiteMol.Bootstrap.Tree.Transform.Builder) {
+  const atoms = data.model.props.model.data.atoms;
+  const confidentResidues =
+    atoms.residueIndex.filter((element, index) =>
+      atoms.tempFactor[index] > TEMP_FACTOR_THRESHOLD
+    );
+  const confidentQuery =
+    LiteMol.Core.Structure.Query.residuesFromIndices(confidentResidues);
+  const confidencePolymer = action.add(
+    data.model,
+    LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateSelectionFromQuery,
+    {
+      "query": confidentQuery,
+      "name": `Confident Polymer ${TEMP_FACTOR_THRESHOLD}`
+    },
+    {
+      "ref": "confidence",
+      "isBinding": false
+    }
+  );
+  addPolymerVisualisations(confidencePolymer, CONFIDENT_REF_PREFIX);
+}
+
 
 function createWaterGroup(data: PrankData, action: LiteMol.Bootstrap.Tree.Transform.Builder) {
   let water = action.add(
@@ -489,30 +543,23 @@ export function colorProtein(plugin: LiteMol.Plugin.Controller) {
     isSticky: true
   });
 
-  const surface = plugin.selectEntities(LiteMol.Bootstrap.Tree.Selection.byRef(TREE_REF_SURFACE).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
-  plugin.command(LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme, {
-    visual: surface as any,
-    theme: theme
-  });
+  updateVisual(plugin, TREE_REF_SURFACE, theme);
+  updateVisual(plugin, TREE_REF_CARTOON, residueTheme);
+  updateVisual(plugin, TREE_REF_ATOMS, theme);
 
-  const cartoon = plugin.selectEntities(LiteMol.Bootstrap.Tree.Selection.byRef(TREE_REF_CARTOON).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
-  plugin.command(LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme, {
-    visual: cartoon as any,
-    theme: residueTheme
-  });
+  updateVisual(plugin, TREE_REF_CONFIDENT_SURFACE, theme);
+  updateVisual(plugin, TREE_REF_CONFIDENT_CARTOON, residueTheme);
+  updateVisual(plugin, TREE_REF_CONFIDENT_ATOMS, theme);
 
-  const atoms = plugin.selectEntities(LiteMol.Bootstrap.Tree.Selection.byRef(TREE_REF_ATOMS).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))[0];
-  plugin.command(LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme, {
-    visual: atoms as any,
-    theme: theme
-  });
-
-  plugin.selectEntities(LiteMol.Bootstrap.Tree.Selection.byRef("pockets").subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual)).forEach(selection => {
-    plugin.command(LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme, {
-      visual: selection as any,
-      theme: theme
+  plugin.selectEntities(LiteMol.Bootstrap.Tree.Selection
+    .byRef("pockets").subtree()
+    .ofType(LiteMol.Bootstrap.Entity.Molecule.Visual))
+    .forEach(visual => {
+      plugin.command(LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme, {
+        visual: visual as any,
+        theme: theme
+      });
     });
-  });
 
   return true;
 }
@@ -535,6 +582,19 @@ function createColors(fallbackColor: LiteMol.Visualization.Color) {
   colors.set("Selection", LiteMol.Visualization.Theme.Default.SelectionColor);
   colors.set("Highlight", LiteMol.Visualization.Theme.Default.HighlightColor);
   return colors;
+}
+
+function updateVisual(plugin: LiteMol.Plugin.Controller, ref: string, theme: any) {
+  const refSelection = LiteMol.Bootstrap.Tree.Selection
+    .byRef(ref).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual);
+  const entities = plugin.selectEntities(refSelection);
+  if (entities.length === 0) {
+    return;
+  }
+  plugin.command(LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme, {
+    "visual": entities[0] as any,
+    "theme": theme
+  });
 }
 
 /**

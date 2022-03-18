@@ -43,6 +43,18 @@
     font-family: "fontello";
 }
 
+.btn.btn-predicted {
+    color: #6c757d;
+    border-color: #6c757d;
+    background-color: #fff3cd;
+}
+
+.btn.btn-predicted:hover {
+    color: #fff3cd;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
 /*
  * shared.css
  */
