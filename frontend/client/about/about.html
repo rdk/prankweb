@@ -45,21 +45,44 @@
     of P2Rank and run experiments locally.
   </p>
 
-  <h2 id="data">Data</h2>
+  <h2 id="datasets">Training Datasets</h2>
   <p>
     PrankWeb classification models have been trained and validated on
     <a href="https://github.com/rdk/p2rank-datasets" target="_blank">
       publicly available datasets
     </a>.
   </p>
+
+  <h2 id="precomputed-predictions">Precomputed predictions</h2>
   <p>
-    Predictions can be computed and viewed using this web application.
-    In addition we provide single file download for selected predictions:
-    <ul>
-      <li><a href="https://prankweb.cz/www/prankweb/v3.tar.gz">PDB with default model</a></li>
-      <li><a href="https://prankweb.cz/www/prankweb/v3-conservation-hmm.tar.gz">PDB with hmm conservation model</a></li>
-    </ul>
+    We have computed the ligand-binding sites predictions for two components of the AlphaFold DB, the “model organism proteomes” and “Swiss-Prot”, as well as PDB.
+    For each database, AlphaFold DB and PDB, we computed the prediction with and without conservations.
+    What is available for download is the content of the <em>predictions</em> directory created as described at wiki page
+    <a href="https://github.com/cusbg/p2rank-framework/wiki/Large-scale-Predictions">Large scale Predictions</a>.
   </p>
+  <ul>
+    <li>
+      <a href="https://prankweb.cz/www/prankweb/PDBe-p2rank-2.4-conservation-hmm.tar.gz">
+        PDB with conservation
+      </a> (183051 predicated structures)
+    </li>
+    <li>
+      <a href="https://prankweb.cz/www/prankweb/PDBe-p2rank-2.4.tar.gz">
+        PDB
+      </a> (183051 predicated structures)
+    </li>
+    <li>
+      <a href="https://prankweb.cz/www/prankweb/AlphaFold-p2rank-2.4-conservation-hmm.tar.gz">
+        AlphaFold with conservation
+      </a> (365198 predicated structures)
+    </li>
+    <li>
+      <a href="https://prankweb.cz/www/prankweb/AlphaFold-p2rank-2.4.tar.gz">
+        AlphaFold
+      </a> (365198 predicated structures)
+    </li>
+  </ul>
+
   <h2 id="citing"> Citing </h2>
   <p> If you use P2Rank online service, please cite:
   <ul>
@@ -84,7 +107,7 @@
         <img src="./assets/images/author-hoksza.jpg">
       </div>
       <h3>
-        David Hoksza
+        David Hoksza <br/>
         (contact&nbsp;person)
       </h3>
       <p>Faculty of Mathematics and Physics, Charles&nbsp;University</p>      
