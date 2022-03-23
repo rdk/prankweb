@@ -122,7 +122,7 @@ function ControlBoxContent(
         Download
       </a>
       <label>
-        Peptide visualisation
+        Protein visualisation
         <select
           id="polymer-visual"
           className="form-select"
