@@ -176,13 +176,17 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
     let features = document.querySelectorAll(".pl-ftrack .pl-feature");
     forEachElement(features, element => {
       if (element.parentElement!.id == "Pockets") {
+        // Highlight all of given predicted pocket.
         let attr = element.attributes.getNamedItem("data-d");
-        if (!attr) return;
+        if (!attr) {
+          return;
+        }
         let pocket = this.parsePocketName(attr.value);
         element.onclick = () => this.onPocketClick(pocket);
         element.onmouseover = () => this.selectAndDisplayToastPocket(pocket, true);
         element.onmouseout = () => this.selectAndDisplayToastPocket(pocket, false);
       } else if (element.parentElement!.id == "Binding sites") {
+        // Highlight all of given binding site.
         element.onmouseover = () => this.selectAndDisplayToastBindingSites(true);
         element.onmouseout = () => this.selectAndDisplayToastBindingSites(false);
       }
@@ -214,17 +218,19 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
   }
 
   onLetterMouseEnter(seqNumber?: number) {
-    if (!seqNumber && seqNumber != 0) {
+    // No change here.
+    if (this.lastNumber === seqNumber) {
       return
     }
-    if (this.lastNumber) {
-      if (this.lastNumber != seqNumber) {
-        this.selectAndDisplayToastLetter(this.lastNumber, false);
-        this.selectAndDisplayToastLetter(seqNumber, true);
-      }
-    } else {
+    // Hide old one.
+    if (this.lastNumber !== seqNumber && this.lastNumber !== undefined) {
+      this.selectAndDisplayToastLetter(this.lastNumber, false);
+    }
+    // Make sure we can use the new value.
+    if (seqNumber !== undefined && seqNumber != 0) {
       this.selectAndDisplayToastLetter(seqNumber, true);
     }
+    // Update last index.
     this.lastNumber = seqNumber;
   }
 
@@ -232,7 +238,7 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
    * Displays/Hides toast for given residue.
    * SeqNumber is ***zero-based index*** of the residue.
    */
-  selectAndDisplayToastLetter(seqNumber: number | undefined, isOn: boolean) {
+  selectAndDisplayToastLetter(seqNumber: number | undefined, isVisible: boolean) {
     if ((!seqNumber && seqNumber != 0) || seqNumber < 0) return;
     let ctx = this.controller.context;
     let model = ctx.select('model')[0] as unknown as LiteMol.Bootstrap.Entity.Molecule.Model;
@@ -245,9 +251,9 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
     LiteMol.Bootstrap.Command.Molecule.Highlight.dispatch(ctx, {
       model: model,
       query: seqSel.query,
-      isOn
+      isOn: isVisible
     });
-    if (isOn) {
+    if (isVisible) {
       // Show tooltip
       let label = LiteMol.Bootstrap.Interactivity.Molecule.formatInfo(seqSel.selectionInfo)
       LiteMol.Bootstrap.Event.Interactivity.Highlight.dispatch(ctx, [label/*, 'some additional label'*/])
@@ -304,7 +310,7 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
     return pocketRes;
   }
 
-  selectAndDisplayToastPocket(pocket: PrankPocket | undefined, isOn: boolean) {
+  selectAndDisplayToastPocket(pocket: PrankPocket | undefined, isVisible: boolean) {
     if (!pocket) return;
     let ctx = this.controller.context;
     let model = ctx.select('model')[0] as unknown as LiteMol.Bootstrap.Entity.Molecule.Model;
@@ -317,9 +323,9 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
     LiteMol.Bootstrap.Command.Molecule.Highlight.dispatch(ctx, {
       model: model,
       query: seqSel.query,
-      isOn
+      isOn: isVisible
     })
-    if (isOn) {
+    if (isVisible) {
       // Show tooltip
       let label = LiteMol.Bootstrap.Interactivity.Molecule.formatInfo(seqSel.selectionInfo)
       LiteMol.Bootstrap.Event.Interactivity.Highlight.dispatch(ctx, [label/*, 'some additional label'*/])
@@ -369,7 +375,8 @@ export class SequenceView extends LiteMol.Plugin.Views.View<SequenceController, 
       <div
         id="sequence-view"
         onMouseLeave={() => {
-          this.onLetterMouseEnter(void 0);
+          // Hide the last highlighted element.
+          // this.onLetterMouseEnter(undefined);
         }}
       />
     );
