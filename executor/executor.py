@@ -130,8 +130,10 @@ def _download_from_alpha_fold(
     entry_response = requests.get(entry_url)
     entry_content = json.loads(entry_response.content)
     metadata["alpha-fold"] = entry_content
+    if len(entry_content) == 0:
+        raise Exception(f"No Alphafold entry found for: {code}")
     assert len(entry_content) == 1, \
-        f"One entry expected for AlphaFold found {len(entry_content)}"
+        f"One entry expected for AlphaFold, found {len(entry_content)}"
     cif_url = entry_content[0]["cifUrl"]
     _download(cif_url, destination)
 
@@ -150,7 +152,7 @@ def _filter_raw_structure_file(
     if configuration.chains:
         command += "-chains " + ",".join(configuration.chains)
     else:
-        assert False, "Structure is not sealed but no chains were selected."
+        assert False, "Structure is not sealed and no chains were selected."
     configuration.execute_command(command)
     return result
 
