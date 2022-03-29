@@ -492,7 +492,7 @@ class Submit {
     const conservation = view.getConservation();
     let url;
     if (conservation) {
-      url = this.createUrl("v3-alphafold", code, [])
+      url = this.createUrl("v3-alphafold-conservation-hmm", code, [])
     } else {
       url = this.createUrl("v3-alphafold", code, [])
     }
