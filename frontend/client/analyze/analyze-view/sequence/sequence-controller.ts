@@ -45,9 +45,9 @@ export class SequenceController extends LiteMol.Bootstrap.Components.Component<{
         }
         // It should still be visible even if some children are invisible.
         const visibility = e.data.state.visibility;
-        let visible = (
-          visibility === LiteMol.Bootstrap.Entity.Visibility.Full
-          || visibility === LiteMol.Bootstrap.Entity.Visibility.Partial);
+        // Using partial visibility allow for pocket to remain visible,
+        // after it was hidden for the first time.
+        let visible = visibility === LiteMol.Bootstrap.Entity.Visibility.Full;
         if (pocketVisibility[index] !== visible) {
           pocketVisibility[index] = visible;
           changed = true;
