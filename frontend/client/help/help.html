@@ -29,24 +29,31 @@
     </li>
     <li>
       A structure file,
-      <a href="http://www.wwpdb.org/documentation/file-format" target="_blank">PDB</a>
+      <a href="http://www.wwpdb.org/documentation/file-format" target="_blank" rel="nofollow noopener noreferrer">PDB</a>
       or mmCif, can be uploaded from user's computer.
     </li>
     <li>
       Provided Uniprot ID PrankWeb can download structure from
-      <a href="https://alphafold.ebi.ac.uk/">AlphaFold Protein Structure Database</a>.
+      <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="nofollow noopener noreferrer">AlphaFold Protein Structure Database</a>.
       For this option the structure visualisation is colored using
       residue-level confidence scores.
     </li>
   </ul>
 
-  <h3>Homology</h3>
+  <h3>Conservation</h3>
   <p>
-    Besides selecting what protein to analyze, one can also specify whether
-    evolutionary conservation should be included in the prediction model by
-    checking the <b>Use conservation</b> checkbox. Note that
-    calculating conservation score can significantly increase the time of
-    analysis.
+    Besides selecting what protein to analyze, one can also specify whether evolutionary conservation should be included in the prediction model by checking the <em>Use conservation</em> checkbox.
+    Note that calculating conservation score can increase the time of analysis.
+  </p>
+  <p>
+    The new conservation pipeline operates as follows.
+    First, polypeptide chain sequences are extracted from the input file using P2Rank.
+    The phmmer tool from the <a href="http://hmmer.org/" target="_blank" rel="nofollow noopener noreferrer">HMMER software package</a> is then used to identify and align similar sequences for each respective query; UniRef50 Release 2021 03 is used as the single target sequence database.
+    Up to 1,000 sequences are then randomly selected from each MSA to form the respective sample MSAs; weights are assigned to the individual sequences constituting the sample MSAs using the Gerstein/Sonnhammer/Chothia algorithm implemented in the <em>esl-weigh</em> miniapp included with the HMMER software.
+    Finally, per-column information content (i.e., conservation score) and gap character frequency values are calculated using the <em>esl-alistat</em> miniapp, taking the individual sequence weights into account; positions containing the gap character in more than 50% of sequences are masked to appear as possessing no conservation at all.
+  </p>
+  <p>
+    The range of the conservation corresponds to the range of the per-residue of information content which is between 0 and ~4 log<sub>2</sub>(20) with higher values corresponding to higher conservation.
   </p>
 
   <h2 id="visualization">Visualization</h2>
@@ -105,12 +112,7 @@
     By toggling the advanced control panel, one has full control over the
     content of the visualization using LiteMol. For more help with LiteMol,
     please visit its
-    <a
-      href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual"
-      target="_blank"
-    >
-      wiki page
-    </a>.
+    <a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual" target="_blank" rel="nofollow noopener noreferrer">wiki page</a>.
   </p>
 
   <h3 id="sequence-visualization-1">Sequence visualization</h3>
@@ -157,12 +159,7 @@
   <p>
     Something is not working or are you missing certain functionality/feature?
     Please let us know by creating a
-    <a
-      href="https://github.com/cusbg/prankweb/issues/new/choose"
-      target="_blank"
-    >
-      GitHub issue
-    </a>.
+    <a href="https://github.com/cusbg/prankweb/issues/new/choose" target="_blank" rel="nofollow noopener noreferrer">GitHub issue</a>.
     Alternatively, if you prefer to use email, please feel free to reach us at
     david.hoksza&nbsp;(at)&nbsp;matfyz.cuni.cz.
   </p>
