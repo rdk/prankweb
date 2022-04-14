@@ -35,13 +35,13 @@ export default class ToolsBox extends React.Component<{
 
   render() {
     return (
-      <div className="card control-box">
+      <div className="card my-2">
         <div className="card-header">
           <h3 style={{"margin": "0"}}>
             Tools
             <button
               type="button"
-              className="btn btn-default btn-toggle-tools"
+              className="btn btn-default btn-icon-right"
               title="Show/Hyde tools."
               onClick={this.toggleVisible}
             >

@@ -6,6 +6,7 @@ import {Sequence} from "./sequence/sequence-model";
 import ToolsBox from "./menu/tools-box";
 import PocketList from "./menu/pocket-list";
 import {createLiteMolPlugin} from "./litemol/litemol";
+import {StructureInformation} from "./structure-information";
 
 import "./application.css";
 import {PrankData} from "./data-loader";
@@ -177,11 +178,10 @@ export class Application extends React.Component<{
             isShowOnlyPredicted={this.state.isShowOnlyPredicted}
             onShowConfidentChange={this.onShowConfidentChange}
           />
-          {isPredicted && (
-            <div className="alert alert-warning my-2" role="alert">
-              <strong>Warning:</strong> Predicted structure.
-            </div>
-          )}
+          <StructureInformation
+            metadata={predictionInfo.metadata}
+            database={predictionInfo.database}
+          />
           <PocketList
             pockets={this.state.pockets}
             showAll={this.onShowAllPockets}
