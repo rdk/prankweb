@@ -9,11 +9,9 @@
 
   <h1 id="user-guide">User guide</h1>
   <p>
-    PrankWeb is a web-based application that allows to predict and visualize
-    protein-ligand binding sites. Furthermore, it allows to compare the
-    location of predicted pockets with highly conserved areas as well as actual
-    ligand binding sites. All one needs to use PrankWeb is a device with a
-    web-browser that supports WebGL.
+    PrankWeb is a web-based application that allows to predict and visualize protein-ligand binding sites.
+    Furthermore, it allows to compare the location of predicted pockets with highly conserved areas as well as actual ligand binding sites.
+    All one needs to use PrankWeb is a device with a web-browser that supports WebGL.
   </p>
 
   <h2 id="specify-what-protein-to-analyze">
@@ -24,8 +22,7 @@
   </p>
   <ul>
     <li>
-      PrankWeb can download it automatically from PDB database provided the
-      protein identification code.
+      PrankWeb can download it automatically from PDB database provided the protein identification code.
     </li>
     <li>
       A structure file,
@@ -35,12 +32,11 @@
     <li>
       Provided Uniprot ID PrankWeb can download structure from
       <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="nofollow noopener noreferrer">AlphaFold Protein Structure Database</a>.
-      For this option the structure visualisation is colored using
-      residue-level confidence scores.
+      For this option the structure visualisation is colored using residue-level confidence scores.
     </li>
   </ul>
 
-  <h3>Conservation</h3>
+  <h2>Conservation</h2>
   <p>
     Besides selecting what protein to analyze, one can also specify whether evolutionary conservation should be included in the prediction model by checking the <em>Use conservation</em> checkbox.
     Note that calculating conservation score can increase the time of analysis.
@@ -58,8 +54,7 @@
 
   <h2 id="visualization">Visualization</h2>
   <p>
-    Once the protein visualization is loaded, three main panels appear:
-    sequence visualization, structural visualization and the pocket panel.
+    Once the protein visualization is loaded, three main panels appear: sequence visualization, structural visualization and the pocket panel.
   </p>
   <img src="./assets/images/help-00.png"
        style="width: 100%"
@@ -67,51 +62,43 @@
     />
   <h3 id="structural-visualization-1">Structural visualization</h3>
   <p>
-    The largest panel contains the three-dimensional visualization of the
-    protein.
+    The largest panel contains the three-dimensional visualization of the protein.
   </p>
   <ul>
     <li>
-      By default, the protein surface is displayed, and individual pocket
-      areas are highlighted with different colors. Ligands (if available)
-      are displayed with yellow.
+      By default, the protein surface is displayed, and individual pocket areas are highlighted with different colors.
+      Ligands (if available) are displayed with yellow.
     </li>
     <li>
-      If score, either conservation or residue-level confidence, is
-      available, the protein atoms are colored with shades of gray according
-      to the score of each residue. Darker color depicts higher score.
+      If a score, either conservation or residue-level confidence, is available, the protein atoms are colored with shades of gray according to the score of each residue.
+      Darker color depicts higher score.
     </li>
     <li>
-      To switch between the views of the protein, use
-      <b>Peptide visualisation</b> and <b>Pockets visualisation</b>
-      selections at top of the pocket panel on the right.
+      To switch between the views of the protein, use <b>Peptide visualisation</b> and <b>Pockets visualisation</b> selections at top of the pocket panel on the right.
     </li>
   </ul>
 
   <h4 id="controls">Controls</h4>
   <p>
     The molecule can be rotated by moving mouse while holding left mouse button.
-    On a touch device, just slide your finger. To zoom in or out, move your
-    mouse while holding the right mouse button or use the pinch gesture on
-    a touch display. In order to move the protein, do the same, but this time
-    hold the wheel button. Lastly, for slabbing the protein, scroll the mouse
-    wheel or use the three finger gesture.
+    On a touch device, just slide your finger.
+    To zoom in or out, move your mouse while holding the right mouse button or use the pinch gesture on a touch display.
+    In order to move the protein, do the same, but this time hold the wheel button.
+    Lastly, for slabbing the protein, scroll the mouse wheel or use the three finger gesture.
   </p>
   <p>Using the buttons in the top-right corner, one can:</p>
   <ul>
     <li>Display a help window.</li>
     <li>
-      Setup the scene such as the visualization background or the field of
-      view.
+      Setup the scene such as the visualization background or the field of view.
     </li>
     <li>Create a snapshot of current visualization.</li>
     <li>Toggle advanced control panels.</li>
     <li>Toggle full-screen mode.</li>
   </ul>
   <p>
-    By toggling the advanced control panel, one has full control over the
-    content of the visualization using LiteMol. For more help with LiteMol,
-    please visit its
+    By toggling the advanced control panel, one has full control over the content of the visualization using LiteMol.
+    For more help with LiteMol, please visit its
     <a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual" target="_blank" rel="nofollow noopener noreferrer">wiki page</a>.
   </p>
 
@@ -119,40 +106,42 @@
   <p>The panel above protein 3D visualization displays protein sequence.</p>
   <ul>
     <li>
-      All chains are concatenated and visualized at once. Chains can be
-      identified by regions marked on the main sequence.
+      All chains are concatenated and visualized at once.
+      Chains can be identified by regions marked on the main sequence.
     </li>
     <li>
-      Colored rectangles depict areas with predicted pockets and real binding
-      areas (if available).
+      Colored rectangles depict areas with predicted pockets and real binding areas (if available).
     </li>
     <li>
-      Real binding sites are residues within 4 &#8491; from any ligand
-      atom.
+      Real binding sites are residues within 4 &#8491; from any ligand atom.
     </li>
     <li>
       If available, conservation scores are portrayed using a bar chart.
     </li>
   </ul>
   <p>
-    As one hovers over the sequence with mouse, the residues are highlighted
-    in the 3D visualization. This feature allows to analyze the protein both
-    from the structural and sequential point of view. By default, the sequence
-    view is zoomed out so that the whole protein is displayed. You can use the
-    trackbar control to zoom in, or select the area with mouse and zoom to the
-    selection.
+    As one hovers over the sequence with mouse, the residues are highlighted in the 3D visualization.
+    This feature allows to analyze the protein both from the structural and sequential point of view.
+    By default, the sequence view is zoomed out so that the whole protein is displayed.
+    You can use the trackbar control to zoom in, or select the area with mouse and zoom to the selection.
   </p>
 
   <h2 id="pocket-panel">Pocket panel</h2>
   <p>
     The right panel contains several control buttons and a list of predicted pockets.
     Use the control buttons to download PrankWeb report, or switch between the structural views.
-    In the pocket list, pocket name, rank, size and average conservation score (if available) is displayed for each pocket.
+    In the pocket list, pocket name, rank, <a href="#probability-score">probability score</a>, size, and average conservation score (if available) is displayed for each pocket.
     Each pocket also contains several buttons related to visibility of the pockets in the visualizations.
   </p>
   <p>
     If the visualised structure is predicted, then this panel also contains a warning and a toggle button.
-    Using the button user can toggle between visualisation of a whole structure and  confidently predicted regions (confidence score > 70).
+    Using the button user can toggle between visualisation of a whole structure and  confidently predicted regions (confidence score &gt; 70).
+  </p>
+
+  <h3 id="probability-score">Probability score calculation</h3>
+  <p>
+    The transformer that calculates probability scores from raw scores is calibrated for each individual model (Default, Default+Conservation, Alphafold, Alphafold+Conservation) on the calibration dataset (HOLO4K).
+    The probability score <em>P(x)</em> for a given raw score <em>x</em> is calculated the following way: <em>P(x) = T<sub>x</sub> / (T<sub>x</sub> + F<sub>x</sub>)</em> where <em>T<sub>x</sub></em> is the number of true pockets with a raw score &leq;x and <em>F<sub>x</sub></em> is the number for false pockets with the score &geq;x (both refer to the predictions of a particular model on the calibration dataset).
   </p>
 
   <h2 id="contact-us">Contact us</h2>
