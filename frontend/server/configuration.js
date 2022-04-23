@@ -6,6 +6,6 @@ module.exports = {
   // frontend without the need to run another component.
   //"proxy-directory": "../../data/database/",
   // Use the option bellow to proxy commands to task runner instance.
-  // This allows you to run tasks or connect to existing instance (p2rank.cz).
+  // This allows you to run tasks or connect to existing instance (https://prankweb.cz).
   "proxy-service": "127.0.0.1:5000",
 }
