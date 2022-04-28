@@ -59,8 +59,11 @@ services:
       - predictions:/data/prankweb
 volumes:
   rabbitmq:
+    external: True
     name: prankweb_rabbitmq
   conservation:
+    external: True
     name: prankweb_conservation
   predictions:
+    external: True
     name: prankweb_predictions
