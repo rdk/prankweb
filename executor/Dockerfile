@@ -31,7 +31,7 @@ RUN apt-get update \
 
 WORKDIR /opt/alignment-based-conservation-dependencies
 
-RUN wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz -q \
+RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz -q \
  && ls -l . \
  && tar -xzf ncbi-blast-2.9.0+-x64-linux.tar.gz \
  && rm ./ncbi-blast-2.9.0+-x64-linux.tar.gz
