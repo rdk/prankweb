@@ -1,3 +1,3 @@
 Content of this repository is based on 
-[funpdbe-validator](https://gitlab.ebi.ac.uk/pdbe-kb/funpdbe/funpdbe-validator) 
-commit 8384792618f2acce7dddc445a90ef6741bfc3299.
+[funpdbe-validator](https://github.com/PDBe-KB/funpdbe-validator) 
+commit 5643a6ca5473436099a55d81da86e4f1fa46523a.
