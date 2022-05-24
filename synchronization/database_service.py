@@ -13,6 +13,9 @@ class EntryStatus(enum.Enum):
     PRANKWEB_FAILED = "prankweb-failed"
     # We have prediction.
     PREDICTED = "predicted"
+    # Extra status, we can not submit empty predictions, yet they are not
+    # failures.
+    EMPTY = "empty"
     # Conversion to funPDBe format failed.
     FUNPDBE_FAILED = "funpdbe-failed"
     # We have the file to submit to funPDBe.

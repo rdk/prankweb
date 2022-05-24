@@ -2,6 +2,7 @@
 import os
 import datetime
 import shutil
+from dataclasses import dataclass
 
 import zipfile
 import typing
@@ -48,6 +49,11 @@ def _read_arguments() -> typing.Dict[str, str]:
     parser.add_argument(
         "--p2rank-version",
         help="Used p2rank version.")
+    parser.add_argument(
+        "--strict-funpdbe",
+        help="Stop on any FunPDBe related error.",
+        action="store_true",
+        default=False)
     return vars(parser.parse_args())
 
 
@@ -66,7 +72,13 @@ def main(args):
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
     logger.info("Downloading result from prankweb server ...")
-    prepare_funpdbe_files(args["p2rank_version"], data_directory, database)
+    try:
+        prepare_funpdbe_files(
+            args["strict_funpdbe"], args["p2rank_version"],
+            data_directory, database)
+    except:
+        database_service.save_database(data_directory, database)
+        logger.info("Can't prepare functional PDBe files.")
     database_service.save_database(data_directory, database)
     if args["ftp_user"] is None:
         logger.info("Skipping upload to FTP server as no user is provided.")
@@ -138,18 +150,20 @@ def synchronize_prankweb(database):
             ...
 
 
-def prepare_funpdbe_files(p2rank_version: str, data_directory: str, database):
+def prepare_funpdbe_files(
+        strict_mode: bool, p2rank_version: str, data_directory: str, database):
     ftp_directory = get_ftp_directory(data_directory)
     os.makedirs(ftp_directory, exist_ok=True)
     configuration = funpdbe_configuration(p2rank_version)
     os.makedirs(os.path.join(data_directory, "working"), exist_ok=True)
     for code, record in database["data"].items():
         prepare_funpdbe_file(
-            ftp_directory, data_directory, configuration, code, record)
+            strict_mode, ftp_directory, data_directory, configuration,
+            code, record)
 
 
 def prepare_funpdbe_file(
-        ftp_directory: str, data_directory: str,
+        strict_mode: bool, ftp_directory: str, data_directory: str,
         configuration: p2rank_to_funpdbe.Configuration,
         code: str, record):
     if not record["status"] == EntryStatus.PREDICTED.value:
@@ -161,7 +175,10 @@ def prepare_funpdbe_file(
     if residues_file is None or residues_file is None:
         logger.exception(f"Can't obtain prediction files for {code}, "
                          f"record ignored.")
-        return
+        if strict_mode:
+            raise RuntimeError(f"Failed to prepare '{code}'.")
+        else:
+            return
 
     working_output = os.path.join(working_directory, f"{code.lower()}.json")
     try:
@@ -169,13 +186,20 @@ def prepare_funpdbe_file(
             configuration, code, predictions_file, residues_file,
             working_output)
         record["status"] = EntryStatus.CONVERTED.value
+    except p2rank_to_funpdbe.EmptyPrediction:
+        logger.exception(f"Empty prediction for {code}, record ignored.")
+        record["status"] = EntryStatus.EMPTY.value
+        return
     except Exception as ex:
         logger.exception(f"Can't convert {code}, record ignored.")
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
         error_log_file = os.path.join(working_directory, "error.log")
         with open(error_log_file, "w") as stream:
             stream.write(str(ex))
-        return
+        if strict_mode:
+            raise RuntimeError(f"Failed to prepare '{code}'.")
+        else:
+            return
     target_directory = os.path.join(ftp_directory, code.lower()[1:3])
     os.makedirs(target_directory, exist_ok=True)
     target_output = os.path.join(target_directory, f"{code.lower()}.json")
