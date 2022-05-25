@@ -187,7 +187,7 @@ def prepare_funpdbe_file(
             working_output)
         record["status"] = EntryStatus.CONVERTED.value
     except p2rank_to_funpdbe.EmptyPrediction:
-        logger.exception(f"Empty prediction for {code}, record ignored.")
+        logger.error(f"Empty prediction for {code}, record ignored.")
         record["status"] = EntryStatus.EMPTY.value
         return
     except Exception as ex:
@@ -205,6 +205,7 @@ def prepare_funpdbe_file(
     target_output = os.path.join(target_directory, f"{code.lower()}.json")
     shutil.move(working_output, target_output)
     shutil.rmtree(working_directory)
+    logger.debug(f"Done processing '{code}'.")
 
 
 def get_ftp_directory(data_directory: str):
