@@ -24,8 +24,8 @@ def _read_arguments() -> typing.Dict[str, str]:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--server",
-        default="https://prankweb.cz/",
-        help="URL of prankweb server.")
+        default="https://prankweb.cz",
+        help="URL of prankweb server, without '/' at the end.")
     parser.add_argument(
         "--server-directory",
         help="Optional path to prediction directory.")
@@ -36,16 +36,16 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--from",
         default=from_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
         help="XSD data to from which update in format 2021-12-01T00:00:00Z.")
-    parser.add_argument(
-        "--ftp-url",
-        default="ftp-private.ebi.ac.uk",
-        help="FTP server url")
-    parser.add_argument(
-        "--ftp-user",
-        help="FTP user name.")
-    parser.add_argument(
-        "--ftp-password",
-        help="FTP password.")
+    # parser.add_argument(
+    #     "--ftp-url",
+    #     default="ftp-private.ebi.ac.uk",
+    #     help="FTP server url")
+    # parser.add_argument(
+    #     "--ftp-user",
+    #     help="FTP user name.")
+    # parser.add_argument(
+    #     "--ftp-password",
+    #     help="FTP password.")
     parser.add_argument(
         "--p2rank-version",
         help="Used p2rank version.")
@@ -80,14 +80,17 @@ def main(args):
         database_service.save_database(data_directory, database)
         logger.info("Can't prepare functional PDBe files.")
     database_service.save_database(data_directory, database)
-    if args["ftp_user"] is None:
-        logger.info("Skipping upload to FTP server as no user is provided.")
-    else:
-        logger.info("Uploading to FTP server ...")
-        upload_to_funpdbe(
-            args["ftp_url"], args["ftp_user"], args["ftp_password"],
-            data_directory, database)
-        database_service.save_database(data_directory, database)
+    # This part of code has never been tested as we do employ
+    # external tool to deal with FTP upload.
+    #
+    # if args["ftp_user"] is None:
+    #     logger.info("Skipping upload to FTP server as no user is provided.")
+    # else:
+    #     logger.info("Uploading to FTP server ...")
+    #     upload_to_funpdbe(
+    #         args["ftp_url"], args["ftp_user"], args["ftp_password"],
+    #         data_directory, database)
+    #     database_service.save_database(data_directory, database)
     logger.info("All done")
 
 
