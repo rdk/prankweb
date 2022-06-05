@@ -8,7 +8,7 @@ class DatabaseV2(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v02")
+            "v2")
 
     def name(self) -> str:
         return "v2"
@@ -20,7 +20,7 @@ class DatabaseV2Conservation(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v02-conservation")
+            "v2-conservation")
 
     def name(self) -> str:
         return "v2-conservation"

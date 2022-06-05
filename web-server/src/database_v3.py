@@ -43,7 +43,7 @@ class DatabaseV3(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v03")
+            "v3")
 
     def name(self) -> str:
         return "v3"
@@ -80,7 +80,7 @@ class DatabaseV3ConservationHmm(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v03-conservation-hmm")
+            "v3-conservation-hmm")
 
     def name(self) -> str:
         return "v3-conservation-hmm"
@@ -112,7 +112,7 @@ class DatabaseV3UserUpload(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v03-user-upload")
+            "v3-user-upload")
 
     def name(self) -> str:
         return "v3-user-upload"
@@ -150,7 +150,7 @@ class DatabaseV3AlphaFold(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v03-alphafold")
+            "v3-alphafold")
 
     def name(self) -> str:
         return "v3-alphafold"
@@ -186,7 +186,7 @@ class DatabaseV3AlphaFoldConservationHmm(NestedReadOnlyDatabase):
         super().__init__()
         self.root = os.path.join(
             self._get_database_directory(),
-            "v03-alphafold-conservation-hmm")
+            "v3-alphafold-conservation-hmm")
 
     def name(self) -> str:
         return "v3-alphafold-conservation-hmm"
