@@ -25,7 +25,27 @@ class Configuration:
     p2rank_version: str
 
 
+class ValidatorFactory:
+    """We need to cache schema, to not download it each time."""
+    _cached_schema = None
+
+    @staticmethod
+    def create(resource: str, pdbe_file: str):
+        result = Validator(resource)
+        if ValidatorFactory._cached_schema is None:
+            result.load_schema()
+            ValidatorFactory._cached_schema = result.schema
+        else:
+            result.schema = ValidatorFactory._cached_schema
+        result.load_json(pdbe_file)
+        return result
+
+
 ResidueRef = collections.namedtuple("ResidueReference", ["chain", "index"])
+
+
+class EmptyPrediction(Exception):
+    ...
 
 
 def convert_p2rank_to_pdbe(
@@ -52,6 +72,9 @@ def convert_p2rank_to_pdbe(
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as out_stream:
         json.dump(content, out_stream, indent=2)
+
+    if len(chains) == 0:
+        raise EmptyPrediction()
 
     validate_file(configuration.data_resource, output_path)
 
@@ -186,10 +209,8 @@ def _create_output_file(
     }
 
 
-def validate_file(data_resource: str, pdbe_file: str):
-    validator = Validator(data_resource)
-    validator.load_schema()
-    validator.load_json(pdbe_file)
+def validate_file(resource: str, pdbe_file: str):
+    validator = ValidatorFactory.create(resource, pdbe_file)
     if not validator.basic_checks():
         logger.error(validator.error_log)
         raise RuntimeError(
