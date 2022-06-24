@@ -102,10 +102,10 @@ export class Application extends React.Component<{
   componentDidMount() {
     console.log("Application::componentDidMount");
     this.loadData();
-    let context = this.props.plugin.context;
+    /*let context = this.props.plugin.context;
     LiteMol.Bootstrap.Event.Tree.NodeUpdated
       .getStream(context)
-      .subscribe(this.onNodeUpdated);
+      .subscribe(this.onNodeUpdated);*/
   }
 
   loadData() {
@@ -121,6 +121,7 @@ export class Application extends React.Component<{
       predictionInfo.id,
       predictionInfo.metadata.structureName
     )
+    /*
       .then((data: PrankData) => {
         const isPredicted =
           predictionInfo.metadata["predictedStructure"] === true;
@@ -149,6 +150,7 @@ export class Application extends React.Component<{
         });
       })
       .catch((error) => _this.setState({"isLoading": false, "error": error}));
+    */
   }
 
   render() {
@@ -238,12 +240,6 @@ export class Application extends React.Component<{
   onPocketsViewChange(value: PocketsViewType) {
     this.setState({"pocketsView": value});
     this.data.updateInProgress = true;
-    updatePocketsView(
-      this.props.plugin,
-      // @ts-ignore
-      this.state.data.prediction.props.pockets,
-      this.state.pockets,
-      value);
     this.data.updateInProgress = false;
   }
 
@@ -270,22 +266,6 @@ export class Application extends React.Component<{
         // There is no change in visibility so no need to update.
         continue;
       }
-      updatePocketView(
-        this.props.plugin.context,
-        // @ts-ignore
-        this.state.data.prediction.props.pockets[index],
-        nextPocket,
-        this.state.pocketsView);
-      updatePeptideColoringForPocket(
-        this.props.plugin,
-        // @ts-ignore
-        this.state.data.model,
-        // @ts-ignore
-        this.state.data.prediction.props.pockets[index],
-        nextPocket,
-        index
-      );
-
     }
     this.data.updateInProgress = false;
     this.setState({"pockets": nextPockets});
@@ -475,93 +455,4 @@ function setEntityVisibilityOptional(
     "entity": entity,
     "visible": visible,
   });
-}
-
-function updatePocketsView(
-  plugin: LiteMol.Plugin.Controller, pockets: PrankPocket[],
-  pocketsView: PocketViewData[], viewType: PocketsViewType,
-) {
-  for (let index = 0; index < pockets.length; ++index) {
-    updatePocketView(
-      plugin.context, pockets[index], pocketsView[index], viewType);
-  }
-}
-
-function updatePocketView(
-  context: LiteMol.Bootstrap.Context, pocket: PrankPocket,
-  pocketView: PocketViewData, viewType: PocketsViewType) {
-  let showAtoms = false;
-  let showSurface = false;
-  if (pocketView.isVisible) {
-    switch (viewType) {
-      case PocketsViewType.Atoms:
-        showAtoms = true;
-        break;
-      case PocketsViewType.Surface:
-        showSurface = true;
-        break;
-    }
-  }
-  // We need to update pocket root entity, as other
-  // parts of the application may listed to their changes
-  // (SequenceView).
-  const pocketEntity = context.select(pocket.name) [0] as LiteMol.Bootstrap.Entity.Any;
-  LiteMol.Bootstrap.Command.Entity.SetVisibility.dispatch(context, {
-    "entity": pocketEntity,
-    "visible": pocketView.isVisible
-  });
-  // The changes are not propagated in the hierarchy, so
-  // we need to update visuals as well.
-  const atoms = context.select(
-    DataLoader.getPocketAtomsRefVisual(pocket)
-  ) [0] as LiteMol.Bootstrap.Entity.Any;
-  const surface = context.select(
-    DataLoader.getPocketSurfaceAtomsRefVisual(pocket)
-  ) [0] as LiteMol.Bootstrap.Entity.Any;
-  LiteMol.Bootstrap.Command.Entity.SetVisibility.dispatch(context, {
-    "entity": atoms,
-    "visible": showAtoms
-  });
-  LiteMol.Bootstrap.Command.Entity.SetVisibility.dispatch(context, {
-    "entity": surface,
-    "visible": showSurface
-  });
-
-}
-
-function updatePeptideColoringForPocket(
-  plugin: LiteMol.Plugin.Controller, model: LiteMol.Bootstrap.Entity.Molecule.Model,
-  pocket: PrankPocket, pocketView: PocketViewData, index: number
-) {
-  let atomMapping = DataLoader.getAtomColorMapping(plugin, model);
-  let residueMapping = DataLoader.getResidueColorMapping(plugin, model);
-  if (!atomMapping || !residueMapping) {
-    return;
-  }
-  let pocketQuery = LiteMol.Core.Structure.Query.atomsById.apply(null, pocket.surfAtomIds).compile();
-  let pocketResQuery = DataLoader.residuesBySeqNums(...pocket.residueIds).compile();
-  if (pocketView.isVisible) {
-    const colorIndex = (index % Colors.size) + 1;
-    for (const atom of pocketQuery(model.props.model.queryContext).unionAtomIndices()) {
-      atomMapping[atom] = colorIndex;
-    }
-    for (const atom of pocketResQuery(model.props.model.queryContext).unionAtomIndices()) {
-      residueMapping[atom] = colorIndex;
-    }
-  } else {
-    const originalMapping = DataLoader.getConservationAtomColorMapping(plugin, model);
-    if (!originalMapping) {
-      return;
-    }
-    for (const atom of pocketQuery(model.props.model.queryContext).unionAtomIndices()) {
-      atomMapping[atom] = originalMapping[atom];
-    }
-    for (const atom of pocketResQuery(model.props.model.queryContext).unionAtomIndices()) {
-      residueMapping[atom] = originalMapping[atom];
-    }
-  }
-  //
-  DataLoader.setAtomColorMapping(plugin, model, atomMapping);
-  DataLoader.setResidueColorMapping(plugin, model, residueMapping);
-  DataLoader.colorProtein(plugin);
 }
