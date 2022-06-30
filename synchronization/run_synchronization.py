@@ -111,7 +111,7 @@ def synchronize_prankweb_with_database(database):
 
 def request_computation_from_prankweb(code: str, record):
     """Request computation or check for status."""
-    logger.info(f"Checking prankweb for '{code}'")
+    logger.info(f"Checking for '{code}' with status {record['status']}")
     response = prankweb_service.retrieve_info(code)
     if response.status == -1:
         # This indicates error with the connection.
@@ -125,7 +125,7 @@ def request_computation_from_prankweb(code: str, record):
     # Make the time same as for the rest of the application.
     record["prankwebCreatedDate"] = response.body["created"] + "Z"
     record["prankwebCheckDate"] = response.body["lastChange"] + "Z"
-    logger.info("Status:" + record["status"])
+    previous_status = record["status"]
     if response.body["status"] == "successful":
         record["status"] = EntryStatus.PREDICTED.value
     elif response.body["status"] == "failed":
@@ -134,6 +134,8 @@ def request_computation_from_prankweb(code: str, record):
     else:
         # The prediction is still running, so no change here.
         ...
+    logger.info(f"Status changed to {record['status']}"
+                f" due to response {response.body['status']}")
 
 
 def prepare_funpdbe_files(
