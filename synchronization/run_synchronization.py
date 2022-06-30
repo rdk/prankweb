@@ -202,7 +202,6 @@ def get_ftp_directory(data_directory: str):
 def retrieve_prediction_files(working_directory: str, code: str):
     zip_path = retrieve_archive(working_directory, code)
     if zip_path is None:
-        logger.error(f"Can't obtain {code} archive, record ignored.")
         return None, None
     unpack_from_zip(
         zip_path,
