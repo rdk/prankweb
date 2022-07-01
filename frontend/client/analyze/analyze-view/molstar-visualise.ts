@@ -1,14 +1,12 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { PredictionData } from './types';
+import { PredictionData, PocketData } from './types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
 import { StructureSelection, QueryContext, StructureElement, StructureProperties, Unit, Bond } from "molstar/lib/mol-model/structure"
 import { Script } from "molstar/lib/mol-script/script"
-
-let structure: any;
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
     // if (plugin) {
@@ -29,7 +27,7 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
     else trajectory = await plugin.builders.structure.parseTrajectory(data, "pdb");
 
     const model = await plugin.builders.structure.createModel(trajectory);
-    structure = await plugin.builders.structure.createStructure(model, {name: 'model', params: {}});
+    let structure = await plugin.builders.structure.createStructure(model, {name: 'model', params: {}});
 
     //adds polymer representation
     const polymer = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
@@ -61,18 +59,18 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
     return [model, structure, polymer]
 }
 
-export async function createPocketsGroupFromJson(plugin: PluginUIContext, groupName: string, prediction: PredictionData) {
+export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: any, groupName: string, prediction: PredictionData) {
     const builder = plugin.state.data.build();
     const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName})
     for(let i = 0; i < prediction.pockets.length; i++) {
         console.log(prediction);
-        createPocketFromJsonByAtoms(plugin, prediction.pockets[i], "Pocket " + (i+1), Number("0x" + prediction.pockets[i].color), group);
+        createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], "Pocket " + (i+1), Number("0x" + prediction.pockets[i].color), group);
     }
     await builder.commit();
 }
 
 //creates pockets' representation one by one and assigns them to the group
-async function createPocketFromJsonByAtoms(plugin: PluginUIContext, pocket: any, groupName: string, color: number, group: any) { //group should not be any but i cannot figure out the right type
+async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: any, pocket: PocketData, groupName: string, color: number, group: any) { //group should not be any but i cannot figure out the right type
     
     const group2 = group.apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName}, {selectionTags: groupName});
 

@@ -4,6 +4,7 @@ import { loadStructureIntoMolstar, createPocketsGroupFromJson } from './molstar-
 import { PredictionData } from "./types";
 import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
+import { data } from "autoprefixer";
 
 export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlugin: RcsbFv, database: string, identifier: string, structureName: string) {
     return new Promise(async (accept, reject) => {
@@ -13,7 +14,9 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlug
         console.log(`${baseUrl}/prediction.json`);*/
 
         // Download pdb/mmcif and create a model in Mol*.
-        loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`);
+        const molData = await loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`).then(result => result);
+        
+        let structure = molData[1];
 
         // Download the prediction.
         const prediction : PredictionData = await downloadJsonFromUrl(`${baseUrl}/prediction.json`);
@@ -22,7 +25,7 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlug
         initRcsb(prediction, rcsbPlugin, molstarPlugin);
 
         // Add pockets etc. from the prediction to Mol*.
-        await createPocketsGroupFromJson(molstarPlugin, "Pockets", prediction);
+        await createPocketsGroupFromJson(molstarPlugin, structure, "Pockets", prediction);
 
         // TODO: Link all plugins together.
 
