@@ -2,12 +2,9 @@
 import os
 import logging
 import csv
-import datetime
 import json
 import collections
-import argparse
 import dataclasses
-import importlib
 
 from funpdbe_validator.validator.validator import Validator
 from funpdbe_validator.validator.residue_index import ResidueIndexes
