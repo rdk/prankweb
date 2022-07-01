@@ -1,34 +1,10 @@
-import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { StateTree } from "molstar/lib/mol-state/tree/immutable"
 
 let structure: any;
 
-export async function loadData(plugin: PluginUIContext, database: string, identifier: string, structureName: string) {
-    return new Promise(async (accept, reject) => {
-        const baseUrl: string = getApiEndpoint(database, identifier) + "/public";
-        // Download pdb/mmcif and create a model.
-
-        console.log(`${baseUrl}/${structureName}`)
-        console.log(`${baseUrl}/prediction.json`);
-  
-        //let x = await fetchData(`${baseUrl}/prediction.json`);
-
-        loadMMCIF(plugin, `${baseUrl}/${structureName}`, `${baseUrl}/prediction.json`);
-    });
-  }
-
-export interface CustomWindow extends Window {
-   plugin: any;
-   StateTree: StateTree;
-   MS: any;
-   Script: any;
-}
-
-
-export async function loadMMCIF(plugin: PluginUIContext, structureUrl: string, predictionUrl: string) {
+export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
     // if (plugin) {
     //     await plugin.clear();
     // }
@@ -78,16 +54,3 @@ export async function loadMMCIF(plugin: PluginUIContext, structureUrl: string, p
 
     return [model, structure, polymer]
 }
-
-
-  async function fetchData(url: string) {
-    try {
-        const response = await fetch(url, {
-            method: 'GET'
-        });
-        const exam = await response.json();
-        return exam;
-    } catch (error) {
-        console.error(error);
-    }
-  }

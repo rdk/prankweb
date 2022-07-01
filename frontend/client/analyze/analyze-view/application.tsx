@@ -5,21 +5,24 @@ import "./application.css";
 import {PredictionInfo} from "../prankweb-api";
 
 //////////
-import { loadData, loadMMCIF, CustomWindow } from './newdata-loader';
+import { sendDataToPlugins } from './data-loader';
+import { CustomWindow } from "./types";
+
+
 import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
+import { RcsbFv } from "@rcsb/rcsb-saguaro";
 
 
 declare let window: CustomWindow;
 
-
 export async function renderProteinView(predictionInfo: PredictionInfo) {
   const wrapper = document.getElementById('application-litemol')!;
-  window.plugin = await createPluginUI(wrapper, {
+  window.MolstarPlugin = await createPluginUI(wrapper, {
       ...DefaultPluginUISpec(),
       layout: {
           initial: {
@@ -40,17 +43,19 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   });
   window.MS = MS;
   window.Script = Script;
-  const plugin = window.plugin;
+  const MolstarPlugin = window.MolstarPlugin;
+  const RcsbPlugin = window.RcsbPlugin;
 
   console.log("!!!!!!!!!!!!!!!!!!");
   console.log(predictionInfo);
   // Render pocket list using React.
-  ReactDOM.render(<Application plugin={plugin} predictionInfo={predictionInfo}/>, document.getElementById('pocket-list-aside'));
+  ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo} pluginRcsb={RcsbPlugin}/>, document.getElementById('pocket-list-aside'));
   
 }
 export class Application extends React.Component<{
   plugin: PluginUIContext,
   predictionInfo: PredictionInfo,
+  pluginRcsb: RcsbFv
 }> {
 
   state = {
@@ -73,14 +78,18 @@ export class Application extends React.Component<{
   }
 
   loadData() {
+
     this.setState({
       "isLoading": true,
       "error": undefined,
     });
-    const {plugin, predictionInfo} = this.props;
+    const {plugin, predictionInfo, pluginRcsb} = this.props;
     const _this = this;
-    loadData(
+
+    //at first we need the plugins to download the needed data and visualise them
+    sendDataToPlugins(
       plugin,
+      pluginRcsb,
       predictionInfo.database,
       predictionInfo.id,
       predictionInfo.metadata.structureName
@@ -98,6 +107,7 @@ export class Application extends React.Component<{
       });
     })
     .catch((error) => _this.setState({"isLoading": false, "error": error}));
+    //TODO: after successfully visualising the data via the plugins, we may render the useful data about pockets.
 
     /*
       .then((data: PrankData) => {
