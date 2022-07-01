@@ -1,9 +1,9 @@
 import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
-import { loadStructureIntoMolstar } from './molstar-visualise';
+import { loadStructureIntoMolstar, createPocketsGroupFromJson } from './molstar-visualise';
 import { PredictionData } from "./types";
 import { initRcsb } from './rcsb-visualise'
-import { RcsbFv, RcsbFvDisplayTypes, RcsbFvTrackDataElementInterface, RcsbFvRowConfigInterface, RcsbFvBoardConfigInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
+import { RcsbFv } from "@rcsb/rcsb-saguaro";
 
 export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlugin: RcsbFv, database: string, identifier: string, structureName: string) {
     return new Promise(async (accept, reject) => {
@@ -19,9 +19,12 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlug
         const prediction : PredictionData = await downloadJsonFromUrl(`${baseUrl}/prediction.json`);
 
         // Initialize RCSB plugin.
-        initRcsb(prediction, rcsbPlugin);
+        initRcsb(prediction, rcsbPlugin, molstarPlugin);
 
-        // TODO: Add pockets etc. from the prediction to Mol*.
+        // Add pockets etc. from the prediction to Mol*.
+        await createPocketsGroupFromJson(molstarPlugin, "Pockets", prediction);
+
+        // TODO: Link all plugins together.
 
     });
 }

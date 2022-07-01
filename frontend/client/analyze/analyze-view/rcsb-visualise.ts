@@ -1,15 +1,17 @@
 import { RcsbFv, RcsbFvDisplayTypes, RcsbFvTrackDataElementInterface, RcsbFvRowConfigInterface, RcsbFvBoardConfigInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
+import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, MolstarResidue, chainResidueAtom } from './types';
+import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
-export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv) {
+export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv, molstarPlugin: PluginUIContext) {
 
     const boardConfigData : RcsbFvBoardConfigInterface = {
         length: data.structure.sequence.length,
         //trackWidth: 1200,
         includeAxis: true,
         highlightHoverPosition: true,
-        highlightHoverCallback: (n: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, n),
-        elementClickCallBack: (d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) => elementClicked(data, d, e)
+        highlightHoverCallback: (n: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, molstarPlugin, n),
+        elementClickCallBack: (d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) => elementClicked(data, molstarPlugin, d, e)
     };
 
     const rowConfigData = createRowConfigDataRcsb(data);
@@ -26,27 +28,27 @@ export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv) {
 
 
 //TODO : EDIT THOSE 
-function elementClicked(data: PredictionData, d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) {
+function elementClicked(data: PredictionData, molstarPlugin: PluginUIContext, d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) {
     console.log(d);
     if(d) {
         if(data) {
             let element = data.structure.indices[d.begin - 1];
             if(element) {
                 let id = Number(element.substring(element.indexOf('_') + 1));
-                //highlightInViewerAuthId(element[0], [id]);
+                highlightInViewerAuthId(molstarPlugin, element[0], [id]);
             }
         }
     }
 }
 
-function onHighlight(data: PredictionData, n: Array<RcsbFvTrackDataElementInterface>) {
+function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, n: Array<RcsbFvTrackDataElementInterface>) {
     console.log(n);
     if(n && n.length > 0) {
         if(data) {
             let element = data.structure.indices[n[0].begin - 1];
             if(element) {
                 let id = Number(element.substring(element.indexOf('_') + 1));
-                //highlightInViewerLabelIdWithoutFocus(element[0], [id]);
+                highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
             }
         }
     }
