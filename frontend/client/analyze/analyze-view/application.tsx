@@ -103,14 +103,12 @@ export class Application extends React.Component<{
     ).then((data) => {this.setState({
       "isLoading": false,
       "data": data
-      /*,
-      "pockets": createPocketList(
-        _this.props.plugin,
-        data.model,
-        data.prediction.props.pockets,
-        data.sequence.props.sequence),
-    */
-    })}).catch((error) => {console.log(error)});
+    })}).catch((error) => {
+      this.setState({
+        "isLoading": false,
+      })
+      console.log(error);
+    });
     //TODO: after successfully visualising the data via the plugins, we may render the useful data about pockets.
   }
 
