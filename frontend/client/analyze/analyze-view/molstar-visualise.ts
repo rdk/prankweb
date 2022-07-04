@@ -1,12 +1,15 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { PredictionData, PocketData } from './types';
+import { PredictionData, PocketData, MolstarResidue } from './types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
 import { StructureSelection, QueryContext, StructureElement, StructureProperties, Unit, Bond } from "molstar/lib/mol-model/structure"
 import { Script } from "molstar/lib/mol-script/script"
+import {Canvas3D} from "molstar/lib/mol-canvas3d/canvas3d";
+import { RcsbFv } from '@rcsb/rcsb-saguaro';
+import {Loci} from "molstar/lib/mol-model/loci";
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
     // if (plugin) {
@@ -124,4 +127,61 @@ export function highlightInViewerAuthId(plugin: PluginUIContext, chain: string, 
     //loci = StructureElement.Loci.firstResidue(loci);
     plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
     plugin.managers.camera.focusLoci(loci);
+}
+
+function getStructureElementLoci(loci: Loci): StructureElement.Loci | undefined {
+    if (loci.kind == "bond-loci") {
+        return Bond.toStructureElementLoci(loci);
+    } else if (loci.kind == "element-loci") {
+        return loci;
+    }
+    return undefined;
+}
+
+export function linkMolstarToRcsb(plugin: PluginUIContext, structureData: PredictionData, rcsbPlugin: RcsbFv) {
+    //cc: https://github.com/scheuerv/molart/
+    //listens for hover event over anything on Mol* plugin and then it determines
+    //if it is loci of type StructureElement. If it is StructureElement then it
+    //propagates this event from MolstarPlugin transformed as MolstarResidue.
+    //in our modification it also highlights the section in RCSB viewer
+    plugin.canvas3d?.interaction.hover.subscribe((event: Canvas3D.HoverEvent) => {
+        const structureElementLoci = getStructureElementLoci(event.current.loci);
+        console.log(rcsbPlugin);
+        if(structureElementLoci)
+        {
+            const structureElement = StructureElement.Stats.ofLoci(structureElementLoci);
+            const location = structureElement.firstElementLoc;
+            const residue: MolstarResidue = {
+                authName: StructureProperties.atom.auth_comp_id(location),
+                name: StructureProperties.atom.label_comp_id(location),
+                isHet: StructureProperties.residue.hasMicroheterogeneity(location),
+                insCode: StructureProperties.residue.pdbx_PDB_ins_code(location),
+                index: StructureProperties.residue.key(location),
+                seqNumber: StructureProperties.residue.label_seq_id(location),
+                authSeqNumber: StructureProperties.residue.auth_seq_id(location),
+                chain: {
+                    asymId: StructureProperties.chain.label_asym_id(location),
+                    authAsymId: StructureProperties.chain.auth_asym_id(location),
+                    entity: {
+                        entityId: StructureProperties.entity.id(location),
+                        index: StructureProperties.entity.key(location)
+                    },
+                    index: StructureProperties.chain.key(location)
+                }
+            };
+            let toFind = residue.chain.authAsymId + "_" + residue.authSeqNumber;
+            let element = structureData.structure.indices.indexOf(toFind);
+            rcsbPlugin.setSelection({
+                elements: {
+                    begin: element + 1
+                },
+                mode: 'hover'
+            })
+            // console.log(residue);
+            // console.log(plugin.managers.structure.hierarchy.current.structures[0].components);
+            //highlightInViewer([60,61,62,63]);
+            //this.mouseOverHighlightedResiduesInStructure = [structureElementLoci];
+            //this.emitOnHover.emit(residue);
+        }
+    });
 }

@@ -7,7 +7,7 @@ export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv, molstarPlugin
 
     const boardConfigData : RcsbFvBoardConfigInterface = {
         length: data.structure.sequence.length,
-        //trackWidth: 1200,
+        trackWidth: 1300,
         includeAxis: true,
         highlightHoverPosition: true,
         highlightHoverCallback: (n: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, molstarPlugin, n),
@@ -24,6 +24,7 @@ export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv, molstarPlugin
         elementId
     });
 
+    return rcsbPlugin;
 }
 
 
