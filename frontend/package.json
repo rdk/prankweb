@@ -44,6 +44,7 @@
     "yaml": "^2.1.1"
   },
   "devDependencies": {
+    "@types/react": "^18.0.14",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^28.1.2",
     "eslint": "^8.18.0",
