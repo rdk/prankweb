@@ -37,7 +37,8 @@ export interface PocketData {
     center: string[];
     residues: string[];
     surface: string[];
-    color?: string;
+    color?: string; //color of the pocket, if any (e.g. "00ff00")
+    isReactVisible?: boolean; //if the pocket is visible in the react component
 }
 
 export interface Metadata {

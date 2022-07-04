@@ -18,6 +18,7 @@ import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 import ToolsBox from "./components/tools-box";
+import PocketList from "./components/pocket-list";
 
 
 declare let window: CustomWindow;
@@ -76,6 +77,11 @@ export class Application extends React.Component<{
     super(props);
     this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
     this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
+    this.onShowAllPockets = this.onShowAllPockets.bind(this);
+    this.onSetPocketVisibility = this.onSetPocketVisibility.bind(this);
+    this.onShowOnlyPocket = this.onShowOnlyPocket.bind(this);
+    this.onFocusPocket = this.onFocusPocket.bind(this);
+    this.onHighlightPocket = this.onHighlightPocket.bind(this);
     this.onShowConfidentChange = this.onShowConfidentChange.bind(this);
   }
 
@@ -144,6 +150,49 @@ export class Application extends React.Component<{
     //updatePolymerView(this.props.plugin, this.state.polymerView, isShowOnlyPredicted);
   }
 
+  onShowAllPockets() {
+    //TODO: show all pockets
+    /*const pockets = this.state.pockets.map((item: PocketViewData) => ({
+      ...item,
+      "isVisible": true
+    }));
+    this.synchronizePocketsVisibility(pockets);*/
+  }
+
+  onSetPocketVisibility(index: number, isVisible: boolean) {
+    //TODO: set pocket visibility
+    /*const pockets = [
+      ...this.state.pockets.slice(0, index),
+      {
+        // @ts-ignore
+        ...this.state.pockets[index],
+        "isVisible": isVisible
+      },
+      ...this.state.pockets.slice(index + 1)
+    ];
+    this.synchronizePocketsVisibility(pockets);
+    */
+  }
+
+  onShowOnlyPocket(index: number) {
+    //TODO: show only one pocket
+    /*
+    const pockets = this.state.pockets.map((item: PocketViewData, i) => ({
+      ...item,
+      "isVisible": i === index
+    }));
+    this.synchronizePocketsVisibility(pockets);
+    */
+  }
+
+  onFocusPocket(index: number) {
+    //TODO: focus on one pocket
+  }
+
+  onHighlightPocket(index: number, isHighlighted: boolean) {
+    //TODO: highlight one pocket
+  }
+
   render() {
     console.log("Application::render");
     if (this.state.isLoading) {
@@ -173,6 +222,14 @@ export class Application extends React.Component<{
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
+          />
+          <PocketList 
+            data={this.state.data}
+            showAll={this.onShowAllPockets}
+            setPocketVisibility={this.onSetPocketVisibility}
+            showOnlyPocket={this.onShowOnlyPocket}
+            focusPocket={this.onFocusPocket}
+            highlightPocket={this.onHighlightPocket}
           />
         </div>
       );
