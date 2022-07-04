@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 
 import "./application.css";
 import {PredictionInfo} from "../prankweb-api";
+import { StructureInformation } from "./components/structure-information";
 
 //////////
 import { sendDataToPlugins } from './data-loader';
@@ -46,7 +47,6 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   const MolstarPlugin = window.MolstarPlugin;
   const RcsbPlugin = window.RcsbPlugin;
 
-  console.log("!!!!!!!!!!!!!!!!!!");
   console.log(predictionInfo);
   // Render pocket list using React.
   ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo} pluginRcsb={RcsbPlugin}/>, document.getElementById('pocket-list-aside'));
@@ -77,7 +77,7 @@ export class Application extends React.Component<{
     this.loadData();
   }
 
-  loadData() {
+  async loadData() {
 
     this.setState({
       "isLoading": true,
@@ -87,26 +87,23 @@ export class Application extends React.Component<{
     const _this = this;
 
     //at first we need the plugins to download the needed data and visualise them
-    sendDataToPlugins(
+    await sendDataToPlugins(
       plugin,
       pluginRcsb,
       predictionInfo.database,
       predictionInfo.id,
       predictionInfo.metadata.structureName
-    ).then((data: any) => {
-      _this.setState({
-        "isLoading": false,
-        //"data": data
-        /*,
-        "pockets": createPocketList(
-          _this.props.plugin,
-          data.model,
-          data.prediction.props.pockets,
-          data.sequence.props.sequence),
-      */
-      });
-    })
-    .catch((error) => _this.setState({"isLoading": false, "error": error}));
+    ).then((data) => {this.setState({
+      "isLoading": false,
+      "data": data
+      /*,
+      "pockets": createPocketList(
+        _this.props.plugin,
+        data.model,
+        data.prediction.props.pockets,
+        data.sequence.props.sequence),
+    */
+    })}).catch((error) => {console.log(error)});
     //TODO: after successfully visualising the data via the plugins, we may render the useful data about pockets.
 
     /*
@@ -143,41 +140,16 @@ export class Application extends React.Component<{
 
   render() {
     console.log("Application::render");
-    return (
-      <div>
-        <h1 className="text-center">Loading...</h1>
-      </div>
-    );
-    /*
+
     const {predictionInfo} = this.props;
     const downloadAs = `prankweb-${predictionInfo.metadata.predictionName}.zip`;
     if (this.state.data) {
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
-          <ToolsBox
-            plugin={this.props.plugin}
-            downloadUrl={getApiDownloadUrl(predictionInfo)}
-            downloadAs={downloadAs}
-            polymerView={this.state.polymerView}
-            pocketsView={this.state.pocketsView}
-            onPolymerViewChange={this.onPolymerViewChange}
-            onPocketsViewChange={this.onPocketsViewChange}
-            isPredicted={isPredicted}
-            isShowOnlyPredicted={this.state.isShowOnlyPredicted}
-            onShowConfidentChange={this.onShowConfidentChange}
-          />
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
-          />
-          <PocketList
-            pockets={this.state.pockets}
-            showAll={this.onShowAllPockets}
-            setPocketVisibility={this.onSetPocketVisibility}
-            showOnlyPocket={this.onShowOnlyPocket}
-            focusPocket={this.onFocusPocket}
-            highlightPocket={this.onHighlightPocket}
           />
         </div>
       );
@@ -191,6 +163,5 @@ export class Application extends React.Component<{
         </button>
       </div>
     );
-    */
   }
 }
