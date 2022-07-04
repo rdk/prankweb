@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import "./application.css";
-import {PredictionInfo} from "../prankweb-api";
+import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
 import { StructureInformation } from "./components/structure-information";
 
 //////////
@@ -17,6 +17,7 @@ import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
+import ToolsBox from "./components/tools-box";
 
 
 declare let window: CustomWindow;
@@ -105,37 +106,6 @@ export class Application extends React.Component<{
     */
     })}).catch((error) => {console.log(error)});
     //TODO: after successfully visualising the data via the plugins, we may render the useful data about pockets.
-
-    /*
-      .then((data: PrankData) => {
-        const isPredicted =
-          predictionInfo.metadata["predictedStructure"] === true;
-        return DataLoader.visualizeData(plugin, data, isPredicted);
-      })
-      .then((data: PrankData) => {
-        return new LiteMol.Promise<DataLoader.PrankData>((accept, reject) => {
-          if (DataLoader.colorProtein(plugin)) {
-            accept(data);
-          } else {
-            reject("Mapping or model not found!");
-          }
-        });
-      })
-      .then((data: PrankData) => {
-        _this.setState({
-          "isLoading": false,
-          "data": data,
-          "pockets": createPocketList(
-            _this.props.plugin,
-            data.model,
-            // These are objects from DataLoader, but they are wrapped
-            // by LiteMol, so we need to use "props" to get to them.
-            data.prediction.props.pockets,
-            data.sequence.props.sequence),
-        });
-      })
-      .catch((error) => _this.setState({"isLoading": false, "error": error}));
-    */
   }
 
   render() {
@@ -147,6 +117,12 @@ export class Application extends React.Component<{
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
+          <ToolsBox 
+            downloadUrl={getApiDownloadUrl(predictionInfo)}
+            downloadAs={downloadAs}
+            isPredicted={isPredicted}
+            isShowOnlyPredicted={false}
+          />
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
