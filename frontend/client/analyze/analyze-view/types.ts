@@ -97,3 +97,14 @@ export type chainResidueAtom = {
     residue?: (r: any) => any,
     atom?: any
 }
+
+export enum PolymerViewType {
+    Atoms = 0,
+    Surface = 1,
+    Cartoon = 2
+}
+
+export enum PocketsViewType {
+    Atoms = 0,
+    Surface = 1
+}

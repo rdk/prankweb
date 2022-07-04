@@ -7,7 +7,7 @@ import { StructureInformation } from "./components/structure-information";
 
 //////////
 import { sendDataToPlugins } from './data-loader';
-import { CustomWindow } from "./types";
+import { CustomWindow, PocketsViewType, PolymerViewType } from "./types";
 
 
 import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -50,27 +50,33 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
 
   console.log(predictionInfo);
   // Render pocket list using React.
-  ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo} pluginRcsb={RcsbPlugin}/>, document.getElementById('pocket-list-aside'));
+  ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo} pluginRcsb={RcsbPlugin}
+  pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface}/>, document.getElementById('pocket-list-aside'));
   
 }
 export class Application extends React.Component<{
   plugin: PluginUIContext,
   predictionInfo: PredictionInfo,
-  pluginRcsb: RcsbFv
+  pluginRcsb: RcsbFv,
+  polymerView: PolymerViewType,
+  pocketsView: PocketsViewType
 }> {
 
   state = {
     "isLoading": true,
     "data": undefined,
     "error": undefined,
-    /*"polymerView": PolymerViewType.Surface,
-    "pocketsView": PocketsViewType.Surface,
-    "pockets": [],
-    "isShowOnlyPredicted": false,*/
+    "polymerView": this.props.polymerView,
+    "pocketsView": this.props.pocketsView,
+    //"pockets": [],
+    "isShowOnlyPredicted": false,
   };
 
   constructor(props: any) {
     super(props);
+    this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
+    this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
+    this.onShowConfidentChange = this.onShowConfidentChange.bind(this);
   }
 
   componentDidMount() {
@@ -108,6 +114,38 @@ export class Application extends React.Component<{
     //TODO: after successfully visualising the data via the plugins, we may render the useful data about pockets.
   }
 
+  onPolymerViewChange(value: PolymerViewType) {
+    this.setState({"polymerView": value});
+    console.log(value);
+    //TODO: show only the actual representation of the protein
+    //updatePolymerView(this.props.plugin, value, this.state.isShowOnlyPredicted);
+  }
+
+  onPocketsViewChange(value: PocketsViewType) {
+    this.setState({"pocketsView": value});
+    console.log(value);
+    //TODO: show only the actual representation of pockets
+    /*
+    this.data.updateInProgress = true;
+    updatePocketsView(
+      this.props.plugin,
+      // @ts-ignore
+      this.state.data.prediction.props.pockets,
+      this.state.pockets,
+      value);
+    this.data.updateInProgress = false;
+    */
+  }
+
+  onShowConfidentChange() {
+    const isShowOnlyPredicted= !this.state.isShowOnlyPredicted;
+    this.setState({
+      "isShowOnlyPredicted": isShowOnlyPredicted
+    });
+    //TODO: show only predicted pockets
+    //updatePolymerView(this.props.plugin, this.state.polymerView, isShowOnlyPredicted);
+  }
+
   render() {
     console.log("Application::render");
 
@@ -117,11 +155,16 @@ export class Application extends React.Component<{
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
-          <ToolsBox 
+          <ToolsBox
             downloadUrl={getApiDownloadUrl(predictionInfo)}
             downloadAs={downloadAs}
+            polymerView={this.state.polymerView}
+            pocketsView={this.state.pocketsView}
+            onPolymerViewChange={this.onPolymerViewChange}
+            onPocketsViewChange={this.onPocketsViewChange}
             isPredicted={isPredicted}
-            isShowOnlyPredicted={false}
+            isShowOnlyPredicted={false} //TODO: change!
+            onShowConfidentChange={this.onShowConfidentChange}
           />
           <StructureInformation
             metadata={predictionInfo.metadata}
