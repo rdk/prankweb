@@ -148,7 +148,13 @@ export class Application extends React.Component<{
 
   render() {
     console.log("Application::render");
-
+    if (this.state.isLoading) {
+      return (
+        <div>
+          <h1 className="text-center">Loading ...</h1>
+        </div>
+      );
+    }
     const {predictionInfo} = this.props;
     const downloadAs = `prankweb-${predictionInfo.metadata.predictionName}.zip`;
     if (this.state.data) {
@@ -163,7 +169,7 @@ export class Application extends React.Component<{
             onPolymerViewChange={this.onPolymerViewChange}
             onPocketsViewChange={this.onPocketsViewChange}
             isPredicted={isPredicted}
-            isShowOnlyPredicted={false} //TODO: change!
+            isShowOnlyPredicted={this.state.isShowOnlyPredicted}
             onShowConfidentChange={this.onShowConfidentChange}
           />
           <StructureInformation
