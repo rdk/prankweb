@@ -3,11 +3,14 @@ import ReactDOM from "react-dom";
 
 import "./application.css";
 import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
+
 import { StructureInformation } from "./components/structure-information";
+import ToolsBox from "./components/tools-box";
+import PocketList from "./components/pocket-list";
 
 //////////
 import { sendDataToPlugins } from './data-loader';
-import { CustomWindow, PocketsViewType, PolymerViewType } from "./types";
+import { CustomWindow, PocketsViewType, PolymerViewType, PredictionData } from "./types";
 
 
 import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -17,8 +20,7 @@ import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
-import ToolsBox from "./components/tools-box";
-import PocketList from "./components/pocket-list";
+import { highlightInViewerLabelIdWithoutFocus, highlightSurfaceAtomsInViewerLabelIdWithoutFocus } from './molstar-visualise';
 
 
 declare let window: CustomWindow;
@@ -60,12 +62,12 @@ export class Application extends React.Component<{
   predictionInfo: PredictionInfo,
   pluginRcsb: RcsbFv,
   polymerView: PolymerViewType,
-  pocketsView: PocketsViewType
+  pocketsView: PocketsViewType,
 }> {
 
   state = {
     "isLoading": true,
-    "data": undefined,
+    "data": null,
     "error": undefined,
     "polymerView": this.props.polymerView,
     "pocketsView": this.props.pocketsView,
@@ -146,43 +148,37 @@ export class Application extends React.Component<{
     this.setState({
       "isShowOnlyPredicted": isShowOnlyPredicted
     });
-    //TODO: show only predicted pockets
+    //TODO: show only predicted residues in the current representation... is possibly based on AlphaFold scores
     //updatePolymerView(this.props.plugin, this.state.polymerView, isShowOnlyPredicted);
   }
 
   onShowAllPockets() {
-    //TODO: show all pockets
-    /*const pockets = this.state.pockets.map((item: PocketViewData) => ({
-      ...item,
-      "isVisible": true
-    }));
-    this.synchronizePocketsVisibility(pockets);*/
+    let index = 0;
+    //@ts-ignore
+    this.state.data.pockets.forEach(pocket => { 
+      this.onSetPocketVisibility(index, true);
+      index++;
+    });
+
+    //TODO: show all pockets in Molstar and RCSB in the current representation
   }
 
   onSetPocketVisibility(index: number, isVisible: boolean) {
-    //TODO: set pocket visibility
-    /*const pockets = [
-      ...this.state.pockets.slice(0, index),
-      {
-        // @ts-ignore
-        ...this.state.pockets[index],
-        "isVisible": isVisible
-      },
-      ...this.state.pockets.slice(index + 1)
-    ];
-    this.synchronizePocketsVisibility(pockets);
-    */
+    //@ts-ignore
+    let newState = {...this.state.data};
+    newState.pockets[index].isReactVisible = isVisible;
+    this.setState({newState});
+    //TODO: set pocket visibility in Molstar and RCSB in the current representation
   }
 
   onShowOnlyPocket(index: number) {
-    //TODO: show only one pocket
-    /*
-    const pockets = this.state.pockets.map((item: PocketViewData, i) => ({
-      ...item,
-      "isVisible": i === index
-    }));
-    this.synchronizePocketsVisibility(pockets);
-    */
+    let i = 0;
+    //@ts-ignore
+    this.state.data.pockets.forEach(pocket => { 
+      this.onSetPocketVisibility(i, (index === i) ? true : false);
+      i++;
+    });
+    //TODO: show only one pocket in Molstar and RCSB in the current representation
   }
 
   onFocusPocket(index: number) {
@@ -190,7 +186,11 @@ export class Application extends React.Component<{
   }
 
   onHighlightPocket(index: number, isHighlighted: boolean) {
-    //TODO: highlight one pocket
+    //@ts-ignore
+    const pocket = this.state.data.pockets[index];
+    highlightSurfaceAtomsInViewerLabelIdWithoutFocus(this.props.plugin, pocket.surface);
+
+    //TODO: is it really needed to de-select it onmouseout?
   }
 
   render() {
