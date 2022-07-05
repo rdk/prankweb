@@ -95,7 +95,7 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
     )
 }
 
-//focuses on the loci specidfied by the user, can be called from anywhere
+//focuses on the residues loci specidfied by the user, can be called from anywhere
 export function highlightInViewerLabelIdWithoutFocus(plugin: PluginUIContext, chain: string, ids: number[]) {
     const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
     if (!data) return;
@@ -104,6 +104,24 @@ export function highlightInViewerLabelIdWithoutFocus(plugin: PluginUIContext, ch
     let loci = StructureSelection.toLociWithSourceUnits(sel);
     //loci = StructureElement.Loci.firstResidue(loci);
     plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
+}
+
+//focuses on the loci specidfied by the user, can be called from anywhere
+export function highlightSurfaceAtomsInViewerLabelIdWithoutFocus(plugin: PluginUIContext, ids: string[]) {
+    const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
+    if (!data) return;
+
+    const sel = getSurfaceAtomSelection(plugin, ids);
+    let loci = StructureSelection.toLociWithSourceUnits(sel);
+    plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
+}
+
+function getSurfaceAtomSelection(plugin: PluginUIContext, ids: string[]) { //gets selection from surface atom numbers
+    const expression2 = MS.struct.generator.atomGroups({
+        'atom-test': MS.core.set.has([MS.set(...ids.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
+    });
+    //@ts-ignore
+    return Script.getStructureSelection(expression2, plugin.managers.structure.hierarchy.current.structures[0].cell.obj.data);
 }
 
 function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, positions: number[]) { // gets selection from chainId

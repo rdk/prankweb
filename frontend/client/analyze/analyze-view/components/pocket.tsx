@@ -53,7 +53,10 @@ export default class Pocket extends React.Component
   render() {
     const pocket = this.props.pocket;
     let borderColor = "#" + this.props.pocket.color;
-    pocket.isReactVisible = true; //TODO: look at this once more
+    console.log("RENDER" + this.props.index);
+    if(pocket.isReactVisible === undefined) {
+      pocket.isReactVisible = true; //TODO: look at this once more
+    }
     if (!this.props.pocket.isReactVisible) {
       borderColor = "gray";
     }
@@ -90,11 +93,11 @@ export default class Pocket extends React.Component
             className="btn btn-outline-secondary"
             onClick={this.toggleVisibility}>
             {this.props.pocket.isReactVisible ?
-              <span className="fontello-icon">
-                &#59430;
+              <span>
+                VIS
               </span>:
-              <span className="fontello-icon">
-                &#59392;
+              <span>
+                NOT
               </span>}
           </button>
         </div>
