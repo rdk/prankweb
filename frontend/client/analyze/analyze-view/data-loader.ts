@@ -6,7 +6,7 @@ import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 import { data } from "autoprefixer";
 
-export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string) {
+export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string) : Promise<[PredictionData, RcsbFv]>{
     const baseUrl: string = getApiEndpoint(database, identifier) + "/public";
     
     /*console.log(`${baseUrl}/${structureName}`)

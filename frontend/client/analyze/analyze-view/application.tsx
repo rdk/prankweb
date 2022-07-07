@@ -10,7 +10,7 @@ import PocketList from "./components/pocket-list";
 
 //////////
 import { sendDataToPlugins } from './data-loader';
-import { CustomWindow, PocketsViewType, PolymerViewType, PredictionData } from "./types";
+import { CustomWindow, PocketsViewType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "./types";
 
 
 import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -19,8 +19,8 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
-import { RcsbFv } from "@rcsb/rcsb-saguaro";
-import { highlightInViewerLabelIdWithoutFocus, highlightSurfaceAtomsInViewerLabelId } from './molstar-visualise';
+import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
+import { highlightSurfaceAtomsInViewerLabelId } from './molstar-visualise';
 
 
 declare let window: CustomWindow;
@@ -56,22 +56,16 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface}/>, document.getElementById('pocket-list-aside'));
   
 }
-export class Application extends React.Component<{
-  plugin: PluginUIContext,
-  predictionInfo: PredictionInfo,
-  polymerView: PolymerViewType,
-  pocketsView: PocketsViewType,
-}> {
-
+export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
+{
   state = {
     "isLoading": true,
-    "data": undefined,
+    "data": {} as PredictionData,
     "error": undefined,
     "polymerView": this.props.polymerView,
     "pocketsView": this.props.pocketsView,
-    //"pockets": [],
     "isShowOnlyPredicted": false,
-    "pluginRcsb": undefined
+    "pluginRcsb": {} as RcsbFv,
   };
 
   constructor(props: any) {
@@ -98,7 +92,6 @@ export class Application extends React.Component<{
       "error": undefined,
     });
     const {plugin, predictionInfo} = this.props;
-    const _this = this;
 
     //at first we need the plugins to download the needed data and visualise them
     await sendDataToPlugins(
@@ -106,7 +99,8 @@ export class Application extends React.Component<{
       predictionInfo.database,
       predictionInfo.id,
       predictionInfo.metadata.structureName
-    ).then((data) => {this.setState({
+    ).then((data) => {
+      this.setState({
       "isLoading": false,
       "data": data[0],
       "pluginRcsb": data[1]
@@ -130,16 +124,6 @@ export class Application extends React.Component<{
     this.setState({"pocketsView": value});
     console.log(value);
     //TODO: show only the actual representation of pockets
-    /*
-    this.data.updateInProgress = true;
-    updatePocketsView(
-      this.props.plugin,
-      // @ts-ignore
-      this.state.data.prediction.props.pockets,
-      this.state.pockets,
-      value);
-    this.data.updateInProgress = false;
-    */
   }
 
   onShowConfidentChange() {
@@ -153,31 +137,27 @@ export class Application extends React.Component<{
 
   onShowAllPockets() {
     let index = 0;
-    //@ts-ignore
     this.state.data.pockets.forEach(pocket => { 
       this.onSetPocketVisibility(index, true);
       index++;
     });
-
     //TODO: show all pockets in Molstar in the current representation
   }
 
   onSetPocketVisibility(index: number, isVisible: boolean) {
-    //@ts-ignore
-    let newState = {...this.state.data};
-    newState.pockets[index].isReactVisible = isVisible;
-    this.setState({newState});
+    let stateData : PredictionData = {...this.state.data};
+    stateData.pockets[index].isReactVisible = isVisible;
+    this.setState({
+      data: stateData
+    });
 
     //resolve RCSB at first - do it by recoloring the pocket
-    //@ts-ignore
     const newColor = isVisible ? "#" + this.state.data.pockets[index].color : "#F9F9F9";
-    //@ts-ignore
+    //@ts-ignore Property 'rowConfigData' is private and only accessible within class 'RcsbFv'. - there is no other way to get to the rowConfigData though...
     const track = this.state.pluginRcsb.rowConfigData.find(e => e.trackId === "pocketsTrack");
     const nameToFind = "pocket" + (index + 1);
-    //@ts-ignore
-    track.trackData?.filter(e => e.provenanceName === nameToFind).forEach(foundPocket => (foundPocket.color = newColor));
+    track.trackData.filter((e : RcsbFvTrackDataElementInterface) => e.provenanceName === nameToFind).forEach((foundPocket : RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
     const newData = track.trackData;
-    //@ts-ignore
     this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
 
     //TODO: set pocket visibility in Molstar in the current representation
@@ -185,7 +165,6 @@ export class Application extends React.Component<{
 
   onShowOnlyPocket(index: number) {
     let i = 0;
-    //@ts-ignore
     this.state.data.pockets.forEach(pocket => { 
       this.onSetPocketVisibility(i, (index === i) ? true : false);
       i++;
@@ -194,7 +173,6 @@ export class Application extends React.Component<{
   }
 
   onFocusPocket(index: number) {
-    //@ts-ignore
     const pocket = this.state.data.pockets[index];
     highlightSurfaceAtomsInViewerLabelId(this.props.plugin, pocket.surface, true);
 
@@ -202,7 +180,6 @@ export class Application extends React.Component<{
   }
 
   onHighlightPocket(index: number, isHighlighted: boolean) {
-    //@ts-ignore
     const pocket = this.state.data.pockets[index];
     highlightSurfaceAtomsInViewerLabelId(this.props.plugin, pocket.surface, false);
 

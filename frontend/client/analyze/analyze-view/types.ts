@@ -1,6 +1,7 @@
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { StateTree } from "molstar/lib/mol-state/tree/immutable"
+import { PredictionInfo } from "../prankweb-api";
 
 export interface CustomWindow extends Window {
     MolstarPlugin: PluginUIContext;
@@ -109,4 +110,21 @@ export enum PolymerViewType {
 export enum PocketsViewType {
     Atoms = 0,
     Surface = 1
+}
+
+export interface ReactApplicationProps {
+    plugin: PluginUIContext,
+    predictionInfo: PredictionInfo,
+    polymerView: PolymerViewType,
+    pocketsView: PocketsViewType,
+}
+
+export interface ReactApplicationState {
+    isLoading: boolean,
+    data: PredictionData,
+    error: Error | undefined,
+    polymerView: PolymerViewType,
+    pocketsView: PocketsViewType,
+    isShowOnlyPredicted: boolean,
+    pluginRcsb: RcsbFv | undefined,
 }
