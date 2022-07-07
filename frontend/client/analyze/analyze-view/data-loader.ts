@@ -19,7 +19,7 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
     let structure = molData[1];
 
     // Download the prediction.
-    const prediction : PredictionData = await downloadJsonFromUrl(`${baseUrl}/prediction.json`);
+    let prediction : PredictionData = await downloadJsonFromUrl(`${baseUrl}/prediction.json`);
 
     // Initialize RCSB plugin + link it to Mol*.
     let rcsbPlugin : RcsbFv = initRcsb(prediction, molstarPlugin);
@@ -29,9 +29,45 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
 
     // Link Molstar to RCSB.
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);
+    
+    // Compute average conservation for each pocket.
+    prediction = computePocketConservationAverage(prediction);
 
     return [prediction, rcsbPlugin];
 }
+
+function getResidueIndices(toBeFound: string[], allResidues: string[]) {
+    let final : number[] = [];
+    toBeFound.forEach(residue => {
+        let index = allResidues.indexOf(residue);
+        if (index > -1) {
+            final.push(index);
+        }
+    });
+    return final;
+}
+
+function computePocketConservationAverage(data: PredictionData) {
+    if (!data.structure.scores) {
+        data.pockets.forEach(pocket => {pocket.avgConservation = 0});
+    }
+
+    data.pockets.forEach(pocket => {
+        let avg = 0;
+        getResidueIndices(pocket.residues, data.structure.indices).forEach(index => {
+            if(data.structure.scores.conservation) {
+                avg += data.structure.scores.conservation[index];
+            }
+            else if(data.structure.scores.plddt) {
+                avg += data.structure.scores.plddt[index];
+            }
+        });
+        avg /= pocket.residues.length;
+        pocket.avgConservation = Number(avg.toFixed(3));
+    });
+
+    return data;
+  }
 
 async function downloadJsonFromUrl(url: string) {
     try {

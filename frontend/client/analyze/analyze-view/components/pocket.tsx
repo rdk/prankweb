@@ -112,7 +112,7 @@ export default class Pocket extends React.Component
             <dt>AA count:</dt>
             <dd>{pocket.residues.length}</dd>
             <dt>Conservation:</dt>
-            <dd>TODO</dd>
+            <dd>{pocket.avgConservation || "N/A"}</dd>
           </dl>
         </div>
       </div>
