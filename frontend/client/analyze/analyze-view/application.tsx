@@ -168,14 +168,17 @@ export class Application extends React.Component<{
     newState.pockets[index].isReactVisible = isVisible;
     this.setState({newState});
 
-    if(isVisible) {
-      //at first show it in the RCSB
-      console.log(this.state.pluginRcsb);
-      
-      return;
-    }
-
-    //if the pocket is not visible, we need to remove it from the viewer
+    //resolve RCSB at first - do it by recoloring the pocket
+    //@ts-ignore
+    const newColor = isVisible ? "#" + this.state.data.pockets[index].color : "#F9F9F9";
+    //@ts-ignore
+    const track = this.state.pluginRcsb.rowConfigData.find(e => e.trackId === "pocketsTrack");
+    const nameToFind = "pocket" + (index + 1);
+    //@ts-ignore
+    track.trackData?.filter(e => e.provenanceName === nameToFind).forEach(foundPocket => (foundPocket.color = newColor));
+    const newData = track.trackData;
+    //@ts-ignore
+    this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
 
     //TODO: set pocket visibility in Molstar and RCSB in the current representation
   }

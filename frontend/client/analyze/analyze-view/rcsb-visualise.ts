@@ -69,7 +69,6 @@ function createRowConfigDataRcsb(data: PredictionData) {
         trackData: [{
             begin: 1,
             value: data.structure.sequence.join('')
-            //value: finalseqString
         }]
     });
 
