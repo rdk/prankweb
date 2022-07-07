@@ -78,10 +78,6 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
     const group2 = group.apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName}, {selectionTags: groupName});
 
     let x = pocket.surface;
-    /*
-    let pocketSurfaceAtomsQuery: LiteMol.Core.Structure.Query.Builder =
-    LiteMol.Core.Structure.Query.atomsById.apply(null, pocket.surfAtomIds);
-    */
     const expression2 = MS.struct.generator.atomGroups({
         'atom-test': MS.core.set.has([MS.set(...x.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
     });

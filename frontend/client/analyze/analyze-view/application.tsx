@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 
 import "./application.css";
 import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
@@ -52,9 +52,10 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
 
   console.log(predictionInfo);
   // Render pocket list using React.
-  ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
-  pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface}/>, document.getElementById('pocket-list-aside'));
-  
+  const container = document.getElementById('pocket-list-aside');
+  const root = createRoot(container!);
+  root.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
+    pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface}/>);
 }
 export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
 {
