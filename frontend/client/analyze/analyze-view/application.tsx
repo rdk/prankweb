@@ -26,7 +26,7 @@ import { highlightInViewerLabelIdWithoutFocus, highlightSurfaceAtomsInViewerLabe
 declare let window: CustomWindow;
 
 export async function renderProteinView(predictionInfo: PredictionInfo) {
-  const wrapper = document.getElementById('application-litemol')!;
+  const wrapper = document.getElementById('application-molstar')!;
   window.MolstarPlugin = await createPluginUI(wrapper, {
       ...DefaultPluginUISpec(),
       layout: {
@@ -159,7 +159,7 @@ export class Application extends React.Component<{
       index++;
     });
 
-    //TODO: show all pockets in Molstar and RCSB in the current representation
+    //TODO: show all pockets in Molstar in the current representation
   }
 
   onSetPocketVisibility(index: number, isVisible: boolean) {
@@ -180,7 +180,7 @@ export class Application extends React.Component<{
     //@ts-ignore
     this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
 
-    //TODO: set pocket visibility in Molstar and RCSB in the current representation
+    //TODO: set pocket visibility in Molstar in the current representation
   }
 
   onShowOnlyPocket(index: number) {
@@ -190,7 +190,7 @@ export class Application extends React.Component<{
       this.onSetPocketVisibility(i, (index === i) ? true : false);
       i++;
     });
-    //TODO: show only one pocket in Molstar and RCSB in the current representation
+    //TODO: show only one pocket in Molstar in the current representation
   }
 
   onFocusPocket(index: number) {
