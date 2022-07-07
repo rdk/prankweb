@@ -20,7 +20,7 @@ import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
-import { highlightInViewerLabelIdWithoutFocus, highlightSurfaceAtomsInViewerLabelIdWithoutFocus } from './molstar-visualise';
+import { highlightInViewerLabelIdWithoutFocus, highlightSurfaceAtomsInViewerLabelId } from './molstar-visualise';
 
 
 declare let window: CustomWindow;
@@ -49,30 +49,29 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   window.MS = MS;
   window.Script = Script;
   const MolstarPlugin = window.MolstarPlugin;
-  const RcsbPlugin = window.RcsbPlugin;
 
   console.log(predictionInfo);
   // Render pocket list using React.
-  ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo} pluginRcsb={RcsbPlugin}
+  ReactDOM.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
   pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface}/>, document.getElementById('pocket-list-aside'));
   
 }
 export class Application extends React.Component<{
   plugin: PluginUIContext,
   predictionInfo: PredictionInfo,
-  pluginRcsb: RcsbFv,
   polymerView: PolymerViewType,
   pocketsView: PocketsViewType,
 }> {
 
   state = {
     "isLoading": true,
-    "data": null,
+    "data": undefined,
     "error": undefined,
     "polymerView": this.props.polymerView,
     "pocketsView": this.props.pocketsView,
     //"pockets": [],
     "isShowOnlyPredicted": false,
+    "pluginRcsb": undefined
   };
 
   constructor(props: any) {
@@ -98,19 +97,19 @@ export class Application extends React.Component<{
       "isLoading": true,
       "error": undefined,
     });
-    const {plugin, predictionInfo, pluginRcsb} = this.props;
+    const {plugin, predictionInfo} = this.props;
     const _this = this;
 
     //at first we need the plugins to download the needed data and visualise them
     await sendDataToPlugins(
       plugin,
-      pluginRcsb,
       predictionInfo.database,
       predictionInfo.id,
       predictionInfo.metadata.structureName
     ).then((data) => {this.setState({
       "isLoading": false,
-      "data": data
+      "data": data[0],
+      "pluginRcsb": data[1]
     })}).catch((error) => {
       this.setState({
         "isLoading": false,
@@ -168,6 +167,16 @@ export class Application extends React.Component<{
     let newState = {...this.state.data};
     newState.pockets[index].isReactVisible = isVisible;
     this.setState({newState});
+
+    if(isVisible) {
+      //at first show it in the RCSB
+      console.log(this.state.pluginRcsb);
+      
+      return;
+    }
+
+    //if the pocket is not visible, we need to remove it from the viewer
+
     //TODO: set pocket visibility in Molstar and RCSB in the current representation
   }
 
@@ -182,13 +191,17 @@ export class Application extends React.Component<{
   }
 
   onFocusPocket(index: number) {
-    //TODO: focus on one pocket
+    //@ts-ignore
+    const pocket = this.state.data.pockets[index];
+    highlightSurfaceAtomsInViewerLabelId(this.props.plugin, pocket.surface, true);
+
+    //TODO: consider other way to focus on the pocket?
   }
 
   onHighlightPocket(index: number, isHighlighted: boolean) {
     //@ts-ignore
     const pocket = this.state.data.pockets[index];
-    highlightSurfaceAtomsInViewerLabelIdWithoutFocus(this.props.plugin, pocket.surface);
+    highlightSurfaceAtomsInViewerLabelId(this.props.plugin, pocket.surface, false);
 
     //TODO: is it really needed to de-select it onmouseout?
   }
