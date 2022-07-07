@@ -3,7 +3,7 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, MolstarResidue, chainResidueAtom } from './types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
-export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv, molstarPlugin: PluginUIContext) {
+export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 
     const boardConfigData : RcsbFvBoardConfigInterface = {
         length: data.structure.sequence.length,
@@ -18,7 +18,7 @@ export function initRcsb(data: PredictionData, rcsbPlugin: RcsbFv, molstarPlugin
 
     const elementId = "application-rcsb"; //div where the plugin is placed
 
-    rcsbPlugin = new RcsbFv({
+    let rcsbPlugin = new RcsbFv({
         rowConfigData,
         boardConfigData,
         elementId

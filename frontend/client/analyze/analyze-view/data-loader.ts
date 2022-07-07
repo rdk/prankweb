@@ -6,7 +6,7 @@ import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 import { data } from "autoprefixer";
 
-export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlugin: RcsbFv, database: string, identifier: string, structureName: string) {
+export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string) {
     const baseUrl: string = getApiEndpoint(database, identifier) + "/public";
     
     /*console.log(`${baseUrl}/${structureName}`)
@@ -22,7 +22,7 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlug
     const prediction : PredictionData = await downloadJsonFromUrl(`${baseUrl}/prediction.json`);
 
     // Initialize RCSB plugin + link it to Mol*.
-    rcsbPlugin = initRcsb(prediction, rcsbPlugin, molstarPlugin);
+    let rcsbPlugin : RcsbFv = initRcsb(prediction, molstarPlugin);
 
     // Add pockets etc. from the prediction to Mol*.
     await createPocketsGroupFromJson(molstarPlugin, structure, "Pockets", prediction);
@@ -30,7 +30,7 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, rcsbPlug
     // Link Molstar to RCSB.
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);
 
-    return prediction;
+    return [prediction, rcsbPlugin];
 }
 
 async function downloadJsonFromUrl(url: string) {
