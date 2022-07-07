@@ -4,6 +4,7 @@ import { PredictionData } from "../types";
 import Pocket from "./pocket";
 
 import "./pocket-list.css";
+import 'css.gg/icons/css/eye.css';
 
 export default class PocketList extends React.Component
   <{
@@ -32,8 +33,9 @@ export default class PocketList extends React.Component
             className="btn btn-outline-secondary btn-show-pockets"
             title="Show all pockets."
             onClick={this.props.showAll}
+            style={{height: "1.5em"}}
           >
-            <span className="fontello-icon">&#59430;</span>
+            <i className="gg-eye"></i>
           </button>
         </h3>
         {this.props.data.pockets.map((item, index) => (

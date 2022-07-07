@@ -2,6 +2,8 @@ import React from "react";
 
 import "./tools-box.css";
 import { PocketsViewType, PolymerViewType } from "../types";
+import 'css.gg/icons/css/arrow-down-o.css';
+import 'css.gg/icons/css/arrow-up-o.css';
 
 export default class ToolsBox extends React.Component<{
   downloadUrl: string,
@@ -43,18 +45,10 @@ export default class ToolsBox extends React.Component<{
             <button
               type="button"
               className="btn btn-default btn-icon-right"
-              title="Show/Hyde tools."
+              title="Show/Hide tools."
               onClick={this.toggleVisible}
             >
-              {
-                this.state.visible ?
-                  <span className="fontello-icon">
-                    &#xe87f;
-                  </span> :
-                  <span className="fontello-icon">
-                    &#xe882;
-                  </span>
-              }
+            {this.state.visible ? <i className="gg-arrow-up-o" style={{fontSize: "1em"}}></i>:<i className="gg-arrow-down-o" style={{fontSize: "1em"}}></i>}
             </button>
           </h3>
         </div>
@@ -96,8 +90,7 @@ function ControlBoxContent(
         href={props.downloadUrl}
         download={props.downloadAs}
       >
-        <span className="fontello-icon">&#xe82d;</span>&nbsp;
-        Download
+        Download data
       </a>
       <label>
         Protein visualisation
