@@ -11,13 +11,18 @@ export default class Pocket extends React.Component
     highlightPocket: (index: number, isHighlighted: boolean) => void
   }, {}> {
 
+  state = {
+    "visible": true
+  };
+
   constructor(props: any) {
     super(props);
     this.onPocketMouseEnter = this.onPocketMouseEnter.bind(this);
     this.onPocketMouseLeave = this.onPocketMouseLeave.bind(this);
     this.onPocketClick = this.onPocketClick.bind(this);
     this.showOnlyClick = this.showOnlyClick.bind(this);
-    this.toggleVisibility = this.toggleVisibility.bind(this);
+    this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
+    this.toggleCardVisibility = this.toggleCardVisibility.bind(this);
   }
 
   onPocketMouseEnter() {
@@ -46,14 +51,17 @@ export default class Pocket extends React.Component
     this.props.showOnlyPocket(this.props.index);
   }
 
-  toggleVisibility() {
+  togglePocketVisibility() {
     this.props.setPocketVisibility(this.props.index, !this.props.pocket.isReactVisible);
+  }
+
+  toggleCardVisibility() {
+    this.setState({"visible": !this.state.visible});
   }
 
   render() {
     const pocket = this.props.pocket;
     let borderColor = "#" + this.props.pocket.color;
-    console.log("RENDER" + this.props.index);
     if(pocket.isReactVisible === undefined) {
       pocket.isReactVisible = true; //TODO: look at this once more
     }
@@ -62,7 +70,35 @@ export default class Pocket extends React.Component
     }
     return (
       <div className="card pocket" style={{"borderColor": borderColor}}>
-        <div className="card-header">
+        <div className="card-header text-center">
+          <h5 className="card-title">POCKET {pocket.rank}
+          <button
+              type="button"
+              style={{"float": "right"}}
+              title="HIDE/SHOW"
+              className="btn btn-outline-secondary"
+              onClick={this.toggleCardVisibility}
+            >
+            <span className="fontello-icon">&#59430;</span>
+          </button>
+          </h5>
+        </div>
+        {this.state.visible && <div className="card-body">
+          <dl className="pocket-properties">
+            <dt>Pocket rank:</dt>
+            <dd>{pocket.rank}</dd>
+            <dt>Pocket score:</dt>
+            <dd>{pocket.score}</dd>
+            <dt>Probability score:</dt>
+            <dd>{pocket.probability || "N/A"}</dd>
+            <dt>AA count:</dt>
+            <dd>{pocket.residues.length}</dd>
+            <dt>Conservation:</dt>
+            <dd>{pocket.avgConservation || "N/A"}</dd>
+          </dl>
+        </div>
+        }
+        {this.state.visible && <div className="card-footer">
           <button
             type="button"
             style={{"float": "left"}}
@@ -91,7 +127,7 @@ export default class Pocket extends React.Component
             style={{"float": "right"}}
             title="Show / Hide pocket."
             className="btn btn-outline-secondary"
-            onClick={this.toggleVisibility}>
+            onClick={this.togglePocketVisibility}>
             {this.props.pocket.isReactVisible ?
               <span>
                 VIS
@@ -100,21 +136,7 @@ export default class Pocket extends React.Component
                 NOT
               </span>}
           </button>
-        </div>
-        <div className="card-body">
-          <dl className="pocket-properties">
-            <dt>Pocket rank:</dt>
-            <dd>{pocket.rank}</dd>
-            <dt>Pocket score:</dt>
-            <dd>{pocket.score}</dd>
-            <dt>Probability score:</dt>
-            <dd>{pocket.probability || "N/A"}</dd>
-            <dt>AA count:</dt>
-            <dd>{pocket.residues.length}</dd>
-            <dt>Conservation:</dt>
-            <dd>{pocket.avgConservation || "N/A"}</dd>
-          </dl>
-        </div>
+        </div>}
       </div>
     )
   }
