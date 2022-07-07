@@ -107,13 +107,14 @@ export function highlightInViewerLabelIdWithoutFocus(plugin: PluginUIContext, ch
 }
 
 //focuses on the loci specidfied by the user, can be called from anywhere
-export function highlightSurfaceAtomsInViewerLabelIdWithoutFocus(plugin: PluginUIContext, ids: string[]) {
+export function highlightSurfaceAtomsInViewerLabelId(plugin: PluginUIContext, ids: string[], focus: boolean) {
     const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
     if (!data) return;
 
     const sel = getSurfaceAtomSelection(plugin, ids);
     let loci = StructureSelection.toLociWithSourceUnits(sel);
     plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
+    if(focus) plugin.managers.camera.focusLoci(loci);
 }
 
 function getSurfaceAtomSelection(plugin: PluginUIContext, ids: string[]) { //gets selection from surface atom numbers
