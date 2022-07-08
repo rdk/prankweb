@@ -2,8 +2,8 @@ import React from "react";
 
 import "./tools-box.css";
 import { PocketsViewType, PolymerViewType } from "../types";
-import 'css.gg/icons/css/arrow-down-o.css';
-import 'css.gg/icons/css/arrow-up-o.css';
+import { IconContext } from "react-icons";
+import { FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 
 export default class ToolsBox extends React.Component<{
   downloadUrl: string,
@@ -48,7 +48,15 @@ export default class ToolsBox extends React.Component<{
               title="Show/Hide tools."
               onClick={this.toggleVisible}
             >
-            {this.state.visible ? <i className="gg-arrow-up-o" style={{fontSize: "1em"}}></i>:<i className="gg-arrow-down-o" style={{fontSize: "1em"}}></i>}
+            {this.state.visible ? 
+            <IconContext.Provider value={{ size: "1.5em" }}>
+                      <FiArrowUpCircle />
+                  </IconContext.Provider>
+                  : 
+                  <IconContext.Provider value={{ size: "1.5em" }}>
+                      <FiArrowDownCircle />
+                  </IconContext.Provider>
+                  }
             </button>
           </h3>
         </div>

@@ -1,10 +1,11 @@
-import { data } from "autoprefixer";
 import React from "react";
 import { PredictionData } from "../types";
 import Pocket from "./pocket";
 
 import "./pocket-list.css";
-import 'css.gg/icons/css/eye.css';
+
+import { AiOutlineEye } from 'react-icons/ai';
+import { IconContext } from "react-icons";
 
 export default class PocketList extends React.Component
   <{
@@ -33,9 +34,8 @@ export default class PocketList extends React.Component
             className="btn btn-outline-secondary btn-show-pockets"
             title="Show all pockets."
             onClick={this.props.showAll}
-            style={{height: "1.5em"}}
           >
-            <i className="gg-eye"></i>
+              <AiOutlineEye />
           </button>
         </h3>
         {this.props.data.pockets.map((item, index) => (
