@@ -7,7 +7,8 @@ import 'css.gg/icons/css/close.css';
 import 'css.gg/icons/css/check.css';
 import 'css.gg/icons/css/arrow-down-o.css';
 import 'css.gg/icons/css/arrow-up-o.css';
-
+import 'css.gg/icons/css/info.css';
+import DraggableDialog from './draggable-dialog'
 
 export default class Pocket extends React.Component
   <{
@@ -17,10 +18,14 @@ export default class Pocket extends React.Component
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void
-  }, {}> {
+  }, {
+    visible: boolean,
+    details: boolean
+  }> {
 
   state = {
-    "visible": true
+    "visible": true,
+    "details": false
   };
 
   constructor(props: any) {
@@ -31,6 +36,7 @@ export default class Pocket extends React.Component
     this.showOnlyClick = this.showOnlyClick.bind(this);
     this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
     this.toggleCardVisibility = this.toggleCardVisibility.bind(this);
+    this.showPocketDetails = this.showPocketDetails.bind(this);
   }
 
   onPocketMouseEnter() {
@@ -64,34 +70,42 @@ export default class Pocket extends React.Component
   }
 
   toggleCardVisibility() {
-    this.setState({"visible": !this.state.visible});
+    this.setState({ "visible": !this.state.visible });
+  }
+
+  showPocketDetails() {
+    //TODO
+    this.setState({ "details": true });
+    
+    console.log("click");
   }
 
   render() {
     const pocket = this.props.pocket;
     let borderColor = "#" + this.props.pocket.color;
-    if(pocket.isReactVisible === undefined) {
-      pocket.isReactVisible = true; //TODO: look at this once more
+    if (pocket.isReactVisible === undefined) { //for pockets that load for the first time
+      pocket.isReactVisible = true;
     }
     if (!this.props.pocket.isReactVisible) {
       borderColor = "gray";
     }
     return (
-      <div className="card pocket" style={{"borderColor": borderColor}}>
-        <div className="card-header text-center" style={{marginBottom: "0.5rem"}}>
+      <div>
+      <div className="card pocket" style={{ "borderColor": borderColor }}>
+        <div className="card-header text-center" style={{ marginBottom: "0.5rem" }}>
           <div className="row">
             <div className="col-8">
-          <h4 className="card-title" style={{marginTop: "0.5rem"}}>Pocket {pocket.rank}</h4>
+              <h4 className="card-title" style={{ marginTop: "0.5rem" }}>Pocket {pocket.rank}</h4>
             </div>
             <div className="col-4">
-                <button
-                  type="button"
-                  title="HIDE/SHOW"
-                  className="btn btn-outline-secondary"
-                  onClick={this.toggleCardVisibility}
-                  style={{marginTop: "0.35rem"}}
-                >
-                {this.state.visible ? <i className="gg-arrow-up-o" style={{fontSize: "1em"}}></i>:<i className="gg-arrow-down-o" style={{fontSize: "1em"}}></i>}
+              <button
+                type="button"
+                title="HIDE/SHOW"
+                className="btn btn-outline-secondary"
+                onClick={this.toggleCardVisibility}
+                style={{ marginTop: "0.35rem" }}
+              >
+                {this.state.visible ? <i className="gg-arrow-up-o"></i> : <i className="gg-arrow-down-o"></i>}
               </button>
             </div>
           </div>
@@ -112,45 +126,58 @@ export default class Pocket extends React.Component
         </div>
         }
         {this.state.visible && <div className="card-footer">
-        <div className="container">
-          <div className="row">
-            <div className="col-4">
-              <button
-                type="button"
-                title="Show only this pocket"
-                className="btn btn-outline-secondary"
-                onClick={this.showOnlyClick}
-              >
-                <i className="gg-eye" style={{fontSize: "0.5em"}}></i>
-              </button>
+          <div className="container">
+            <div className="row">
+              <div className="col-4">
+                <button
+                  type="button"
+                  title="Show only this pocket"
+                  className="btn btn-outline-secondary"
+                  onClick={this.showOnlyClick}
+                >
+                  <i className="gg-eye"></i>
+                </button>
+              </div>
+              <div className="col-4">
+                <button
+                  type="button"
+                  style={{
+                    "display": this.props.pocket.isReactVisible ? "inherit" : "none",
+                  }}
+                  title="Focus/highlight to this pocket."
+                  className="btn btn-outline-secondary"
+                  onClick={this.onPocketClick}
+                  onMouseEnter={this.onPocketMouseEnter}
+                  onMouseLeave={this.onPocketMouseLeave}
+                >
+                  <i className="gg-select-o"></i>
+                </button>
+              </div>
+              <div className="col-4">
+                <button
+                  type="button"
+                  title="Show / Hide pocket."
+                  className="btn btn-outline-secondary"
+                  onClick={this.togglePocketVisibility}>
+                  {this.props.pocket.isReactVisible ? <i className="gg-close"></i> : <i className="gg-check"></i>}
+                </button>
+              </div>
             </div>
-            <div className="col-4">
-            <button
-                type="button"
-                style={{
-                  "display": this.props.pocket.isReactVisible ? "inherit" : "none",
-                }}
-                title="Focus/highlight to this pocket."
-                className="btn btn-outline-secondary"
-                onClick={this.onPocketClick}
-                onMouseEnter={this.onPocketMouseEnter}
-                onMouseLeave={this.onPocketMouseLeave}
-              >
-              <i className="gg-select-o"></i>
-              </button>
-            </div>
-            <div className="col-4">
-            <button
-            type="button"
-            title="Show / Hide pocket."
-            className="btn btn-outline-secondary"
-            onClick={this.togglePocketVisibility}>
-            {this.props.pocket.isReactVisible ? <i className="gg-close" style={{fontSize: "1.5em"}}></i>:<i className="gg-check" style={{fontSize: "1.5em"}}></i>}
-          </button>
+            <hr />
+            <div className="row">
+              <div className="col-4">
+                &nbsp;
+              </div>
+              <div className="col-4">
+                <DraggableDialog pocket={this.props.pocket}/>
+              </div>
+              <div className="col-4">
+                &nbsp;
+              </div>
             </div>
           </div>
-        </div>
         </div>}
+      </div>
       </div>
     )
   }

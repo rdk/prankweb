@@ -28,7 +28,7 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 }
 
 
-//TODO : EDIT THOSE 
+//TODO : maybe edit these
 function elementClicked(data: PredictionData, molstarPlugin: PluginUIContext, d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) {
     console.log(d);
     if(d) {
