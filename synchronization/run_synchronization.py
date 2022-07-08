@@ -2,7 +2,6 @@
 import os
 import datetime
 import shutil
-from dataclasses import dataclass
 
 import zipfile
 import typing
@@ -12,7 +11,6 @@ import database_service
 from database_service import EntryStatus
 import pdb_service
 import prankweb_service
-import pdbe_service
 import p2rank_to_funpdbe
 
 logger = logging.getLogger(__name__)
@@ -36,16 +34,6 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--from",
         default=from_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
         help="XSD data to from which update in format 2021-12-01T00:00:00Z.")
-    # parser.add_argument(
-    #     "--ftp-url",
-    #     default="ftp-private.ebi.ac.uk",
-    #     help="FTP server url")
-    # parser.add_argument(
-    #     "--ftp-user",
-    #     help="FTP user name.")
-    # parser.add_argument(
-    #     "--ftp-password",
-    #     help="FTP password.")
     parser.add_argument(
         "--p2rank-version",
         help="Used p2rank version.")
@@ -68,7 +56,7 @@ def main(args):
     database_service.save_database(data_directory, database)
     logger.info("Synchronizing with prankweb server ...")
     prankweb_service.initialize(args["server"], args["server_directory"])
-    synchronize_prankweb(database)
+    synchronize_prankweb_with_database(database)
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
     logger.info("Downloading result from prankweb server ...")
@@ -80,21 +68,11 @@ def main(args):
         database_service.save_database(data_directory, database)
         logger.info("Can't prepare functional PDBe files.")
     database_service.save_database(data_directory, database)
-    # This part of code has never been tested as we do employ
-    # external tool to deal with FTP upload.
-    #
-    # if args["ftp_user"] is None:
-    #     logger.info("Skipping upload to FTP server as no user is provided.")
-    # else:
-    #     logger.info("Uploading to FTP server ...")
-    #     upload_to_funpdbe(
-    #         args["ftp_url"], args["ftp_user"], args["ftp_password"],
-    #         data_directory, database)
-    #     database_service.save_database(data_directory, database)
     logger.info("All done")
 
 
 def _init_logging():
+    """Setup logging for the script."""
     formatter = logging.Formatter(
         "%(asctime)s %(name)s [%(levelname)s] : %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S")
@@ -108,6 +86,7 @@ def _init_logging():
 
 def add_pdb_to_database(
         database, new_records: typing.List[pdb_service.PdbRecord]):
+    """Add given records to database as new records."""
     from_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
     for record in new_records:
         if record.code in database["data"]:
@@ -119,38 +98,43 @@ def add_pdb_to_database(
         }
 
 
-def synchronize_prankweb(database):
+def synchronize_prankweb_with_database(database):
+    """Synchronize database with prankweb."""
     status_to_update = [
         EntryStatus.NEW.value,
         EntryStatus.PRANKWEB_QUEUED.value,
     ]
     for code, record in database["data"].items():
-        if record["status"] not in status_to_update:
-            continue
-        logger.info(f"Checking prankweb for '{code}'")
-        response = prankweb_service.retrieve_info(code)
-        if response.status == -1:
-            # This indicates error with the connection.
-            logging.info("Can't connect to server.")
-            continue
-        if not 199 < response.status < 299:
-            record["status"] = EntryStatus.PRANKWEB_FAILED.value
-            logger.info(
-                f"Request failed {code} {response.status}\n   {response.body}")
-            continue
-        # Make the time same as for the rest of the application.
-        record["prankwebCreatedDate"] = response.body["created"] + "Z"
-        record["prankwebCheckDate"] = response.body["lastChange"] + "Z"
-        logger.info("Status:" + record["status"])
-        if response.body["status"] == "successful":
-            record["status"] = EntryStatus.PREDICTED.value
-            continue
-        elif response.body["status"] == "failed":
-            record["status"] = EntryStatus.PRANKWEB_FAILED.value
-            continue
-        else:
-            # The prediction is still running, so no change here.
-            ...
+        if record["status"] in status_to_update:
+            request_computation_from_prankweb(code, record)
+
+
+def request_computation_from_prankweb(code: str, record):
+    """Request computation or check for status."""
+    logger.info(f"Checking for '{code}' with status '{record['status']}'")
+    response = prankweb_service.retrieve_info(code)
+    if response.status == -1:
+        # This indicates error with the connection.
+        logging.info("Can't connect to server.")
+        return
+    if not 199 < response.status < 299:
+        record["status"] = EntryStatus.PRANKWEB_FAILED.value
+        logger.info(
+            f"Request failed for '{code}' {response.status}\n   {response.body}")
+        return
+    # Make the time same as for the rest of the application.
+    record["prankwebCreatedDate"] = response.body["created"] + "Z"
+    record["prankwebCheckDate"] = response.body["lastChange"] + "Z"
+    if response.body["status"] == "successful":
+        record["status"] = EntryStatus.PREDICTED.value
+    elif response.body["status"] == "failed":
+        # We try it again later.
+        ...
+    else:
+        # The prediction is still running, so no change here.
+        ...
+    logger.info(f"Status changed to '{record['status']}' for '{code}' "
+                f" due to response '{response.body['status']}'")
 
 
 def prepare_funpdbe_files(
@@ -176,8 +160,8 @@ def prepare_funpdbe_file(
     predictions_file, residues_file = retrieve_prediction_files(
         working_directory, code)
     if residues_file is None or residues_file is None:
-        logger.exception(f"Can't obtain prediction files for {code}, "
-                         f"record ignored.")
+        logger.error(f"Can't obtain prediction files for {code}, "
+                     f"record ignored.")
         if strict_mode:
             raise RuntimeError(f"Failed to prepare '{code}'.")
         else:
@@ -218,7 +202,6 @@ def get_ftp_directory(data_directory: str):
 def retrieve_prediction_files(working_directory: str, code: str):
     zip_path = retrieve_archive(working_directory, code)
     if zip_path is None:
-        logger.exception(f"Can't obtain {code} archive, record ignored.")
         return None, None
     unpack_from_zip(
         zip_path,
@@ -245,6 +228,7 @@ def retrieve_archive(working_directory: str, code: str):
         prankweb_service.retrieve_archive(code, download_path)
         return download_path
     except:
+        logger.exception("Can't retrieve prankweb archive.")
         return None
 
 
@@ -265,24 +249,6 @@ def funpdbe_configuration(p2rank_version: str) \
         prankweb_service.prediction_url_template(),
         p2rank_version
     )
-
-
-def upload_to_funpdbe(
-        server: str, username: str, password: str,
-        data_directory: str, database):
-    configuration = pdbe_service.Configuration(server, username, password)
-    ftp_directory = get_ftp_directory(data_directory)
-    for code, record in database["data"].items():
-        if not record["status"] == EntryStatus.CONVERTED.value:
-            continue
-        logger.info(f"Uploading {code}")
-        source_directory = os.path.join(ftp_directory, code.lower()[1:3])
-        try:
-            pdbe_service.upload_to_ftp(configuration, code, source_directory)
-        except:
-            logger.exception(f"Can't upload {code}.")
-            continue
-        record["status"] = EntryStatus.SUBMITTED.value
 
 
 if __name__ == "__main__":
