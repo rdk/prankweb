@@ -1,6 +1,7 @@
 import React from "react";
 import { PocketData } from "../types";
 import DraggableDialog from './draggable-dialog'
+import PocketDetails from "./pocket-details";
 
 import { AiOutlineEye } from 'react-icons/ai';
 import { IconContext } from "react-icons";
@@ -73,8 +74,6 @@ export default class Pocket extends React.Component
   showPocketDetails() {
     //TODO
     this.setState({ "details": true });
-
-    console.log("click");
   }
 
   render() {
@@ -115,21 +114,7 @@ export default class Pocket extends React.Component
               </div>
             </div>
           </div>
-          {this.state.visible && <div className="card-body">
-            <dl className="pocket-properties">
-              <dt>Pocket rank:</dt>
-              <dd>{pocket.rank}</dd>
-              <dt>Pocket score:</dt>
-              <dd>{pocket.score}</dd>
-              <dt>Probability score:</dt>
-              <dd>{pocket.probability || "N/A"}</dd>
-              <dt>AA count:</dt>
-              <dd>{pocket.residues.length}</dd>
-              <dt>Conservation:</dt>
-              <dd>{pocket.avgConservation || "N/A"}</dd>
-            </dl>
-          </div>
-          }
+          {this.state.visible && <PocketDetails pocket={pocket} inDialog={false}/>}
           {this.state.visible && <div className="card-footer">
             <div className="container">
               <div className="row">

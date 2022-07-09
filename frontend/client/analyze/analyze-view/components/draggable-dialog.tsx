@@ -10,6 +10,7 @@ import Draggable from 'react-draggable';
 import { PocketData } from "../types";
 import { MdOutlineInfo } from 'react-icons/md';
 import { IconContext } from "react-icons";
+import PocketDetails from "./pocket-details";
 
 function PaperComponent(props: PaperProps) {
   return (<Paper {...props} style={{ margin: 0, maxHeight: '100%' }} />
@@ -72,22 +73,8 @@ export default class DraggableDialog extends React.Component<{
               Pocket {this.props.pocket.rank}
             </DialogTitle>
             <DialogContent>
-              <DialogContentText>
-                <div>
-                    <dl className="pocket-properties">
-                    <dt>Pocket rank:</dt>
-                    <dd>{this.props.pocket.rank}</dd>
-                    <dt>Pocket score:</dt>
-                    <dd>{this.props.pocket.score}</dd>
-                    <dt>Probability score:</dt>
-                    <dd>{this.props.pocket.probability || "N/A"}</dd>
-                    <dt>AA count:</dt>
-                    <dd>{this.props.pocket.residues.length}</dd>
-                    <dt>Conservation:</dt>
-                    <dd>{this.props.pocket.avgConservation || "N/A"}</dd>
-                  </dl>
-                </div>
-                place for another information ...
+              <DialogContentText component={'div'}>
+                <PocketDetails pocket={this.props.pocket} inDialog={true}/>
               </DialogContentText>
             </DialogContent>
             <DialogActions>
