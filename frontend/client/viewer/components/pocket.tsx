@@ -1,5 +1,5 @@
 import React from "react";
-import { PocketData } from "../types";
+import { PocketData } from "../../custom-types";
 import DraggableDialog from './draggable-dialog'
 import PocketDetails from "./pocket-details";
 

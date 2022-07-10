@@ -1,7 +1,7 @@
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { StateTree } from "molstar/lib/mol-state/tree/immutable"
-import { PredictionInfo } from "../prankweb-api";
+import { PredictionInfo } from "./prankweb-api";
 
 export interface CustomWindow extends Window {
     MolstarPlugin: PluginUIContext;

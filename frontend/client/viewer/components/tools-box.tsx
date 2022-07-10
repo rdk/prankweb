@@ -1,7 +1,7 @@
 import React from "react";
 
 import "./tools-box.css";
-import { PocketsViewType, PolymerViewType } from "../types";
+import { PocketsViewType, PolymerViewType } from "../../custom-types";
 import { IconContext } from "react-icons";
 import { FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 

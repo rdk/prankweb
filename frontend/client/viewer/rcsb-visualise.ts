@@ -1,6 +1,6 @@
 import { RcsbFv, RcsbFvDisplayTypes, RcsbFvTrackDataElementInterface, RcsbFvRowConfigInterface, RcsbFvBoardConfigInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import { PredictionData, MolstarResidue, chainResidueAtom } from './types';
+import { PredictionData, MolstarResidue, chainResidueAtom } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
 export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {

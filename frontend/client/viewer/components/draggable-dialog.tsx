@@ -7,7 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Paper, { PaperProps } from '@mui/material/Paper';
 import Draggable from 'react-draggable';
-import { PocketData } from "../types";
+import { PocketData } from "../../custom-types";
 import { MdOutlineInfo } from 'react-icons/md';
 import { IconContext } from "react-icons";
 import PocketDetails from "./pocket-details";

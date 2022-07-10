@@ -10,7 +10,7 @@ import PocketList from "./components/pocket-list";
 
 //////////
 import { sendDataToPlugins } from './data-loader';
-import { CustomWindow, PocketsViewType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "./types";
+import { CustomWindow, PocketsViewType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "../custom-types";
 
 
 import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';

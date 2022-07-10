@@ -1,5 +1,5 @@
 import React from "react";
-import { PocketData } from "../types";
+import { PocketData } from "../../custom-types";
 
 export default class PocketDetails extends React.Component
     <{

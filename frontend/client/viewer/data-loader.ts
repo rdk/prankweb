@@ -1,10 +1,9 @@
 import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb } from './molstar-visualise';
-import { PredictionData } from "./types";
+import { PredictionData } from "../custom-types";
 import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
-import { data } from "autoprefixer";
 
 export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string) : Promise<[PredictionData, RcsbFv]>{
     const baseUrl: string = getApiEndpoint(database, identifier) + "/public";

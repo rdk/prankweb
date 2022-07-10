@@ -16,6 +16,7 @@ module.exports = {
     "index": clientDirectory("index", "index.js"),
     "privacy": clientDirectory("privacy", "privacy.js"),
     "terms": clientDirectory("terms", "terms.js"),
+    "viewer": clientDirectory("viewer", "viewer.ts"),
   },
   "output": {
     "path": path.join(__dirname, "..", "dist"),
@@ -103,6 +104,11 @@ module.exports = {
       "filename": "terms.html",
       "template": clientDirectory("terms", "terms.html"),
       "chunks": ["terms"],
+    }),
+    new HtmlWebpackPlugin({
+      "filename": "viewer.html",
+      "template": clientDirectory("viewer", "viewer.html"),
+      "chunks": ["viewer"],
     }),
     new WebpackBar(),
   ]

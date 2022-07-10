@@ -1,5 +1,5 @@
 import React from "react";
-import { PredictionData } from "../types";
+import { PredictionData } from "../../custom-types";
 import Pocket from "./pocket";
 
 import "./pocket-list.css";

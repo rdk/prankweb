@@ -1,15 +1,15 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { PredictionData, PocketData, MolstarResidue } from './types';
+import { PredictionData, PocketData, MolstarResidue } from '../custom-types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
 import { StructureSelection, QueryContext, StructureElement, StructureProperties, Unit, Bond } from "molstar/lib/mol-model/structure"
 import { Script } from "molstar/lib/mol-script/script"
-import {Canvas3D} from "molstar/lib/mol-canvas3d/canvas3d";
+import { Canvas3D } from "molstar/lib/mol-canvas3d/canvas3d";
 import { RcsbFv } from '@rcsb/rcsb-saguaro';
-import {Loci} from "molstar/lib/mol-model/loci";
+import { Loci } from "molstar/lib/mol-model/loci";
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
     // if (plugin) {
