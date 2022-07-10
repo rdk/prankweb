@@ -3,6 +3,14 @@
     height: calc(100vh - 68px);
 }
 
+#message {
+    display: none;
+}
+
+#footer {
+    display: block;
+}
+
 #application-molstar {
     position: absolute;
     bottom: 0;
