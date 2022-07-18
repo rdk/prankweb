@@ -26,6 +26,7 @@ def create_hom_from_cache(
         return False
     logging.info("Using conservation from cache.")
     _write_hom_file(output_file, conservation)
+    return True
 
 
 def _load_fasta_file(input_file: str) \
