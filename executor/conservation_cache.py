@@ -24,6 +24,7 @@ def create_hom_from_cache(
     conservation = load_from_cache(cache_directory, sequence)
     if conservation is None:
         return False
+    logging.info("Using conservation from cache.")
     _write_hom_file(output_file, conservation)
 
 
