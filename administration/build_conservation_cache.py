@@ -4,10 +4,8 @@
 import typing
 import logging
 import argparse
-import hashlib
-import json
 import os
-import collections
+from conservation_cache import add_to_cache, create_conservation_from_hom_file
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -32,15 +30,16 @@ def main(arguments):
     buffer = []
     logger.info("Collecting conservations ...")
     files = os.listdir(arguments["input"])
+    logger.info(f"Found {len(files)} conservations.")
     for file_name in files:
         path = os.path.join(arguments["input"], file_name)
-        buffer.append(load_conservation_from_hom_file(path))
+        buffer.append(create_conservation_from_hom_file(path))
         if len(buffer) > arguments["buffer_size"]:
             logger.info("Saving to cache ...")
-            add_add_to_cache(arguments["cache_directory"], buffer)
+            add_to_cache(arguments["cache_directory"], buffer)
             buffer.clear()
     logger.info("Saving to cache ...")
-    add_add_to_cache(arguments["cache_directory"], buffer)
+    add_to_cache(arguments["cache_directory"], buffer)
     logger.info("All done")
 
 
@@ -54,56 +53,6 @@ def _init_logging():
     handler.setFormatter(formatter)
 
     logger.addHandler(handler)
-
-
-def load_conservation_from_hom_file(path: str):
-    with open(path) as stream:
-        sequence = []
-        score = []
-        for line in stream:
-            tokens = line.split()
-            sequence.append(tokens[2])
-            score.append(tokens[1])
-    return {
-        "sequence": "".join(sequence),
-        "score": score,
-    }
-
-
-def add_add_to_cache(directory: str, items):
-    grouped_by_hash = collections.defaultdict(list)
-    for item in items:
-        grouped_by_hash[hash_sequence(item["sequence"])].append(item)
-    for group_hash, items in grouped_by_hash.items():
-        path = os.path.join(directory, group_hash + ".jsonl")
-        content = read_cache_file(path)
-        # Add only new one.
-        sequences = {item["sequence"] for item in content}
-        content.extend([
-            item for item in items
-            if item["sequence"] not in sequences])
-        write_cache_file(path, content)
-
-
-def hash_sequence(sequence: str) -> str:
-    return hashlib.md5(sequence.encode("ascii")).hexdigest()
-
-
-def read_cache_file(path: str):
-    with open(path, encoding="utf-8") as stream:
-        return [
-            json.loads(line)
-            for line in stream
-        ]
-
-
-def write_cache_file(path: str, content):
-    swap_path = path + ".swp"
-    with open(swap_path, "w", encoding="utf-8") as stream:
-        for record in content:
-            json.dump(record, stream, ensure_ascii=False)
-            stream.write("\n")
-    os.replace(swap_path, path)
 
 
 if __name__ == "__main__":
