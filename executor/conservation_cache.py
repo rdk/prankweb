@@ -80,8 +80,8 @@ def _write_hom_file(path: str, conservation):
     with open(path, mode="w", newline="") as stream:
         sequence = conservation["sequence"]
         scores = conservation["score"]
-        for index, aa, score in zip(enumerate(sequence), sequence, scores):
-            stream.write("\t".join((str(index), aa, score)) + "\n")
+        for (index, aa), score in zip(enumerate(sequence), scores):
+            stream.write("\t".join((str(index), score, aa)) + "\n")
 
 
 def update_cache_from_hom_file(
