@@ -23,19 +23,24 @@ class Prediction:
 def _read_arguments() -> typing.Dict[str, str]:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--prediction", required=True,
-        help="Directory with prankweb predictions.")
+        "--database", required=True,
+        help="Directory with prankweb predictions, e.g. 'v3'.")
+    parser.add_argument(
+        "--pocket-size", action="store_true",
+        help="Also print information about pocket sizes.")
     return vars(parser.parse_args())
 
 
 def main(arguments):
     _init_logging()
     logger.info("Collecting predictions ...")
-    directories = collect_predictions_directories(arguments["prediction"])
+    directories = collect_predictions_directories(arguments["database"])
     logger.info(f"Found {len(directories)} prediction directories")
     logger.info("Loading predictions ...")
-    predictions = [load_prediction(directory) for directory in directories]
-    print_statistics(predictions)
+    count_pockets = arguments["pocket_size"]
+    predictions = [load_prediction(directory, count_pockets)
+                   for directory in directories]
+    print_statistics(predictions, count_pockets)
     logger.info("All done")
 
 
@@ -60,7 +65,7 @@ def collect_predictions_directories(
     ]
 
 
-def load_prediction(directory: str) -> Prediction:
+def load_prediction(directory: str, load_pockets: bool) -> Prediction:
     info_file = os.path.join(directory, "info.json")
     if not os.path.exists(info_file):
         return Prediction(directory[-4:].lower(), "missing", None)
@@ -68,7 +73,7 @@ def load_prediction(directory: str) -> Prediction:
 
     prediction_file = os.path.join(directory, "public", "prediction.json")
     predicted_site = None
-    if os.path.exists(prediction_file):
+    if load_pockets and os.path.exists(prediction_file):
         prediction = load_json(prediction_file)
         predicted_site = len(prediction["pockets"])
 
@@ -80,7 +85,7 @@ def load_json(path: str):
         return json.load(stream)
 
 
-def print_statistics(predictions: typing.List[Prediction]):
+def print_statistics(predictions: typing.List[Prediction], print_pockets: bool):
     by_status = collections.defaultdict(int)
     by_pockets = collections.defaultdict(int)
     for prediction in predictions:
@@ -90,10 +95,11 @@ def print_statistics(predictions: typing.List[Prediction]):
     print("Status")
     for key, value in by_status.items():
         print(f"  {key} : {value}")
-    print("Pockets")
-    for key in sorted(by_pockets.keys()):
-        value = by_pockets[key]
-        print(f"  {str(key).rjust(6)} : {str(value).rjust(6)}")
+    if print_pockets:
+        print("Pockets")
+        for key in sorted(by_pockets.keys()):
+            value = by_pockets[key]
+            print(f"  {str(key).rjust(6)} : {str(value).rjust(6)}")
 
 
 if __name__ == "__main__":
