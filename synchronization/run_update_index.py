@@ -36,7 +36,7 @@ def main(args):
     if "server_directory" in args:
         new_codes.extend(list_prankweb_predictions(args["server_directory"]))
     if "pdb_file" in args:
-        new_codes.extend(list_prankweb_predictions(args["pdb_file"]))
+        new_codes.extend(list_from_file(args["pdb_file"]))
     add_pdb_to_database(database, new_codes)
     database_service.save_database(data_directory, database)
     logger.info("All done")
@@ -64,7 +64,7 @@ def list_prankweb_predictions(predictions_directory: str) -> typing.List[str]:
 
 
 def list_from_file(path: str) -> typing.List[str]:
-    with open(path, encoding="utf-f") as stream:
+    with open(path, encoding="utf-8") as stream:
         return [
             code.rstrip().lstrip().upper()
             for code in stream
