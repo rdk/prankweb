@@ -178,10 +178,12 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackHeight: 45,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.AREA,
+            displayColor: "#6d6d6d",
+            /*
             displayColor: {
                 "thresholds":[0.5],
                 "colors":["#8484FF","#FF8484"]
-            },
+            },*/
             rowTitle: "CONSERVATION",
             trackData: conservationData,
         })
@@ -210,10 +212,10 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.AREA,
             displayColor: {
-                "thresholds":[0.5],
-                "colors":["#8484FF","#FF8484"]
+                "thresholds":[0.5, 0.7, 0.9],
+                "colors":["#ff7d45", "#ffdb13", "#65cbf3","#0053d6"] //those are the colors from ALPHAFOLD db
             },
-            rowTitle: "ALPHAFOLD",
+            rowTitle: "AF CONFIDENCE",
             trackData: alphafoldData,
         })
     }
