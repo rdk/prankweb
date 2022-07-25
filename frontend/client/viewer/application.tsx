@@ -10,7 +10,7 @@ import PocketList from "./components/pocket-list";
 
 //////////
 import { sendDataToPlugins } from './data-loader';
-import { CustomWindow, PocketsViewType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "../custom-types";
+import { CustomWindow, PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "../custom-types";
 
 
 import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
@@ -55,7 +55,7 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   const container = document.getElementById('pocket-list-aside');
   const root = createRoot(container!);
   root.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
-    pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface}/>);
+    pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface} polymerColor={PolymerColorType.Clean}/>);
 }
 export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
 {
@@ -65,6 +65,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "error": undefined,
     "polymerView": this.props.polymerView,
     "pocketsView": this.props.pocketsView,
+    "polymerColor": this.props.polymerColor,
     "isShowOnlyPredicted": false,
     "pluginRcsb": {} as RcsbFv,
   };
@@ -73,6 +74,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     super(props);
     this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
     this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
+    this.onPolymerColorChange = this.onPolymerColorChange.bind(this);
     this.onShowAllPockets = this.onShowAllPockets.bind(this);
     this.onSetPocketVisibility = this.onSetPocketVisibility.bind(this);
     this.onShowOnlyPocket = this.onShowOnlyPocket.bind(this);
@@ -123,6 +125,12 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
   onPocketsViewChange(value: PocketsViewType) {
     this.setState({"pocketsView": value});
+    console.log(value);
+    //TODO: show only the actual representation of pockets
+  }
+
+  onPolymerColorChange(value: PolymerColorType) {
+    this.setState({"polymerColor": value});
     console.log(value);
     //TODO: show only the actual representation of pockets
   }
@@ -207,8 +215,10 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             downloadAs={downloadAs}
             polymerView={this.state.polymerView}
             pocketsView={this.state.pocketsView}
+            polymerColor={this.state.polymerColor}
             onPolymerViewChange={this.onPolymerViewChange}
             onPocketsViewChange={this.onPocketsViewChange}
+            onPolymerColorChange={this.onPolymerColorChange}
             isPredicted={isPredicted}
             isShowOnlyPredicted={this.state.isShowOnlyPredicted}
             onShowConfidentChange={this.onShowConfidentChange}

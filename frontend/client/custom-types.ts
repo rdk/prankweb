@@ -112,11 +112,18 @@ export enum PocketsViewType {
     Surface = 1
 }
 
+export enum PolymerColorType {
+    Clean = 0,
+    Conservation = 1,
+    AlphaFold = 2
+}
+
 export interface ReactApplicationProps {
     plugin: PluginUIContext,
     predictionInfo: PredictionInfo,
     polymerView: PolymerViewType,
     pocketsView: PocketsViewType,
+    polymerColor: PolymerColorType
 }
 
 export interface ReactApplicationState {
@@ -125,6 +132,7 @@ export interface ReactApplicationState {
     error: Error | undefined,
     polymerView: PolymerViewType,
     pocketsView: PocketsViewType,
+    polymerColor: PolymerColorType,
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
 }

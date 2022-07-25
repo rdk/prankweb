@@ -1,7 +1,7 @@
 import React from "react";
 
 import "./tools-box.css";
-import { PocketsViewType, PolymerViewType } from "../../custom-types";
+import { PocketsViewType, PolymerViewType, PolymerColorType } from "../../custom-types";
 import { IconContext } from "react-icons";
 import { FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 
@@ -10,8 +10,10 @@ export default class ToolsBox extends React.Component<{
   downloadAs: string,
   polymerView: PolymerViewType,
   pocketsView: PocketsViewType,
+  polymerColor: PolymerColorType,
   onPolymerViewChange: (value: PolymerViewType) => void,
   onPocketsViewChange: (value: PocketsViewType) => void,
+  onPolymerColorChange: (value: PolymerColorType) => void,
   isPredicted: boolean,
   isShowOnlyPredicted: boolean,
   onShowConfidentChange: () => void,
@@ -68,6 +70,8 @@ export default class ToolsBox extends React.Component<{
             onPolymerViewChange={this.props.onPolymerViewChange}
             pocketsView={this.props.pocketsView}
             onPocketsViewChange={this.props.onPocketsViewChange}
+            onPolymerColorChange={this.props.onPolymerColorChange}
+            polymerColor={this.props.polymerColor}
             isPredicted={this.props.isPredicted}
             isShowOnlyPredicted={this.props.isShowOnlyPredicted}
             onShowConfidentChange={this.props.onShowConfidentChange}
@@ -86,7 +90,9 @@ function ControlBoxContent(
     polymerView: PolymerViewType,
     onPolymerViewChange: (value: PolymerViewType) => void,
     pocketsView: PocketsViewType,
+    polymerColor: PolymerColorType,
     onPocketsViewChange: (value: PocketsViewType) => void,
+    onPolymerColorChange: (value: PolymerColorType) => void,
     isPredicted: boolean,
     isShowOnlyPredicted: boolean,
     onShowConfidentChange: () => void,
@@ -125,6 +131,20 @@ function ControlBoxContent(
         >
           <option value="0">Balls and Sticks</option>
           <option value="1">Surface</option>
+        </select>
+      </label>
+      <label>
+        Polymer coloring
+        <select
+          id="polymer-coloring"
+          className="form-select"
+          value={props.polymerColor}
+          onChange={(event) =>
+            props.onPolymerColorChange(parseInt(event.target.value))}
+        >
+          <option value="0">Clear</option>
+          <option value="1">Conservation</option>
+          <option value="2">AlphaFold confidence</option>
         </select>
       </label>
       {props.isPredicted && (
