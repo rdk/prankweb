@@ -10,6 +10,9 @@ import { Script } from "molstar/lib/mol-script/script"
 import { Canvas3D } from "molstar/lib/mol-canvas3d/canvas3d";
 import { RcsbFv } from '@rcsb/rcsb-saguaro';
 import { Loci } from "molstar/lib/mol-model/loci";
+import { Bundle } from "molstar/lib/mol-model/structure/structure/element/bundle";
+
+let repr : any;
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
     // if (plugin) {
@@ -35,10 +38,11 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
     //adds polymer representation
     const polymer = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
     if (polymer) {
-        await plugin.builders.structure.representation.addRepresentation(polymer, {
+        repr = await plugin.builders.structure.representation.addRepresentation(polymer, {
             type: 'gaussian-surface', //molecular-surface is probably better, but slower
             //type: 'cartoon',
-            color: 'uniform', colorParams: {value: Color(0xFFFFFF)}
+            color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+            ref: "polymer"
         });
     }
 
@@ -59,6 +63,21 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
         });
     }
 
+
+    /* !!!!!!
+    TODO: change this to re-color the actual residues property based on the conservation.*/
+    const builder  = plugin.build();
+    //@ts-ignore
+    builder.to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, {
+        layers: [{
+          bundle: Bundle.fromSelection(getSelectionFromChainAuthId(plugin, "A", [165, 166, 167, 168])),
+          color: Color(0xFF00FF),
+          clear: false
+        }]
+      });
+    await builder.commit();
+
+
     return [model, structure, polymer]
 }
 
@@ -67,7 +86,7 @@ export async function createPocketsGroupFromJson(plugin: PluginUIContext, struct
     const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName})
     for(let i = 0; i < prediction.pockets.length; i++) {
         console.log(prediction);
-        createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], "Pocket " + (i+1), Number("0x" + prediction.pockets[i].color), group);
+        createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], `Pocket ${i+1}`, Number("0x" + prediction.pockets[i].color), group);
     }
     await builder.commit();
 }
@@ -87,8 +106,7 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
             type: 'gaussian-surface',
             color: 'uniform', colorParams: {value: Color(color)},
             size: 'physical', sizeParams: {scale: 1.10}
-        })
-    )
+        }))
 }
 
 //focuses on the residues loci specidfied by the user, can be called from anywhere
