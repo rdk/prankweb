@@ -189,6 +189,10 @@ def _prepare_conservation(
         "conservation")
     os.makedirs(output_directory, exist_ok=True)
     result = {}
+    # We employ local cache on level of protein, where we remember the output
+    # file. As there is other method of caching in the conservation_cache
+    # we may remove this in the future. Yet the overhead should be small,
+    # and it is faster than the other cache.
     cache = {}
     for chain, fasta_file in structure.sequence_files.items():
         working_directory = os.path.join(

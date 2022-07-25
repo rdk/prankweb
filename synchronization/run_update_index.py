@@ -13,14 +13,17 @@ logger.setLevel(logging.DEBUG)
 
 def _read_arguments() -> typing.Dict[str, str]:
     parser = argparse.ArgumentParser(
-        description="Create/update an index file from prankweb prediction "
-                    "directory.")
+        description="Create/update an index file")
     parser.add_argument(
-        "--server-directory",
+        "--prankweb-directory",
         help="Path to prankweb prediction directory to import.")
     parser.add_argument(
+        "--pdb-file",
+        help="Path to file with PDB codes, each line with one code.")
+    parser.add_argument(
         "--data",
-        help="Path to database directory.")
+        help="Path to database directory.",
+        required=True)
     return vars(parser.parse_args())
 
 
@@ -29,8 +32,12 @@ def main(args):
     data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
-    codes = list_predictions(args["server_directory"])
-    add_pdb_to_database(database, codes)
+    new_codes = []
+    if "server_directory" in args:
+        new_codes.extend(list_prankweb_predictions(args["server_directory"]))
+    if "pdb_file" in args:
+        new_codes.extend(list_from_file(args["pdb_file"]))
+    add_pdb_to_database(database, new_codes)
     database_service.save_database(data_directory, database)
     logger.info("All done")
 
@@ -47,13 +54,21 @@ def _init_logging():
     logger.addHandler(handler)
 
 
-def list_predictions(predictions_directory: str) -> typing.List[str]:
+def list_prankweb_predictions(predictions_directory: str) -> typing.List[str]:
     return [
         code.lower()
         for subdir in os.listdir(predictions_directory)
         for code in os.listdir(os.path.join(predictions_directory, subdir))
         if "_" not in code
     ]
+
+
+def list_from_file(path: str) -> typing.List[str]:
+    with open(path, encoding="utf-8") as stream:
+        return [
+            code.rstrip().lstrip().upper()
+            for code in stream
+        ]
 
 
 def add_pdb_to_database(database, new_codes: typing.List[str]):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import collections
 import os
 import datetime
 import shutil
@@ -15,7 +16,6 @@ import p2rank_to_funpdbe
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 
 def _read_arguments() -> typing.Dict[str, str]:
     from_date = datetime.datetime.today() - datetime.timedelta(weeks=2)
@@ -50,8 +50,10 @@ def main(args):
     data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
-    logger.info("Fetching PDB records from '" + args["from"] + "' ...")
+    logger.info(f"Fetching PDB records from '{args['from']} ...")
     new_pdb_records = pdb_service.get_deposited_from(args["from"])
+    logger.info(f"Found {len(new_pdb_records)} new records")
+    logger.debug("New records: "+ ",".join(new_pdb_records))
     add_pdb_to_database(database, new_pdb_records)
     database_service.save_database(data_directory, database)
     logger.info("Synchronizing with prankweb server ...")
@@ -81,7 +83,7 @@ def _init_logging():
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
 
-    logger.addHandler(handler)
+    logging.getLogger().addHandler(handler)
 
 
 def add_pdb_to_database(
@@ -104,22 +106,27 @@ def synchronize_prankweb_with_database(database):
         EntryStatus.NEW.value,
         EntryStatus.PRANKWEB_QUEUED.value,
     ]
+    count_by_status = collections.defaultdict(int)
     for code, record in database["data"].items():
         if record["status"] in status_to_update:
             request_computation_from_prankweb(code, record)
+            count_by_status[record["status"]] += 1
+    message = "\n".join(f"    {name}: {value}"
+                        for name, value in count_by_status.items())
+    logger.info("Synchronization summary: \n" + message)
 
 
 def request_computation_from_prankweb(code: str, record):
     """Request computation or check for status."""
-    logger.info(f"Checking for '{code}' with status '{record['status']}'")
+    logger.debug(f"Checking for '{code}' with status '{record['status']}'")
     response = prankweb_service.retrieve_info(code)
     if response.status == -1:
         # This indicates error with the connection.
-        logging.info("Can't connect to server.")
+        logging.warning(f"Can't connect to server to check '{code}'.")
         return
     if not 199 < response.status < 299:
         record["status"] = EntryStatus.PRANKWEB_FAILED.value
-        logger.info(
+        logger.warning(
             f"Request failed for '{code}' {response.status}\n   {response.body}")
         return
     # Make the time same as for the rest of the application.
@@ -133,7 +140,7 @@ def request_computation_from_prankweb(code: str, record):
     else:
         # The prediction is still running, so no change here.
         ...
-    logger.info(f"Status changed to '{record['status']}' for '{code}' "
+    logger.debug(f"Status changed to '{record['status']}' for '{code}' "
                 f" due to response '{response.body['status']}'")
 
 
