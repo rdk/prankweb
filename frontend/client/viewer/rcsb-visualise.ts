@@ -5,9 +5,11 @@ import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from ".
 
 export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 
+    const width = calculateViewerWidth();
+
     const boardConfigData : RcsbFvBoardConfigInterface = {
         length: data.structure.sequence.length,
-        trackWidth: 1300,
+        trackWidth: width,
         includeAxis: true,
         highlightHoverPosition: true,
         highlightHoverCallback: (n: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, molstarPlugin, n),
@@ -25,6 +27,18 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
     });
 
     return rcsbPlugin;
+}
+
+function calculateViewerWidth() {
+    const width = window.innerWidth;
+
+    if(width <= 768) return width;
+
+    if(width <= 1200) {
+        return Math.floor(width * (8/12)) - 210;
+    }
+
+    return Math.floor(width * (10/12)) - 210;
 }
 
 
@@ -93,7 +107,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "bindingsTrack",
-            trackHeight: 20,
+            trackHeight: 30,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.BLOCK,
             displayColor: "#9542F5",
@@ -137,7 +151,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "pocketsTrack",
-            trackHeight: 20,
+            trackHeight: 30,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.BLOCK,
             displayColor: "#FF0000",
