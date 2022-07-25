@@ -1,5 +1,6 @@
 import React from "react";
 import { PocketData } from "../../custom-types";
+import PocketProperty from "./pocket-property";
 
 export default class PocketDetails extends React.Component
     <{
@@ -13,44 +14,15 @@ export default class PocketDetails extends React.Component
 
     render() {
         const pocket = this.props.pocket;
-        if (!this.props.inDialog) {
-            return (
-                <div className="card-body">
-                    <dl className="pocket-properties">
-                        <dt>Pocket rank:</dt>
-                        <dd>{pocket.rank}</dd>
-                        <dt>Pocket score:</dt>
-                        <dd>{pocket.score}</dd>
-                        <dt>Probability score:</dt>
-                        <dd>{pocket.probability || "N/A"}</dd>
-                        <dt>AA count:</dt>
-                        <dd>{pocket.residues.length}</dd>
-                        <dt>Conservation:</dt>
-                        <dd>{pocket.avgConservation || "N/A"}</dd>
-                    </dl>
-                    Not in dialog.<br />
-                </div>
-            );
-        }
-
         return (
-            <div>
-                <dl className="pocket-properties">
-                    <dt>Pocket rank:</dt>
-                    <dd>{pocket.rank}</dd>
-                    <dt>Pocket score:</dt>
-                    <dd>{pocket.score}</dd>
-                    <dt>Probability score:</dt>
-                    <dd>{pocket.probability || "N/A"}</dd>
-                    <dt>AA count:</dt>
-                    <dd>{pocket.residues.length}</dd>
-                    <dt>Conservation:</dt>
-                    <dd>{pocket.avgConservation || "N/A"}</dd>
-                    <dt>Residues:</dt>
-                    <dd>{pocket.residues.join(", ")}</dd>
-                </dl>
-                In dialog.<br />
-                By the way, this is a place where more details can be added.
+            <div className={this.props.inDialog ? "" : "card-body"}>
+                <PocketProperty inDialog={this.props.inDialog} title="Pocket rank" data={pocket.rank}/>
+                <PocketProperty inDialog={this.props.inDialog} title="Pocket score" data={pocket.score}/>
+                <PocketProperty inDialog={this.props.inDialog} title="Probability score" data={pocket.probability || "N/A"}/>
+                <PocketProperty inDialog={this.props.inDialog} title="AA count" data={pocket.residues.length}/>
+                <PocketProperty inDialog={this.props.inDialog} title="Conservation" data={pocket.avgConservation || "N/A"}/>
+                {this.props.inDialog && <PocketProperty inDialog={this.props.inDialog} title="Residues" data={pocket.residues.join(", ")}/>}
+                More info can be added.<br />
             </div>
         );
     }
