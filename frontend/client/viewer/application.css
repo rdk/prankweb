@@ -14,11 +14,13 @@
 #application-molstar {
     position: absolute;
     bottom: 0;
-    height: 70%;
+    height: 70vh;
 }
 
 #application-rcsb {
     position: relative;
+    overflow: auto;
+    height: calc(30vh - 68px);
 }
 
 #pocket-list-aside {
