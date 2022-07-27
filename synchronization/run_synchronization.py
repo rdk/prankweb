@@ -53,7 +53,8 @@ def main(args):
     logger.info(f"Fetching PDB records from '{args['from']} ...")
     new_pdb_records = pdb_service.get_deposited_from(args["from"])
     logger.info(f"Found {len(new_pdb_records)} new records")
-    logger.debug("New records: "+ ",".join(new_pdb_records))
+    logger.debug("New records: " + ",".join(
+        [record.code for record in new_pdb_records]))
     add_pdb_to_database(database, new_pdb_records)
     database_service.save_database(data_directory, database)
     logger.info("Synchronizing with prankweb server ...")
