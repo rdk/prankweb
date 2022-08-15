@@ -1,7 +1,7 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { PredictionData, PocketData, MolstarResidue, ChainData } from '../custom-types';
+import { PredictionData, PocketData, MolstarResidue, ChainData, CustomRepresentation, PolymerColorType, PolymerViewType } from '../custom-types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
@@ -12,10 +12,12 @@ import { RcsbFv } from '@rcsb/rcsb-saguaro';
 import { Loci } from "molstar/lib/mol-model/loci";
 import { Bundle } from "molstar/lib/mol-model/structure/structure/element/bundle";
 import { color } from '@mui/system';
+import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
+import { StateObjectSelector } from 'molstar/lib/mol-state';
 
-let repr : any;
+let polymerRepresentations: CustomRepresentation[] = [];
 
-export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
+export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string, predicted: boolean) {
     // if (plugin) {
     //     await plugin.clear();
     // }
@@ -39,11 +41,41 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
     //adds polymer representation
     const polymer = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
     if (polymer) {
-        repr = await plugin.builders.structure.representation.addRepresentation(polymer, {
-            type: 'gaussian-surface', //molecular-surface is probably better, but slower
-            //type: 'cartoon',
+        polymerRepresentations.push({
+            type: PolymerViewType.Gaussian_Surface,
+            representation: await plugin.builders.structure.representation.addRepresentation(polymer, {
+                type: 'gaussian-surface', //molecular-surface is probably better, but slower
+                color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+                ref: "polymer_gaussian"
+            })
+        });
+
+        await plugin.builders.structure.representation.addRepresentation(polymer, {
+            type: 'ball-and-stick', 
             color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
-            ref: "polymer"
+            ref: "polymer_balls"
+        }).then((e) => 
+        { 
+            //hide ball and stick representation
+            polymerRepresentations.push({
+                type: PolymerViewType.Atoms,
+                representation: e
+            });
+            setSubtreeVisibility(plugin.state.data, polymerRepresentations.find(e => e.type === PolymerViewType.Atoms)!.representation.ref, true);
+        });
+
+        await plugin.builders.structure.representation.addRepresentation(polymer, {
+            type: 'cartoon', 
+            color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+            ref: "polymer_cartoon"
+        }).then((e) => 
+        { 
+            //hide ball and stick representation
+            polymerRepresentations.push({
+                type: PolymerViewType.Cartoon,
+                representation: e
+            });
+            setSubtreeVisibility(plugin.state.data, polymerRepresentations.find(e => e.type === PolymerViewType.Cartoon)!.representation.ref, true);
         });
     }
 
@@ -71,7 +103,31 @@ function getLogBaseX(x : number, y : number) {
     return Math.log(y) / Math.log(x);
 }
 
-export async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
+export async function updatePolymerView(value: PolymerViewType, plugin: PluginUIContext, predicted: boolean) {
+    for(const element of polymerRepresentations) {
+        if(element.type === value) {
+            setSubtreeVisibility(plugin.state.data, element.representation.ref, false);
+        } else {
+            setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
+        }
+    }
+}
+
+export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUIContext, prediction: PredictionData) {
+    switch(value) {
+        case PolymerColorType.Clean:
+            overPaintStructureClear(plugin, prediction);
+            return;
+        case PolymerColorType.Conservation:
+            overPaintStructureWithConservation(plugin, prediction);
+            return;
+        case PolymerColorType.AlphaFold:
+            overPaintStructureWithAlphaFold(plugin, prediction);
+            return;
+    }
+}
+
+async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
     const chains : ChainData[] = [];
     const params = [];
 
@@ -96,10 +152,12 @@ export async function overPaintStructureClear(plugin: PluginUIContext, predictio
         });
     }
 
-    await plugin.build().to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+    for(const element of polymerRepresentations) { 
+        await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+    } 
 }
 
-export async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) { //paints the structure with the alpha fold prediction
+async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) { //paints the structure with the alpha fold prediction
     if(!prediction.structure.scores.plddt) return;
 
     const params = [];
@@ -146,10 +204,12 @@ export async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, p
         });
     }
 
-    await plugin.build().to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+    for(const element of polymerRepresentations) { 
+        await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+    } 
 }
 
-export async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
+async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
     if(!prediction.structure.scores.conservation) return;
 
     //we need to normalize the scores to fit in properly
@@ -162,13 +222,13 @@ export async function overPaintStructureWithConservation(plugin: PluginUIContext
         conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
     }
 
-    console.log(conservationNormalized);
-
     const params = [];
     const thresholds = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0];
     const colors : Color[] = [];
 
     //create shades of gray
+    //the first one is 120, 120, 120
+    //the last one is 255, 255, 255
     for(let i = 0; i < thresholds.length; i++) {
         let colorShade = i * 15 + 120;
         colors.push(Color.fromRgb(colorShade, colorShade, colorShade));
@@ -198,8 +258,6 @@ export async function overPaintStructureWithConservation(plugin: PluginUIContext
         }
     }
 
-    console.log(selections);
-
     //color the residues
     for(let i = 0; i < selections.length; i++) {
         const sel = getSelectionFromChainAuthId(plugin, selections[i].chainId, selections[i].residueNums);
@@ -212,7 +270,9 @@ export async function overPaintStructureWithConservation(plugin: PluginUIContext
         });
     }
 
-    await plugin.build().to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+    for(const element of polymerRepresentations) { 
+        await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+    } 
 }
 
 export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: any, groupName: string, prediction: PredictionData) {
@@ -282,6 +342,51 @@ function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, p
     console.log(plugin.managers.structure.hierarchy.current.structures);
     //@ts-ignore
     return Script.getStructureSelection(query, plugin.managers.structure.hierarchy.current.structures[0].cell.obj.data);
+}
+
+//TODO: FIX THIS
+export async function addPredictedPolymerRepresentation(plugin: PluginUIContext, prediction: PredictionData, structure: any) {
+    //adds predicted structure
+    const predStr = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
+    console.log(predStr);
+    if (predStr) {
+        await plugin.builders.structure.representation.addRepresentation(predStr, {
+            type: 'ball-and-stick',
+            color: 'uniform', colorParams: {value: Color(0x00FF00)},
+        });
+    }
+}
+
+//TODO: FIX THIS
+export function getSelectionFromIndices(plugin: PluginUIContext, prediction: PredictionData) { // gets selection for predicted structure
+    const queries = [];
+    //for each chain create a query for the residues
+    let totalIndex = 0;
+
+    for(let i = 0; i < prediction.structure.regions.length; i++) {
+        const chain = prediction.structure.regions[i].name;
+        const positions = prediction.structure.indices.slice(totalIndex, prediction.structure.regions[i].end + 1);
+        const newPositions = [];
+
+        for(let y = 0; y < positions.length; y++) {
+            if(prediction.structure.scores.plddt![totalIndex + y] > 70) {
+                newPositions.push(positions[y].split("_")[1]);
+            }
+        }
+
+        const query = MS.struct.generator.atomGroups({
+            'chain-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_asym_id(), chain]),
+            'residue-test': MS.core.set.has([MS.set(...newPositions), MS.struct.atomProperty.macromolecular.auth_seq_id()]),
+            'group-by': MS.struct.atomProperty.macromolecular.residueKey()
+        });
+        totalIndex = prediction.structure.regions[i].end + 1;
+        queries.push(query);
+    }
+
+    const finalQuery = MS.struct.combinator.merge(queries);
+    console.log(finalQuery);
+
+    return finalQuery;
 }
 
 //focuses on the loci specidfied by the user, can be called from anywhere

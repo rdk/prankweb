@@ -20,7 +20,7 @@ import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
-import { highlightSurfaceAtomsInViewerLabelId, overPaintStructureClear, overPaintStructureWithAlphaFold, overPaintStructureWithConservation } from './molstar-visualise';
+import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView } from './molstar-visualise';
 
 
 declare let window: CustomWindow;
@@ -55,7 +55,7 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   const container = document.getElementById('pocket-list-aside');
   const root = createRoot(container!);
   root.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
-    pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Surface} polymerColor={PolymerColorType.Clean}/>);
+    pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
 }
 export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
 {
@@ -101,7 +101,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       plugin,
       predictionInfo.database,
       predictionInfo.id,
-      predictionInfo.metadata.structureName
+      predictionInfo.metadata.structureName,
+      predictionInfo.metadata.predictedStructure ? true : false
     ).then((data) => {
       this.setState({
       "isLoading": false,
@@ -120,7 +121,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     this.setState({"polymerView": value});
     console.log(value);
     //TODO: show only the actual representation of the protein
-    //updatePolymerView(this.props.plugin, value, this.state.isShowOnlyPredicted);
+    updatePolymerView(value, this.props.plugin, this.state.isShowOnlyPredicted);
   }
 
   onPocketsViewChange(value: PocketsViewType) {
@@ -132,18 +133,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   onPolymerColorChange(value: PolymerColorType) {
     this.setState({"polymerColor": value});
     console.log(value);
-    switch(value) {
-      case PolymerColorType.Clean:
-        overPaintStructureClear(this.props.plugin, this.state.data);
-        return;
-      case PolymerColorType.Conservation:
-        overPaintStructureWithConservation(this.props.plugin, this.state.data);
-        return;
-      case PolymerColorType.AlphaFold:
-        overPaintStructureWithAlphaFold(this.props.plugin, this.state.data);
-        return;
-    }
-    //TODO: show only the actual representation of pockets
+    overPaintPolymer(value, this.props.plugin, this.state.data);
   }
 
   onShowConfidentChange() {

@@ -1,5 +1,6 @@
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
+import { StateObjectSelector } from "molstar/lib/mol-state";
 import { StateTree } from "molstar/lib/mol-state/tree/immutable"
 import { PredictionInfo } from "./prankweb-api";
 
@@ -103,7 +104,7 @@ export type chainResidueAtom = {
 
 export enum PolymerViewType {
     Atoms = 0,
-    Surface = 1,
+    Gaussian_Surface = 1,
     Cartoon = 2
 }
 
@@ -141,4 +142,9 @@ export interface ChainData {
     threshold?: number;
     chainId: string;
     residueNums: number[];
+}
+
+export interface CustomRepresentation {
+    type: PolymerViewType;
+    representation: StateObjectSelector;
 }
