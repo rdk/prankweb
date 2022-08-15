@@ -107,7 +107,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "bindingsTrack",
-            trackHeight: 30,
+            trackHeight: 25,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.BLOCK,
             displayColor: "#9542F5",
@@ -151,7 +151,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "pocketsTrack",
-            trackHeight: 30,
+            trackHeight: 25,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.BLOCK,
             displayColor: "#FF0000",

@@ -136,3 +136,9 @@ export interface ReactApplicationState {
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
 }
+
+export interface ChainData {
+    threshold: number;
+    chainId: string;
+    residueNums: number[];
+}
