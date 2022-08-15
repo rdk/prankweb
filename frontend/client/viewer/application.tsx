@@ -20,7 +20,7 @@ import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
-import { highlightSurfaceAtomsInViewerLabelId } from './molstar-visualise';
+import { highlightSurfaceAtomsInViewerLabelId, overPaintStructureClear, overPaintStructureWithAlphaFold, overPaintStructureWithConservation } from './molstar-visualise';
 
 
 declare let window: CustomWindow;
@@ -132,6 +132,17 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   onPolymerColorChange(value: PolymerColorType) {
     this.setState({"polymerColor": value});
     console.log(value);
+    switch(value) {
+      case PolymerColorType.Clean:
+        overPaintStructureClear(this.props.plugin, this.state.data);
+        return;
+      case PolymerColorType.Conservation:
+        overPaintStructureWithConservation(this.props.plugin, this.state.data);
+        return;
+      case PolymerColorType.AlphaFold:
+        overPaintStructureWithAlphaFold(this.props.plugin, this.state.data);
+        return;
+    }
     //TODO: show only the actual representation of pockets
   }
 

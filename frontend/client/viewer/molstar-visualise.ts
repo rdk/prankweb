@@ -71,7 +71,35 @@ function getLogBaseX(x : number, y : number) {
     return Math.log(y) / Math.log(x);
 }
 
-export async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) {
+export async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
+    const chains : ChainData[] = [];
+    const params = [];
+
+    for (let i = 0; i < prediction.structure.indices.length; i++) {
+        let splitIndice = prediction.structure.indices[i].split("_");
+        let element = chains.find(x => x.chainId === splitIndice[0]);
+        if(element) {
+            element.residueNums.push(Number(splitIndice[1]));
+        } else {
+            chains.push({chainId: splitIndice[0], residueNums: [Number(splitIndice[1])]});
+        }
+    }
+
+    for(let i = 0; i < chains.length; i++) {
+        const sel = getSelectionFromChainAuthId(plugin, chains[i].chainId, chains[i].residueNums);
+        const bundle = Bundle.fromSelection(sel);
+
+        params.push({
+          bundle: bundle,
+          color: Color(0xFFFFFF),
+          clear: false
+        });
+    }
+
+    await plugin.build().to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+}
+
+export async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) { //paints the structure with the alpha fold prediction
     if(!prediction.structure.scores.plddt) return;
 
     const params = [];
@@ -105,6 +133,70 @@ export async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, p
             }
         }
     }
+    //console.log(selections);
+    //color the residues
+    for(let i = 0; i < selections.length; i++) {
+        const sel = getSelectionFromChainAuthId(plugin, selections[i].chainId, selections[i].residueNums);
+        const bundle = Bundle.fromSelection(sel);
+
+        params.push({
+          bundle: bundle,
+          color: colors[thresholds.findIndex(e => e === selections[i].threshold)],
+          clear: false
+        });
+    }
+
+    await plugin.build().to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+}
+
+export async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
+    if(!prediction.structure.scores.conservation) return;
+
+    //we need to normalize the scores to fit in properly
+    //by the definition of conservation scoring the maximum is log_2(20)
+    const maxConservation = getLogBaseX(2, 20);
+
+    const conservationNormalized = [];
+
+    for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
+        conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
+    }
+
+    console.log(conservationNormalized);
+
+    const params = [];
+    const thresholds = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0];
+    const colors : Color[] = [];
+
+    //create shades of gray
+    for(let i = 0; i < thresholds.length; i++) {
+        let colorShade = i * 15 + 120;
+        colors.push(Color.fromRgb(colorShade, colorShade, colorShade));
+    }
+
+    const selections : ChainData[] = [];
+
+    for(let i = 0; i < prediction.structure.indices.length; i++) {
+        let residue = prediction.structure.indices[i];
+        const splitResidue = residue.split("_");
+        const chain = splitResidue[0];
+        const id = Number(splitResidue[1]);
+
+        let score = prediction.structure.scores.conservation[i];
+
+        for(let y = 0; y < thresholds.length; y++) {
+            if(score > thresholds[y]) {
+                let element = selections.find(e => e.threshold === thresholds[y] && e.chainId == chain);
+                if(element) {
+                    element.residueNums.push(id);
+                }
+                else {
+                    selections.push({chainId: chain, residueNums: [id], threshold: thresholds[y]});
+                }
+                break;
+            }
+        }
+    }
 
     console.log(selections);
 
@@ -121,88 +213,6 @@ export async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, p
     }
 
     await plugin.build().to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
-
-    /*
-    for (const color in coloring.colors.colorPos) {
-      str2Hex(mappingColorSheme.emptyColor)
-      const positions = coloring.colors.colorPos[color];
-      const _params = props.entityId ? {entityId: props.entityId} : {chain: props.chain};
-      const sel = selectPositions({..._params, ...{positions: positions}})
-      const bundle = Bundle.fromSelection(sel);
-
-      params.push({
-        bundle: bundle,
-        color: Color(color),
-        clear: false
-      });
-    }
-    */
-}
-
-export async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
-        /* !!!!!!
-    TODO: change this to re-color the actual residues property based on the conservation.*/
-
-    //basically the idea is to select some color range, which will be for instance 255-60
-    //then create a rgb color based on the maximal conservation value and the minimal conservation value
-    if(!prediction.structure.scores.conservation) return;
-
-    //we need to normalize the scores to fit in properly
-    //by the definition of conservation scoring the maximum is log_2(20)
-    const maxConservation = Math.max(...prediction.structure.scores.conservation);
-
-    const conservationNormalized = [];
-
-    for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
-        conservationNormalized.push(maxConservation - (prediction.structure.scores.conservation[i] / maxConservation));
-    }
-    console.log(conservationNormalized);
-
-    let maximumColorNumber = 255 / maxConservation;
-
-    /*
-    for(let i = 0; i < prediction.structure.indices.length; i++) {
-        //this is done because prediction.structure.indices looks like "A_123"
-        let splitIndice = prediction.structure.indices[i].split("_");
-        let chain = splitIndice[0];
-        let number = Number(splitIndice[1]);
-
-        console.log(maximumColorNumber * conservationNormalized[i]);
-
-        let color = Color.fromRgb(maximumColorNumber * conservationNormalized[i], maximumColorNumber * conservationNormalized[i], maximumColorNumber * conservationNormalized[i]);
-
-        const builder = plugin.build();
-        //@ts-ignore
-        builder.to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, {
-            layers: [{
-              bundle: Bundle.fromSelection(getSelectionFromChainAuthId(plugin, chain, [number])),
-              color: color,
-              clear: false
-            }]
-          });
-        await builder.commit();
-    }
-    */
-    /*
-        const params = [];
-        for (const color in coloring.colors.colorPos) {
-          str2Hex(mappingColorSheme.emptyColor)
-          const positions = coloring.colors.colorPos[color];
-          const _params = props.entityId ? {entityId: props.entityId} : {chain: props.chain};
-          const sel = selectPositions({..._params, ...{positions: positions}})
-          const bundle = Bundle.fromSelection(sel);
-  
-          params.push({
-            bundle: bundle,
-            color: Color(color),
-            clear: false
-          });
-        }
-  
-        await plugin.build()
-          .to(repr).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params})
-          .commit();
-          */
 }
 
 export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: any, groupName: string, prediction: PredictionData) {

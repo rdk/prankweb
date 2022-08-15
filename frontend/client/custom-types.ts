@@ -138,7 +138,7 @@ export interface ReactApplicationState {
 }
 
 export interface ChainData {
-    threshold: number;
+    threshold?: number;
     chainId: string;
     residueNums: number[];
 }
