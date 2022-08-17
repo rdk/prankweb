@@ -144,7 +144,13 @@ export interface ChainData {
     residueNums: number[];
 }
 
-export interface CustomRepresentation {
+export interface PolymerRepresentation {
     type: PolymerViewType;
+    representation: StateObjectSelector;
+}
+
+export interface PocketRepresentation {
+    pocketId: string;
+    type: PocketsViewType;
     representation: StateObjectSelector;
 }

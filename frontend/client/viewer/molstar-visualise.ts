@@ -1,7 +1,7 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { PredictionData, PocketData, MolstarResidue, ChainData, CustomRepresentation, PolymerColorType, PolymerViewType } from '../custom-types';
+import { PredictionData, PocketData, MolstarResidue, ChainData, PolymerRepresentation, PolymerColorType, PolymerViewType, PocketRepresentation, PocketsViewType } from '../custom-types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
@@ -15,7 +15,8 @@ import { color } from '@mui/system';
 import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
 import { StateObjectSelector } from 'molstar/lib/mol-state';
 
-let polymerRepresentations: CustomRepresentation[] = [];
+let polymerRepresentations: PolymerRepresentation[] = [];
+let pocketRepresentations: PocketRepresentation[] = [];
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string, predicted: boolean) {
     // if (plugin) {
@@ -103,7 +104,7 @@ function getLogBaseX(x : number, y : number) {
     return Math.log(y) / Math.log(x);
 }
 
-export async function updatePolymerView(value: PolymerViewType, plugin: PluginUIContext, predicted: boolean) {
+export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContext, predicted: boolean) {
     for(const element of polymerRepresentations) {
         if(element.type === value) {
             setSubtreeVisibility(plugin.state.data, element.representation.ref, false);
@@ -294,13 +295,59 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
     const expression2 = MS.struct.generator.atomGroups({
         'atom-test': MS.core.set.has([MS.set(...x.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
     });
-    group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
-        .apply(StateTransforms.Representation.StructureRepresentation3D,
-        createStructureRepresentationParams(plugin, structure.data, {
-            type: 'gaussian-surface',
-            color: 'uniform', colorParams: {value: Color(color)},
-            size: 'physical', sizeParams: {scale: 1.10}
-        }))
+
+    //create the gaussian surface representation
+    const repr_surface : StateObjectSelector = await group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
+    .apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'gaussian-surface',
+        color: 'uniform', colorParams: {value: Color(color)},
+        size: 'physical', sizeParams: {scale: 1.10}
+    }));
+
+    pocketRepresentations.push({
+        pocketId: pocket.name,
+        type: PocketsViewType.Surface,
+        representation: repr_surface,
+    });
+
+    //create the ball and stick representation
+    const repr_ball_stick = await group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
+    .apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'ball-and-stick',
+        color: 'uniform', colorParams: {value: Color(color)},
+        size: 'physical', sizeParams: {scale: 1.10}
+    }));
+
+    pocketRepresentations.push({
+        pocketId: pocket.name,
+        type: PocketsViewType.Atoms,
+        representation: repr_ball_stick,
+    });
+}
+
+//sets the pocket visibility in mol* in one representation
+export function showPocketInCurrentRepresentation(plugin: PluginUIContext, representationType: PocketsViewType, pocketIndex: number, isVisible: boolean) {
+    if(isVisible) {
+        //show the pocket
+        const currentPocketRepr = pocketRepresentations.find(e => e.type === representationType && e.pocketId === `pocket${pocketIndex+1}`);
+
+        if(currentPocketRepr) {
+            setSubtreeVisibility(plugin.state.data, currentPocketRepr.representation.ref , false);
+        }
+
+        const otherPocketRepr = pocketRepresentations.find(e => e.type !== representationType && e.pocketId === `pocket${pocketIndex+1}`);
+        //hide other representations
+        if(otherPocketRepr) {
+            setSubtreeVisibility(plugin.state.data, otherPocketRepr.representation.ref, true);
+        }
+        return;
+    }
+
+    //else hide all representations
+    const pocketRepr = pocketRepresentations.find(e => e.pocketId === `pocket${pocketIndex+1}`);
+    if(pocketRepr) {
+        setSubtreeVisibility(plugin.state.data, pocketRepr.representation.ref, true);
+    }
 }
 
 //focuses on the residues loci specidfied by the user, can be called from anywhere

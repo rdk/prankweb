@@ -20,7 +20,7 @@ import { Script } from "molstar/lib/mol-script/script"
 import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
-import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView } from './molstar-visualise';
+import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView, showPocketInCurrentRepresentation } from './molstar-visualise';
 
 
 declare let window: CustomWindow;
@@ -120,14 +120,18 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
     console.log(value);
-    //TODO: show only the actual representation of the protein
+    //TODO: show only the actual representation of the protein if predicted
     updatePolymerView(value, this.props.plugin, this.state.isShowOnlyPredicted);
   }
 
   onPocketsViewChange(value: PocketsViewType) {
     this.setState({"pocketsView": value});
     console.log(value);
-    //TODO: show only the actual representation of pockets
+    let index = 0;
+    this.state.data.pockets.forEach(pocket => {
+      this.onSetPocketVisibility(index, pocket.isReactVisible ? true : false, value);
+      index++;
+    });
   }
 
   onPolymerColorChange(value: PolymerColorType) {
@@ -151,10 +155,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       this.onSetPocketVisibility(index, true);
       index++;
     });
-    //TODO: show all pockets in Molstar in the current representation
   }
 
-  onSetPocketVisibility(index: number, isVisible: boolean) {
+  onSetPocketVisibility(index: number, isVisible: boolean, value?: PocketsViewType) {
     let stateData : PredictionData = {...this.state.data};
     stateData.pockets[index].isReactVisible = isVisible;
     this.setState({
@@ -170,7 +173,15 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     const newData = track.trackData;
     this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
 
-    //TODO: set pocket visibility in Molstar in the current representation
+    //then resolve Mol*
+    //here value may be passed as an parameter whilst changing the pocket view type, because the state is not updated yet.
+    //Otherwise the value is taken from the state.
+    if(value === null || value === undefined) {
+      showPocketInCurrentRepresentation(this.props.plugin, this.state.pocketsView, index, isVisible);
+    }
+    else {
+      showPocketInCurrentRepresentation(this.props.plugin, value, index, isVisible);
+    }
   }
 
   onShowOnlyPocket(index: number) {
