@@ -1,19 +1,18 @@
 import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
-import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb } from './molstar-visualise';
+import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, getSelectionFromIndices, addPredictedPolymerRepresentation } from './molstar-visualise';
 import { PredictionData } from "../custom-types";
 import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 
-export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string) : Promise<[PredictionData, RcsbFv]>{
+export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string, predicted: boolean) : Promise<[PredictionData, RcsbFv]>{
     const baseUrl: string = getApiEndpoint(database, identifier) + "/public";
     
     /*console.log(`${baseUrl}/${structureName}`)
     console.log(`${baseUrl}/prediction.json`);*/
 
     // Download pdb/mmcif and create a model in Mol*.
-    console.log("XD");
-    const molData = await loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`).then(result => result);
+    const molData = await loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`, predicted).then(result => result);
     
     let structure = molData[1];
 
@@ -25,6 +24,9 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
 
     // Add pockets etc. from the prediction to Mol*.
     await createPocketsGroupFromJson(molstarPlugin, structure, "Pockets", prediction);
+
+    //TODO: Add predicted representation
+    //if(predicted) await addPredictedPolymerRepresentation(molstarPlugin, prediction, structure);
 
     // Link Molstar to RCSB.
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);
