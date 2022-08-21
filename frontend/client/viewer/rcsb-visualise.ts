@@ -32,13 +32,19 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 function calculateViewerWidth() {
     const width = window.innerWidth;
 
-    if(width <= 768) return width;
+    const xs = 768;
+    const lg = 1200;
 
-    if(width <= 1200) {
-        return Math.floor(width * (8/12)) - 210;
+    //768 and 1200 + their multipliers are based on the current setting of bootstrap classes, could be changed
+    //230 is a needed padding... could be maybe a little less, but on the other way smaller numbers can cause unnecessary overflow 
+
+    if(width <= xs) return width;
+
+    if(width <= lg) {
+        return Math.floor(width * (8/12)) - 230;
     }
 
-    return Math.floor(width * (10/12)) - 210;
+    return Math.floor(width * (10/12)) - 230;
 }
 
 
@@ -107,7 +113,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "bindingsTrack",
-            trackHeight: 30,
+            trackHeight: 20,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.BLOCK,
             displayColor: "#9542F5",
@@ -151,7 +157,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "pocketsTrack",
-            trackHeight: 30,
+            trackHeight: 20,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.BLOCK,
             displayColor: "#FF0000",
@@ -189,7 +195,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "conservationTrack",
-            trackHeight: 45,
+            trackHeight: 40,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.AREA,
             displayColor: "#6d6d6d",
@@ -222,7 +228,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     
         rowConfigData.push({
             trackId: "alphafoldTrack",
-            trackHeight: 45,
+            trackHeight: 40,
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.AREA,
             displayColor: {
