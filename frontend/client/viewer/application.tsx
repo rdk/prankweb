@@ -145,8 +145,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     this.setState({
       "isShowOnlyPredicted": isShowOnlyPredicted
     });
-    //TODO: show only predicted residues in the current representation... is possibly based on AlphaFold scores
-    //updatePolymerView(this.props.plugin, this.state.polymerView, isShowOnlyPredicted);
+    updatePolymerView(this.state.polymerView, this.props.plugin, isShowOnlyPredicted);
   }
 
   onShowAllPockets() {
@@ -190,7 +189,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       this.onSetPocketVisibility(i, (index === i) ? true : false);
       i++;
     });
-    //TODO: show only one pocket in Molstar in the current representation
   }
 
   onFocusPocket(index: number) {

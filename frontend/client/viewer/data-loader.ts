@@ -1,6 +1,6 @@
 import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
-import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, getSelectionFromIndices, addPredictedPolymerRepresentation } from './molstar-visualise';
+import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, getConfidentResiduesFromPrediction, addPredictedPolymerRepresentation } from './molstar-visualise';
 import { PredictionData } from "../custom-types";
 import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
@@ -25,8 +25,8 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
     // Add pockets etc. from the prediction to Mol*.
     await createPocketsGroupFromJson(molstarPlugin, structure, "Pockets", prediction);
 
-    //TODO: Add predicted representation
-    //if(predicted) await addPredictedPolymerRepresentation(molstarPlugin, prediction, structure);
+    // Add predicted polymer representation.
+    if(predicted) await addPredictedPolymerRepresentation(molstarPlugin, prediction, structure);
 
     // Link Molstar to RCSB.
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);

@@ -11,12 +11,12 @@ import { Canvas3D } from "molstar/lib/mol-canvas3d/canvas3d";
 import { RcsbFv } from '@rcsb/rcsb-saguaro';
 import { Loci } from "molstar/lib/mol-model/loci";
 import { Bundle } from "molstar/lib/mol-model/structure/structure/element/bundle";
-import { color } from '@mui/system';
 import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
-import { StateObjectSelector } from 'molstar/lib/mol-state';
+import { State, StateObjectSelector } from 'molstar/lib/mol-state';
 
 let polymerRepresentations: PolymerRepresentation[] = [];
 let pocketRepresentations: PocketRepresentation[] = [];
+let predictedPolymerRepresentations: PolymerRepresentation[] = [];
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string, predicted: boolean) {
     // if (plugin) {
@@ -104,7 +104,33 @@ function getLogBaseX(x : number, y : number) {
     return Math.log(y) / Math.log(x);
 }
 
-export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContext, predicted: boolean) {
+export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContext, showConfidentResidues: boolean) {
+    //firstly check if the structure is a predicted one
+    //and if we're supposed to show only confident residues
+    if(predictedPolymerRepresentations.length > 0 && showConfidentResidues) {
+        //if so, show the predicted polymer representation
+        for(const element of predictedPolymerRepresentations) {
+            if(element.type === value) {
+                setSubtreeVisibility(plugin.state.data, element.representation.ref, false);
+            } else {
+                setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
+            }
+        }
+
+        //and hide all other ones
+        for(const element of polymerRepresentations) {
+            setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
+        }
+        return;
+    }
+
+    //if predicted and not showing confident residues, show none
+    if(predictedPolymerRepresentations.length > 0) {
+        for(const element of predictedPolymerRepresentations) {
+            setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
+        }
+    }
+
     for(const element of polymerRepresentations) {
         if(element.type === value) {
             setSubtreeVisibility(plugin.state.data, element.representation.ref, false);
@@ -155,7 +181,13 @@ async function overPaintStructureClear(plugin: PluginUIContext, prediction: Pred
 
     for(const element of polymerRepresentations) { 
         await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
-    } 
+    }
+
+    if(predictedPolymerRepresentations.length > 0) {
+        for(const element of predictedPolymerRepresentations) {
+            await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+        }
+    }
 }
 
 async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) { //paints the structure with the alpha fold prediction
@@ -208,6 +240,12 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
     for(const element of polymerRepresentations) { 
         await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
     } 
+
+    if(predictedPolymerRepresentations.length > 0) {
+        for(const element of predictedPolymerRepresentations) {
+            await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+        }
+    }
 }
 
 async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
@@ -274,11 +312,17 @@ async function overPaintStructureWithConservation(plugin: PluginUIContext, predi
     for(const element of polymerRepresentations) { 
         await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
     } 
+
+    if(predictedPolymerRepresentations.length > 0) {
+        for(const element of predictedPolymerRepresentations) {
+            await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
+        }
+    }
 }
 
 export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: any, groupName: string, prediction: PredictionData) {
     const builder = plugin.state.data.build();
-    const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName})
+    const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName});
     for(let i = 0; i < prediction.pockets.length; i++) {
         console.log(prediction);
         createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], `Pocket ${i+1}`, Number("0x" + prediction.pockets[i].color), group);
@@ -297,8 +341,8 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
     });
 
     //create the gaussian surface representation
-    const repr_surface : StateObjectSelector = await group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
-    .apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+     const selection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
+     const repr_surface : StateObjectSelector = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'gaussian-surface',
         color: 'uniform', colorParams: {value: Color(color)},
         size: 'physical', sizeParams: {scale: 1.10}
@@ -311,8 +355,7 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
     });
 
     //create the ball and stick representation
-    const repr_ball_stick = await group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
-    .apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+    const repr_ball_stick : StateObjectSelector = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'ball-and-stick',
         color: 'uniform', colorParams: {value: Color(color)},
         size: 'physical', sizeParams: {scale: 1.10}
@@ -394,18 +437,52 @@ function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, p
 //TODO: FIX THIS
 export async function addPredictedPolymerRepresentation(plugin: PluginUIContext, prediction: PredictionData, structure: any) {
     //adds predicted structure
-    const predStr = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
-    console.log(predStr);
-    if (predStr) {
-        await plugin.builders.structure.representation.addRepresentation(predStr, {
-            type: 'ball-and-stick',
-            color: 'uniform', colorParams: {value: Color(0x00FF00)},
-        });
-    }
+    const builder = plugin.state.data.build();
+    const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: "Confident Polymer 70"}, {ref: "Confident Polymer 70"});
+
+    const expr = getConfidentResiduesFromPrediction(plugin, prediction);
+
+    const selection = group.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expr});
+
+    const repr_ball_stick_predict = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'ball-and-stick',
+        color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+    }));
+
+    predictedPolymerRepresentations.push({
+        type: PolymerViewType.Atoms,
+        representation: repr_ball_stick_predict.selector,
+    });
+
+    const repr_surface_predict = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'gaussian-surface',
+        color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+    }));
+
+    predictedPolymerRepresentations.push({
+        type: PolymerViewType.Gaussian_Surface,
+        representation: repr_surface_predict.selector,
+    });
+
+    const repr_cartoon_predict = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'cartoon',
+        color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+    }));
+
+    predictedPolymerRepresentations.push({
+        type: PolymerViewType.Cartoon,
+        representation: repr_cartoon_predict.selector,
+    });
+
+    await builder.commit();
+
+    //after creating the representations, hide them
+    setSubtreeVisibility(plugin.state.data, repr_ball_stick_predict.ref, true);
+    setSubtreeVisibility(plugin.state.data, repr_surface_predict.ref, true);
+    setSubtreeVisibility(plugin.state.data, repr_cartoon_predict.ref, true);
 }
 
-//TODO: FIX THIS
-export function getSelectionFromIndices(plugin: PluginUIContext, prediction: PredictionData) { // gets selection for predicted structure
+export function getConfidentResiduesFromPrediction(plugin: PluginUIContext, prediction: PredictionData) { // gets selection for predicted structure
     const queries = [];
     //for each chain create a query for the residues
     let totalIndex = 0;
@@ -417,7 +494,7 @@ export function getSelectionFromIndices(plugin: PluginUIContext, prediction: Pre
 
         for(let y = 0; y < positions.length; y++) {
             if(prediction.structure.scores.plddt![totalIndex + y] > 70) {
-                newPositions.push(positions[y].split("_")[1]);
+                newPositions.push(Number(positions[y].split("_")[1]));
             }
         }
 
@@ -426,12 +503,12 @@ export function getSelectionFromIndices(plugin: PluginUIContext, prediction: Pre
             'residue-test': MS.core.set.has([MS.set(...newPositions), MS.struct.atomProperty.macromolecular.auth_seq_id()]),
             'group-by': MS.struct.atomProperty.macromolecular.residueKey()
         });
+
         totalIndex = prediction.structure.regions[i].end + 1;
         queries.push(query);
     }
 
-    const finalQuery = MS.struct.combinator.merge(queries);
-    console.log(finalQuery);
+    const finalQuery = MS.struct.modifier.union(queries);
 
     return finalQuery;
 }
