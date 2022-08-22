@@ -3,44 +3,75 @@ services:
   gateway:
     build:
       context: ./
-      dockerfile: ./api-gateway/Dockerfile
+      dockerfile: ./gateway/Dockerfile
       args:
-        GOOGLE_ANALYTIS: "UA-136777636-1"
-      labels:
-        com.github.cusbg.project: "prankweb"
+        GOOGLE_ANALYTICS: "UA-136777636-1"
+        WEB_SERVICE_USER: ${WEB_SERVICE_USER}
+        WEB_SERVICE_PASSWORD: ${WEB_SERVICE_PASSWORD}
+    depends_on:
+      - web-server
     restart: unless-stopped
-    networks:
-      - prankweb
     ports:
       - "8020:80"
-  runtime:
+  rabbitmq:
     build:
       context: ./
-      dockerfile: ./runtime/Dockerfile
-      args:
-        UID: 1002
-        GID: 1002
-        P2RANK_DOWNLOAD_URL: "https://github.com/rdk/p2rank/releases/download/2.3.1/p2rank_2.3.1.tar.gz"
-      labels:
-        com.github.cusbg.project: "prankweb"
-    restart: unless-stopped
-    networks:
-      - prankweb
-    user: "1002"
+      dockerfile: ./rabbitmq/Dockerfile
+    hostname: "rabbitmq"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     volumes:
-      - /data/conservation/blast-database:/data/conservation/blast-database
-      - /data/conservation/hssp:/data/conservation/hssp
-      - /data/prankweb:/data/prankweb/task
+      - rabbitmq:/var/lib/rabbitmq/
+  flower:
+    build: https://github.com/mher/flower.git
+    command: "celery flower --url_prefix=service/flower"
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+    depends_on:
+      - rabbitmq
+  web-server:
+    build:
+      context: ./
+      dockerfile: ./web-server/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      PRANKWEB_DATA: "/data/prankweb"
+#      CELERY_BROKER_PATH: "/data/prankweb/broker"
+    restart: unless-stopped
+    volumes:
+      - predictions:/data/prankweb
+  executor:
+    build:
+      context: ./
+      dockerfile: ./executor/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+#      CELERY_BROKER_PATH: "/data/prankweb/broker"
+    restart: unless-stopped
+    volumes:
+      - conservation:/data/conservation
+      - predictions:/data/prankweb
   monitor:
     build:
       context: ./
       dockerfile: ./monitor/Dockerfile
-      args:
-        GOOGLE_ANALYTICS: "UA-136777636-2"
-      labels:
-        com.github.cusbg.project: "prankweb"
+    environment:
+      GOOGLE_ANALYTICS: "UA-136777636-2"
     restart: unless-stopped
-    networks:
-      - prankweb
-networks:
-  prankweb:
+volumes:
+  conservation:
+    external: True
+    name: prankweb_conservation
+  predictions:
+    external: True
+    name: prankweb_predictions
+  rabbitmq:
+    external: True
+    name: prankweb_rabbitmq

@@ -1,45 +1,32 @@
 const path = require("path");
-const merge = require("webpack-merge");
+const {merge} = require("webpack-merge");
 const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const common = Object.assign({}, require("./webpack.common"));
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+const common = require("./webpack.common");
 
 module.exports = merge(common, {
   "mode": "production",
   "output": {
-    "filename": path.join("assets", "bundle.[chunkhash].js"),
+    "filename": path.join("bundle-[name]-[contenthash].js"),
   },
   "optimization": {
     "splitChunks": {
       "cacheGroups": {
-        "litemol": {
-          "test": /[\\/]litemol[\\/]/,
-          "chunks": "all",
-          "priority": 1,
-          "filename": path.join("assets", "litemol.[chunkhash].js"),
-        },
         "commons": {
           "test": /[\\/]node_modules[\\/]/,
           "chunks": "all",
           "priority": 0,
-          "filename": path.join("assets", "commons.[chunkhash].js"),
-        },
-        "protael": {
-          "test": /protael.js/,
-          "chunks": "all",
-          "priority": 1,
-          "filename": path.join("assets", "protael.[chunkhash].js"),
+          "filename": path.join("bundle-commons-[contenthash].js"),
         },
       },
     },
     "minimizer": [
+      // https://github.com/terser/terser
       new TerserPlugin({
-        "cache": true,
-        "parallel": false,
-        "sourceMap": false,
         "terserOptions": {
-          // https://github.com/terser/terser#compress-options
           "compress": {
             "ecma": 6,
           },
@@ -49,9 +36,15 @@ module.exports = merge(common, {
   },
   "plugins": [
     new CleanWebpackPlugin({}),
-    new CopyWebpackPlugin([{
-      "from": path.join(__dirname, "..", "public", "assets"),
-      "to": path.join(__dirname, "..", "dist", "assets"),
-    }]),
+    new MiniCssExtractPlugin({
+      "filename": "style-[contenthash].css",
+    }),
+    new CopyWebpackPlugin({
+      "patterns": [{
+        "from": path.join(__dirname, "..", "public", "assets"),
+        "to": path.join(__dirname, "..", "dist", "assets"),
+        "noErrorOnMissing": true,
+      }],
+    }),
   ],
 });

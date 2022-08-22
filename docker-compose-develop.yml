@@ -3,31 +3,67 @@ services:
   gateway:
     build:
       context: ./
-      dockerfile: ./api-gateway/Dockerfile
-      labels:
-        com.github.cusbg.project: "prankweb"
-    restart: unless-stopped
-    networks:
-      - prankweb
+      dockerfile: ./gateway/Dockerfile
+      args:
+        GOOGLE_ANALYTICS: ""
+        WEB_SERVICE_USER: ${WEB_SERVICE_USER}
+        WEB_SERVICE_PASSWORD: ${WEB_SERVICE_PASSWORD}
+    depends_on:
+      - web-server
     ports:
       - "8020:80"
-  runtime:
+  rabbitmq:
     build:
       context: ./
-      dockerfile: ./runtime/Dockerfile
+      dockerfile: ./rabbitmq/Dockerfile
+    hostname: "rabbitmq"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+  flower:
+    build: https://github.com/mher/flower.git
+    command: "celery flower --url_prefix=service/flower"
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+    depends_on:
+      - rabbitmq
+  web-server:
+    build:
+      context: ./
+      dockerfile: ./web-server/Dockerfile
       args:
         UID: ${UID}
         GID: ${GID}
-        P2RANK_DOWNLOAD_URL: "https://github.com/rdk/p2rank/releases/download/2.3.1/p2rank_2.3.1.tar.gz"
-      labels:
-        com.github.cusbg.project: "prankweb"
-    user: ${UID}:${GID}
-    restart: unless-stopped
-    networks:
-      - prankweb
+    depends_on:
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      PRANKWEB_DATA: "/data/prankweb"
     volumes:
-      - /data/conservation/2020_06:/data/conservation/blast-database
-      - /data/conservation/hssp:/data/conservation/hssp
-      - /data/prankweb:/data/prankweb/task
-networks:
-  prankweb:
+      - predictions:/data/prankweb
+  executor:
+    build:
+      context: ./
+      dockerfile: ./executor/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    depends_on:
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+    volumes:
+      - conservation:/data/conservation
+      - predictions:/data/prankweb
+volumes:
+  rabbitmq:
+    external: True
+    name: prankweb_rabbitmq
+  conservation:
+    external: True
+    name: prankweb_conservation
+  predictions:
+    external: True
+    name: prankweb_predictions

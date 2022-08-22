@@ -1,0 +1,150 @@
+openapi: 3.0.0
+
+info:
+  title: prankweb API
+  version: 1.0.0
+
+servers:
+  - url: https://prankweb.cz/api/v2/predictions/
+
+paths:
+  /{database}/{task}/:
+    get:
+      parameters:
+        - in: path
+          name: database
+          required: true
+          schema:
+            $ref: '#/components/schemas/DatabaseId'
+        - in: path
+          name: task
+          required: true
+          schema:
+            $ref: '#/components/schemas/TaskId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  /{database}/{task}/log:
+    get:
+      parameters:
+        - in: path
+          name: database
+          required: true
+          schema:
+            $ref: '#/components/schemas/DatabaseId'
+        - in: path
+          name: task
+          required: true
+          schema:
+            $ref: '#/components/schemas/TaskId'
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{database}/{task}/public/prediction.json:
+    get:
+      parameters:
+        - in: path
+          name: database
+          required: true
+          schema:
+            $ref: '#/components/schemas/DatabaseId'
+        - in: path
+          name: task
+          required: true
+          schema:
+            $ref: '#/components/schemas/TaskId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prediction'
+
+components:
+  schemas:
+    DatabaseId:
+      type : string
+    TaskId:
+      type : string
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        created:
+          type: string
+          format: date-time
+        lastChange:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: ['queued', 'running', 'failed', 'successful']
+    Prediction:
+      type: object
+      properties:
+        pockets:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              rank:
+                type: number
+              score:
+                type: number
+              probability:
+                type: number
+              center:
+                type: array
+                items:
+                  type: number
+              residues:
+                type: array
+                items:
+                  type: string
+              surface:
+                type: array
+                items:
+                  type: string
+        structure:
+          type: object
+          properties:
+            sequence:
+              type: array
+              items:
+                type: string
+            scores:
+              type: array
+              items:
+                type: number
+            indices:
+              type: array
+              items:
+                type: string
+            binding:
+              type: array
+              description: Indices of know binding sites on the complex.
+              items:
+                type: number
+            regions:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  start:
+                    type: number
+                  end:
+                    type: number

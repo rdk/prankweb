@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'checkstyle'
+apply plugin: 'application'
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+jar {
+    archiveFileName = 'prankweb-java-tools.jar'
+}
+
+dependencies {
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.7'
+    implementation group: 'ch.qos.logback.contrib', name: 'logback-json-classic', version: '0.1.5'
+    implementation group: 'ch.qos.logback.contrib', name: 'logback-jackson', version: '0.1.5'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.0'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.5.0'
+    implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.9.0'
+    implementation(group: 'org.biojava', name: 'biojava-structure', version: '6.0.1') {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    }
+    implementation group: 'javax.activation', name: 'activation', version: '1.1.1'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.8.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClassName = 'cusbg.prankweb.pjtools.ApplicationEntry'
+}
+
+installDist {
+    into "${project.rootDir}/dist"
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url "https://repository.jboss.org/nexus/content/repositories/thirdparty-releases/" }
+}
