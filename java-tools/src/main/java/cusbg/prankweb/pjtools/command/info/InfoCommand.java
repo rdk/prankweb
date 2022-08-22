@@ -202,12 +202,16 @@ public class InfoCommand implements CliCommand {
         if (residueBasedValues == null) {
             return;
         }
+        boolean reportedMissing = false;
         List<Double> values = new ArrayList<>(model.indices.size());
         for (String index : model.indices) {
             if (residueBasedValues.containsKey(index)) {
                 values.add(residueBasedValues.get(index));
             } else {
-                LOG.info("Missing '{}' value for residue '{}'", name, index);
+                if (!reportedMissing) {
+                    LOG.info("Missing '{}' value.", name);
+                }
+                reportedMissing = true;
                 values.add(defaultValue);
             }
         }
