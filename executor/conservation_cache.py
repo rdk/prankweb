@@ -132,6 +132,7 @@ def _read_cache_file(cache_directory: str, group_hash: str):
 
 
 def write_cache_file(cache_directory: str, group_hash: str, content):
+    os.makedirs(cache_directory, exist_ok=True)
     path = os.path.join(cache_directory, group_hash + ".jsonl")
     swap_path = path + ".swp"
     with open(swap_path, "w", encoding="utf-8") as stream:
