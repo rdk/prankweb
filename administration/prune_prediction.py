@@ -20,7 +20,10 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--database", required=True,
         help="Path of target prankweb database directory, e.g. 'v3'.")
     parser.add_argument(
-        "--remove-failed", action="store_true",
+        "--running", action="store_true",
+        help="If set failed tasks are also removed.")
+    parser.add_argument(
+        "--failed", action="store_true",
         help="If set failed tasks are also removed.")
     return vars(parser.parse_args())
 
@@ -33,25 +36,17 @@ def main(arguments):
     for (code, directory) in predictions:
         info_path = os.path.join(directory, "info.json")
         if not os.path.exists(info_path):
-            logger.info(f"No info.json file found for '{code}'.")
-            logger.debug(f"Removing directory '{directory}'.")
+            logger.info(f"Removing prediction '{code}' with no info.json file.")
             removed_counter += 1
             shutil.rmtree(directory)
             continue
         with open(info_path) as stream:
             info = json.load(stream)
-        if info["status"] == "running":
-            logger.info(f"Found running task for '{code}'.")
-            logger.debug(f"Removing directory '{directory}'.")
+        if should_be_deleted(info, arguments):
+            logger.info(f"Removing '{code}' in '{directory}'.")
             removed_counter += 1
             shutil.rmtree(directory)
-        elif info["status"] == "failed" and arguments["remove_failed"]:
-            logger.info(f"Found failed task for '{code}'.")
-            logger.debug(f"Removing directory '{directory}'.")
-            removed_counter += 1
-            shutil.rmtree(directory)
-    logger.info(f"Checked {len(predictions)} predictions.")
-    logger.info(f"Removed {removed_counter} predictions.")
+    logger.info(f"Removed {removed_counter} out of {len(predictions)}.")
     logger.info("All done")
 
 
@@ -77,6 +72,11 @@ def list_prankweb_predictions(predictions_directory: str) \
         for subdir in os.listdir(predictions_directory)
         for code in os.listdir(os.path.join(predictions_directory, subdir))
     ]
+
+
+def should_be_deleted(info, arguments):
+    return (info["status"] == "running" and arguments["running"]) or \
+           (info["status"] == "failed" and arguments["failed"])
 
 
 if __name__ == "__main__":
