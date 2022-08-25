@@ -18,6 +18,8 @@ let polymerRepresentations: PolymerRepresentation[] = [];
 let pocketRepresentations: PocketRepresentation[] = [];
 let predictedPolymerRepresentations: PolymerRepresentation[] = [];
 
+let conservationNormalized: any = null;
+
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string, predicted: boolean) {
     // if (plugin) {
     //     await plugin.clear();
@@ -144,12 +146,15 @@ export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUI
     switch(value) {
         case PolymerColorType.Clean:
             overPaintStructureClear(plugin, prediction);
+            overPaintPocketsClear(plugin, prediction);
             return;
         case PolymerColorType.Conservation:
             overPaintStructureWithConservation(plugin, prediction);
+            overPaintPocketsWithConservation(plugin, prediction);
             return;
         case PolymerColorType.AlphaFold:
             overPaintStructureWithAlphaFold(plugin, prediction);
+            overPaintPocketsWithAlphaFold(plugin, prediction);
             return;
     }
 }
@@ -187,6 +192,43 @@ async function overPaintStructureClear(plugin: PluginUIContext, prediction: Pred
         for(const element of predictedPolymerRepresentations) {
             await plugin.build().to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params }).commit();
         }
+    }
+}
+
+async function overPaintPocketsClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
+    for(const pocket of prediction.pockets) {
+        const builder = plugin.state.data.build();
+        const chains : ChainData[] = [];
+        const params = [];
+
+        for(const residue of pocket.residues) {
+            let splitResidue = residue.split("_");
+            let element = chains.find(x => x.chainId === splitResidue[0]);
+            if(element) {
+                element.residueNums.push(Number(splitResidue[1]));
+            } else {
+                chains.push({chainId: splitResidue[0], residueNums: [Number(splitResidue[1])]});
+            }
+        }
+
+        for(let i = 0; i < chains.length; i++) {
+            const sel = getSelectionFromChainAuthId(plugin, chains[i].chainId, chains[i].residueNums);
+            const bundle = Bundle.fromSelection(sel);
+    
+            params.push({
+              bundle: bundle,
+              color: Color(0xFFFFFF),
+              clear: false
+            });
+        }
+        const pocketReprs = pocketRepresentations.filter(e => e.pocketId === pocket.name);
+        for(const element of pocketReprs) {
+            if(!element.coloredPocket) {
+                await builder.to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params });
+            }
+        }
+    
+        await builder.commit();
     }
 }
 
@@ -248,6 +290,67 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
     }
 }
 
+async function overPaintPocketsWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) {
+    if(!prediction.structure.scores.plddt) return;
+
+    const thresholds = [90, 70, 50, 0];
+    const colors : Color[] = [ //those are the colors from ALPHAFOLD db
+        Color.fromRgb(0, 83, 214),
+        Color.fromRgb(101, 203, 243),
+        Color.fromRgb(255, 219, 19),
+        Color.fromRgb(255, 125, 69),
+    ]
+
+    for(const pocket of prediction.pockets) {
+        const builder = plugin.state.data.build();
+        const params = [];
+        const selections : ChainData[] = [];
+    
+        for(const residue of pocket.residues) {
+            const splitResidue = residue.split("_");
+            const chain = splitResidue[0];
+            const id = Number(splitResidue[1]);
+    
+            let index = prediction.structure.indices.findIndex(e => e === residue);
+            let score = prediction.structure.scores.plddt[index];
+    
+            for(let y = 0; y < thresholds.length; y++) {
+                if(score > thresholds[y]) {
+                    let element = selections.find(e => e.threshold === thresholds[y] && e.chainId == chain);
+                    if(element) {
+                        element.residueNums.push(id);
+                    }
+                    else {
+                        selections.push({chainId: chain, residueNums: [id], threshold: thresholds[y]});
+                    }
+                    break;
+                }
+            }
+        }
+    
+        //color the residues
+        for(let i = 0; i < selections.length; i++) {
+            const sel = getSelectionFromChainAuthId(plugin, selections[i].chainId, selections[i].residueNums);
+            const bundle = Bundle.fromSelection(sel);
+    
+            params.push({
+              bundle: bundle,
+              color: colors[thresholds.findIndex(e => e === selections[i].threshold)],
+              clear: false
+            });
+        }
+    
+        const pocketReprs = pocketRepresentations.filter(e => e.pocketId === pocket.name);
+        for(const element of pocketReprs) {
+            if(!element.coloredPocket) {
+                await builder.to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params });
+            }
+        }
+    
+        await builder.commit();
+    }
+}
+
 async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
     if(!prediction.structure.scores.conservation) return;
 
@@ -255,10 +358,11 @@ async function overPaintStructureWithConservation(plugin: PluginUIContext, predi
     //by the definition of conservation scoring the maximum is log_2(20)
     const maxConservation = getLogBaseX(2, 20);
 
-    const conservationNormalized = [];
-
-    for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
-        conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
+    if(conservationNormalized === null) {
+        conservationNormalized = [];
+        for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
+            conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
+        }
     }
 
     const params = [];
@@ -320,6 +424,84 @@ async function overPaintStructureWithConservation(plugin: PluginUIContext, predi
     }
 }
 
+async function overPaintPocketsWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
+    if(!prediction.structure.scores.conservation) return;
+
+    //we need to normalize the scores to fit in properly
+    //by the definition of conservation scoring the maximum is log_2(20)
+    const maxConservation = getLogBaseX(2, 20);
+
+    const thresholds = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0];
+    const colors : Color[] = [];
+    //create shades of gray
+    //the first one is 120, 120, 120
+    //the last one is 255, 255, 255
+    for(let i = 0; i < thresholds.length; i++) {
+        let colorShade = i * 15 + 120;
+        colors.push(Color.fromRgb(colorShade, colorShade, colorShade));
+    }
+
+
+    for(const pocket of prediction.pockets) {
+        const builder = plugin.state.data.build();
+        const params = [];
+    
+        if(conservationNormalized === null) {
+            conservationNormalized = [];
+            for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
+                conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
+            }
+        }
+        const selections : ChainData[] = [];
+        
+        for(const residue of pocket.residues) {
+            const splitResidue = residue.split("_");
+            const chain = splitResidue[0];
+            const id = Number(splitResidue[1]);
+    
+            let index = prediction.structure.indices.findIndex(e => e === residue);
+            let score = prediction.structure.scores.conservation[index];
+    
+            // console.log('residue: %s, index: %d, score: %d', residue, index, score);
+    
+            for(let y = 0; y < thresholds.length; y++) {
+                if(score > thresholds[y]) {
+                    let element = selections.find(e => e.threshold === thresholds[y] && e.chainId == chain);
+                    if(element) {
+                        element.residueNums.push(id);
+                    }
+                    else {
+                        selections.push({chainId: chain, residueNums: [id], threshold: thresholds[y]});
+                    }
+                    break;
+                }
+            }
+        }
+    
+        //color the residues
+        for(let i = 0; i < selections.length; i++) {
+            const sel = getSelectionFromChainAuthId(plugin, selections[i].chainId, selections[i].residueNums);
+            const bundle = Bundle.fromSelection(sel);
+    
+            params.push({
+              bundle: bundle,
+              color: colors[thresholds.findIndex(e => e === selections[i].threshold)],
+              clear: false
+            });
+        }
+    
+        const pocketReprs = pocketRepresentations.filter(e => e.pocketId === pocket.name);
+        console.log(pocketReprs);
+        for(const element of pocketReprs) {
+            if(!element.coloredPocket) {
+                await builder.to(element.representation).apply(StateTransforms.Representation.OverpaintStructureRepresentation3DFromBundle, { layers: params });
+            }
+        }
+    
+        await builder.commit();
+    }
+}
+
 export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: any, groupName: string, prediction: PredictionData) {
     const builder = plugin.state.data.build();
     const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName});
@@ -332,17 +514,32 @@ export async function createPocketsGroupFromJson(plugin: PluginUIContext, struct
 
 //creates pockets' representation one by one and assigns them to the group
 async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: any, pocket: PocketData, groupName: string, color: number, group: any) { //group should not be any but i cannot figure out the right type
-    
     const group2 = group.apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName}, {selectionTags: groupName});
 
     let x = pocket.surface;
-    const expression2 = MS.struct.generator.atomGroups({
+    let expression2 = MS.struct.generator.atomGroups({
         'atom-test': MS.core.set.has([MS.set(...x.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
     });
 
-    //create the gaussian surface representation
-     const selection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
-     const repr_surface : StateObjectSelector = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+    //this selects the whole residues
+    let expr3 = MS.struct.modifier.wholeResidues({0: expression2});
+
+    //create the gaussian surface representations
+    const selection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expr3})
+    const repr_surface : StateObjectSelector = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'gaussian-surface',
+        color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
+    }));
+
+    pocketRepresentations.push({
+        pocketId: pocket.name,
+        type: PocketsViewType.Surface,
+        representation: repr_surface,
+        coloredPocket: false,
+    });
+
+    const selection2 = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: expression2})
+    const repr_surface2 : StateObjectSelector = selection2.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'gaussian-surface',
         color: 'uniform', colorParams: {value: Color(color)},
         size: 'physical', sizeParams: {scale: 1.10}
@@ -351,13 +548,14 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
     pocketRepresentations.push({
         pocketId: pocket.name,
         type: PocketsViewType.Surface,
-        representation: repr_surface,
+        representation: repr_surface2,
+        coloredPocket: true,
     });
 
-    //create the ball and stick representation
+    //create the ball and stick representations
     const repr_ball_stick : StateObjectSelector = selection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'ball-and-stick',
-        color: 'uniform', colorParams: {value: Color(color)},
+        color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
         size: 'physical', sizeParams: {scale: 1.10}
     }));
 
@@ -365,6 +563,20 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
         pocketId: pocket.name,
         type: PocketsViewType.Atoms,
         representation: repr_ball_stick,
+        coloredPocket: false,
+    });
+
+    const repr_ball_stick2 : StateObjectSelector = selection2.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'ball-and-stick',
+        color: 'uniform', colorParams: {value: Color(color)},
+        size: 'physical', sizeParams: {scale: 1.50}
+    }));
+
+    pocketRepresentations.push({
+        pocketId: pocket.name,
+        type: PocketsViewType.Atoms,
+        representation: repr_ball_stick2,
+        coloredPocket: true,
     });
 }
 
@@ -372,24 +584,24 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: a
 export function showPocketInCurrentRepresentation(plugin: PluginUIContext, representationType: PocketsViewType, pocketIndex: number, isVisible: boolean) {
     if(isVisible) {
         //show the pocket
-        const currentPocketRepr = pocketRepresentations.find(e => e.type === representationType && e.pocketId === `pocket${pocketIndex+1}`);
+        const currentPocketRepr = pocketRepresentations.filter(e => e.type === representationType && e.pocketId === `pocket${pocketIndex+1}`);
 
-        if(currentPocketRepr) {
-            setSubtreeVisibility(plugin.state.data, currentPocketRepr.representation.ref , false);
+        for(const element of currentPocketRepr) {
+            setSubtreeVisibility(plugin.state.data, element.representation.ref , false);
         }
 
-        const otherPocketRepr = pocketRepresentations.find(e => e.type !== representationType && e.pocketId === `pocket${pocketIndex+1}`);
+        const otherPocketRepr = pocketRepresentations.filter(e => e.type !== representationType && e.pocketId === `pocket${pocketIndex+1}`);
         //hide other representations
-        if(otherPocketRepr) {
-            setSubtreeVisibility(plugin.state.data, otherPocketRepr.representation.ref, true);
+        for(const element of otherPocketRepr) {
+            setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
         }
         return;
     }
 
     //else hide all representations
-    const pocketRepr = pocketRepresentations.find(e => e.pocketId === `pocket${pocketIndex+1}`);
-    if(pocketRepr) {
-        setSubtreeVisibility(plugin.state.data, pocketRepr.representation.ref, true);
+    const pocketRepr = pocketRepresentations.filter(e => e.pocketId === `pocket${pocketIndex+1}`);
+    for(const element of pocketRepr) {
+        setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
     }
 }
 
@@ -419,8 +631,7 @@ function getSurfaceAtomSelection(plugin: PluginUIContext, ids: string[]) { //get
     const expression2 = MS.struct.generator.atomGroups({
         'atom-test': MS.core.set.has([MS.set(...ids.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
     });
-    //@ts-ignore
-    return Script.getStructureSelection(expression2, plugin.managers.structure.hierarchy.current.structures[0].cell.obj.data);
+    return Script.getStructureSelection(expression2, plugin.managers.structure.hierarchy.current.structures[0].cell.obj!.data);
 }
 
 function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, positions: number[]) { // gets selection from chainId
@@ -430,11 +641,9 @@ function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, p
         'group-by': MS.struct.atomProperty.macromolecular.residueKey()
     });
     console.log(plugin.managers.structure.hierarchy.current.structures);
-    //@ts-ignore
-    return Script.getStructureSelection(query, plugin.managers.structure.hierarchy.current.structures[0].cell.obj.data);
+    return Script.getStructureSelection(query, plugin.managers.structure.hierarchy.current.structures[0].cell.obj!.data);
 }
 
-//TODO: FIX THIS
 export async function addPredictedPolymerRepresentation(plugin: PluginUIContext, prediction: PredictionData, structure: any) {
     //adds predicted structure
     const builder = plugin.state.data.build();

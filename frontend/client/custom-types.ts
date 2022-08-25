@@ -153,4 +153,5 @@ export interface PocketRepresentation {
     pocketId: string;
     type: PocketsViewType;
     representation: StateObjectSelector;
+    coloredPocket: boolean;
 }

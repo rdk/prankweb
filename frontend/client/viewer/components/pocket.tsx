@@ -72,7 +72,6 @@ export default class Pocket extends React.Component
   }
 
   showPocketDetails() {
-    //TODO
     this.setState({ "details": true });
   }
 

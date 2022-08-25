@@ -120,7 +120,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
     console.log(value);
-    //TODO: show only the actual representation of the protein if predicted
     updatePolymerView(value, this.props.plugin, this.state.isShowOnlyPredicted);
   }
 
