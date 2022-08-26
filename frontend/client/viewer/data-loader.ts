@@ -14,19 +14,19 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
     // Download pdb/mmcif and create a model in Mol*.
     const molData = await loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`, predicted).then(result => result);
     
-    let structure = molData[1];
+    const structure = molData[1];
 
     // Download the prediction.
     let prediction : PredictionData = await downloadJsonFromUrl(`${baseUrl}/prediction.json`);
 
     // Initialize RCSB plugin + link it to Mol*.
-    let rcsbPlugin : RcsbFv = initRcsb(prediction, molstarPlugin);
+    const rcsbPlugin : RcsbFv = initRcsb(prediction, molstarPlugin);
 
     // Add pockets etc. from the prediction to Mol*.
-    await createPocketsGroupFromJson(molstarPlugin, structure, "Pockets", prediction);
+    await createPocketsGroupFromJson(molstarPlugin, structure!, "Pockets", prediction);
 
     // Add predicted polymer representation.
-    if(predicted) await addPredictedPolymerRepresentation(molstarPlugin, prediction, structure);
+    if(predicted) await addPredictedPolymerRepresentation(molstarPlugin, prediction, structure!);
 
     // Link Molstar to RCSB.
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);
