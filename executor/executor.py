@@ -87,7 +87,7 @@ def _prepare_raw_structure_file(
         logger.info("I'm lazy and structure file already exists")
         return result
     if configuration.structure_code is not None:
-        configuration.structure_extension = "pdb"
+        configuration.structure_extension = "cif"
         result += configuration.structure_extension
         _download_from_pdb(configuration.structure_code, result)
     elif configuration.structure_file is not None:
@@ -106,7 +106,7 @@ def _prepare_raw_structure_file(
 
 
 def _download_from_pdb(code: str, destination: str) -> None:
-    url = f"https://files.rcsb.org/download/{code}.pdb"
+    url = f"https://files.rcsb.org/download/{code}.cif"
     _download(url, destination)
 
 
@@ -189,6 +189,10 @@ def _prepare_conservation(
         "conservation")
     os.makedirs(output_directory, exist_ok=True)
     result = {}
+    # We employ local cache on level of protein, where we remember the output
+    # file. As there is other method of caching in the conservation_cache
+    # we may remove this in the future. Yet the overhead should be small,
+    # and it is faster than the other cache.
     cache = {}
     for chain, fasta_file in structure.sequence_files.items():
         working_directory = os.path.join(

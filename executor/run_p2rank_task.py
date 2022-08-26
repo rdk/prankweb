@@ -69,13 +69,13 @@ def execute_directory_task(
         if stdout:
             stream = sys.stdout
         handler = _create_log_handler(stream)
-        logger.addHandler(handler)
+        logging.getLogger().addHandler(handler)
         try:
             _execute_directory_task(
                 directory, stream, keep_working, lazy_execution)
         finally:
             handler.flush()
-            logger.removeHandler(handler)
+            logging.getLogger().removeHandler(handler)
             stream.flush()
 
 

@@ -30,6 +30,7 @@ def main():
 def prepare_database(name: str, url: str):
     print(f"Preparing database: {name} ...")
     path = os.path.join(BLAST_DATABASE, name)
+    os.makedirs(path, exist_ok=True)
     command = f"curl {url} | gunzip |  {BLASTDMAKEDB_CMD} " \
               f"-out {path} -title {name} -dbtype prot -parse_seqids"
     execute_command(command)
