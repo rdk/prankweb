@@ -19,12 +19,29 @@
 
 #application-rcsb {
     position: relative;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
     height: calc(30vh - 68px);
 }
 
 #pocket-list-aside {
     height: 100%;
+}
+
+@media (max-width: 768px) {
+    #application-rcsb {
+        height: auto;
+    }
+
+    #analyze {
+        position: relative;
+        height: auto;
+    }
+
+    #application-molstar {
+        position: relative;
+        bottom: auto;
+    }
 }
 
 /* Set for Bootstrap md breakpoint. */

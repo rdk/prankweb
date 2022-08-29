@@ -35,9 +35,9 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
               showControls: true,
               controlsDisplay: "reactive",
               regionState: {
-                  top: "full",        //sequence
-                  left:"collapsed",   //tree with some components
-                  bottom: "full",    //shows some log
+                  top: "hidden",    //sequence
+                  left: "hidden",   //tree with some components
+                  bottom: "hidden", //shows log information
                   right: "hidden"   //structure tools
               }
           }
@@ -52,7 +52,10 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
 
   console.log(predictionInfo);
   // Render pocket list using React.
-  const container = document.getElementById('pocket-list-aside');
+  let container = document.getElementById('pocket-list-aside');
+  if (window.innerWidth < 768) {
+    container = document.getElementById('pocket-list-aside-mobile');
+  }
   const root = createRoot(container!);
   root.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
     pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
@@ -128,7 +131,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     console.log(value);
     let index = 0;
     this.state.data.pockets.forEach(pocket => {
-      this.onSetPocketVisibility(index, pocket.isReactVisible ? true : false, value);
+      this.onSetPocketVisibility(index, pocket.isVisible ? true : false, value);
       index++;
     });
   }
@@ -157,7 +160,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
   onSetPocketVisibility(index: number, isVisible: boolean, value?: PocketsViewType) {
     let stateData : PredictionData = {...this.state.data};
-    stateData.pockets[index].isReactVisible = isVisible;
+    stateData.pockets[index].isVisible = isVisible;
     this.setState({
       data: stateData
     });
