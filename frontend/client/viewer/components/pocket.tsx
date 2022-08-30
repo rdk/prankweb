@@ -38,14 +38,14 @@ export default class Pocket extends React.Component
   }
 
   onPocketMouseEnter() {
-    if (!this.props.pocket.isReactVisible) {
+    if (!this.props.pocket.isVisible) {
       return;
     }
     this.props.highlightPocket(this.props.index, true);
   }
 
   onPocketMouseLeave() {
-    if (!this.props.pocket.isReactVisible) {
+    if (!this.props.pocket.isVisible) {
       return;
     }
     this.props.highlightPocket(this.props.index, false);
@@ -53,7 +53,7 @@ export default class Pocket extends React.Component
 
   onPocketClick() {
     // Cannot focus on hidden pocket.
-    if (!this.props.pocket.isReactVisible) {
+    if (!this.props.pocket.isVisible) {
       return;
     }
     this.props.focusPocket(this.props.index);
@@ -64,7 +64,7 @@ export default class Pocket extends React.Component
   }
 
   togglePocketVisibility() {
-    this.props.setPocketVisibility(this.props.index, !this.props.pocket.isReactVisible);
+    this.props.setPocketVisibility(this.props.index, !this.props.pocket.isVisible);
   }
 
   toggleCardVisibility() {
@@ -78,10 +78,10 @@ export default class Pocket extends React.Component
   render() {
     const pocket = this.props.pocket;
     let borderColor = "#" + this.props.pocket.color;
-    if (pocket.isReactVisible === undefined) { //for pockets that load for the first time
-      pocket.isReactVisible = true;
+    if (pocket.isVisible === undefined) { //for pockets that load for the first time
+      pocket.isVisible = true;
     }
-    if (!this.props.pocket.isReactVisible) {
+    if (!this.props.pocket.isVisible) {
       borderColor = "gray";
     }
     return (
@@ -140,7 +140,7 @@ export default class Pocket extends React.Component
                   <button
                     type="button"
                     style={{
-                      "display": this.props.pocket.isReactVisible ? "inherit" : "none",
+                      "display": this.props.pocket.isVisible ? "inherit" : "none",
                     }}
                     title="Focus/highlight to this pocket."
                     className="btn btn-outline-secondary"
@@ -160,7 +160,7 @@ export default class Pocket extends React.Component
                     className="btn btn-outline-secondary"
                     style={{"float": "right"}}
                     onClick={this.togglePocketVisibility}>
-                    {this.props.pocket.isReactVisible ?
+                    {this.props.pocket.isVisible ?
                       <IconContext.Provider value={{ size: "1.25em" }}>
                         <RiCloseFill />
                       </IconContext.Provider>

@@ -8,26 +8,18 @@ import { StructureInformation } from "./components/structure-information";
 import ToolsBox from "./components/tools-box";
 import PocketList from "./components/pocket-list";
 
-//////////
 import { sendDataToPlugins } from './data-loader';
-import { CustomWindow, PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "../custom-types";
+import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "../custom-types";
 
-
-import { DefaultPluginUISpec, PluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
+import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
-import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import { Script } from "molstar/lib/mol-script/script"
-import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
 import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView, showPocketInCurrentRepresentation } from './molstar-visualise';
 
-
-declare let window: CustomWindow;
-
 export async function renderProteinView(predictionInfo: PredictionInfo) {
   const wrapper = document.getElementById('application-molstar')!;
-  window.MolstarPlugin = await createPluginUI(wrapper, {
+  const MolstarPlugin = await createPluginUI(wrapper, {
       ...DefaultPluginUISpec(),
       layout: {
           initial: {
@@ -36,7 +28,7 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
               controlsDisplay: "reactive",
               regionState: {
                   top: "hidden",    //sequence
-                  left: "hidden",   //tree with some components
+                  left: "collapsed",//tree with some components
                   bottom: "hidden", //shows log information
                   right: "hidden"   //structure tools
               }
@@ -46,20 +38,14 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
           remoteState: 'none'
       }
   });
-  window.MS = MS;
-  window.Script = Script;
-  const MolstarPlugin = window.MolstarPlugin;
 
-  console.log(predictionInfo);
-  // Render pocket list using React.
-  let container = document.getElementById('pocket-list-aside');
-  if (window.innerWidth < 768) {
-    container = document.getElementById('pocket-list-aside-mobile');
-  }
+  // Render pocket list on the right side (or bottom for smartphones) using React.
+  const container = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
   const root = createRoot(container!);
-  root.render(<Application plugin={MolstarPlugin} predictionInfo={predictionInfo}
+  root.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
     pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
 }
+
 export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
 {
   state = {
@@ -73,7 +59,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "pluginRcsb": {} as RcsbFv,
   };
 
-  constructor(props: any) {
+  constructor(props: ReactApplicationProps) {
     super(props);
     this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
     this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
@@ -92,16 +78,15 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   }
 
   async loadData() {
-
     this.setState({
       "isLoading": true,
       "error": undefined,
     });
-    const {plugin, predictionInfo} = this.props;
+    const {molstarPlugin, predictionInfo} = this.props;
 
     //at first we need the plugins to download the needed data and visualise them
     await sendDataToPlugins(
-      plugin,
+      molstarPlugin,
       predictionInfo.database,
       predictionInfo.id,
       predictionInfo.metadata.structureName,
@@ -117,18 +102,15 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       })
       console.log(error);
     });
-    //TODO: after successfully visualising the data via the plugins, we may render the useful data about pockets.
   }
 
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
-    console.log(value);
-    updatePolymerView(value, this.props.plugin, this.state.isShowOnlyPredicted);
+    updatePolymerView(value, this.props.molstarPlugin, this.state.isShowOnlyPredicted);
   }
 
   onPocketsViewChange(value: PocketsViewType) {
     this.setState({"pocketsView": value});
-    console.log(value);
     let index = 0;
     this.state.data.pockets.forEach(pocket => {
       this.onSetPocketVisibility(index, pocket.isVisible ? true : false, value);
@@ -138,8 +120,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
   onPolymerColorChange(value: PolymerColorType) {
     this.setState({"polymerColor": value});
-    console.log(value);
-    overPaintPolymer(value, this.props.plugin, this.state.data);
+    overPaintPolymer(value, this.props.molstarPlugin, this.state.data);
   }
 
   onShowConfidentChange() {
@@ -147,7 +128,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     this.setState({
       "isShowOnlyPredicted": isShowOnlyPredicted
     });
-    updatePolymerView(this.state.polymerView, this.props.plugin, isShowOnlyPredicted);
+    updatePolymerView(this.state.polymerView, this.props.molstarPlugin, isShowOnlyPredicted);
   }
 
   onShowAllPockets() {
@@ -159,29 +140,31 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   }
 
   onSetPocketVisibility(index: number, isVisible: boolean, value?: PocketsViewType) {
-    let stateData : PredictionData = {...this.state.data};
+    let stateData: PredictionData = {...this.state.data};
     stateData.pockets[index].isVisible = isVisible;
     this.setState({
       data: stateData
     });
 
-    //resolve RCSB at first - do it by recoloring the pocket
+    //resolve RCSB at first - do it by recoloring the pocket to the default color value
+    //currently there is no other way to "remove" one of the pockets without modyfing the others
     const newColor = isVisible ? "#" + this.state.data.pockets[index].color : "#F9F9F9";
     //@ts-ignore Property 'rowConfigData' is private and only accessible within class 'RcsbFv'. - there is no other way to get to the rowConfigData though...
     const track = this.state.pluginRcsb.rowConfigData.find(e => e.trackId === "pocketsTrack");
-    const nameToFind = "pocket" + (index + 1);
-    track.trackData.filter((e : RcsbFvTrackDataElementInterface) => e.provenanceName === nameToFind).forEach((foundPocket : RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
-    const newData = track.trackData;
-    this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
+    if(track) {
+      track.trackData.filter((e : RcsbFvTrackDataElementInterface) => e.provenanceName === `pocket${index+1}`).forEach((foundPocket : RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
+      const newData = track.trackData;
+      this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
+    }
 
     //then resolve Mol*
     //here value may be passed as an parameter whilst changing the pocket view type, because the state is not updated yet.
     //Otherwise the value is taken from the state.
     if(value === null || value === undefined) {
-      showPocketInCurrentRepresentation(this.props.plugin, this.state.pocketsView, index, isVisible);
+      showPocketInCurrentRepresentation(this.props.molstarPlugin, this.state.pocketsView, index, isVisible);
     }
     else {
-      showPocketInCurrentRepresentation(this.props.plugin, value, index, isVisible);
+      showPocketInCurrentRepresentation(this.props.molstarPlugin, value, index, isVisible);
     }
   }
 
@@ -195,16 +178,13 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
   onFocusPocket(index: number) {
     const pocket = this.state.data.pockets[index];
-    highlightSurfaceAtomsInViewerLabelId(this.props.plugin, pocket.surface, true);
-
-    //TODO: consider other way to focus on the pocket?
+    highlightSurfaceAtomsInViewerLabelId(this.props.molstarPlugin, pocket.surface, true);
   }
 
   onHighlightPocket(index: number, isHighlighted: boolean) {
     const pocket = this.state.data.pockets[index];
-    highlightSurfaceAtomsInViewerLabelId(this.props.plugin, pocket.surface, false);
-
-    //TODO: is it really needed to de-select it onmouseout?
+    highlightSurfaceAtomsInViewerLabelId(this.props.molstarPlugin, pocket.surface, false);
+    //currently the residues are not de-selected on mouse out, could be potentially changed in the future
   }
 
   render() {
@@ -212,7 +192,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     if (this.state.isLoading) {
       return (
         <div>
-          <h1 className="text-center">Loading ...</h1>
+          <h1 className="text-center">Loading...</h1>
         </div>
       );
     }

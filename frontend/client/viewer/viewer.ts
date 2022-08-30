@@ -35,14 +35,16 @@ function getPredictionInfoFromUrl() {
     }
 }
 
-(function initialize() {
+function initialize() {
     const data = getPredictionInfoFromUrl();
     if(data === null) {
         document.getElementById('message')!.style.display = 'block';
-        document.getElementById('message-text')!.innerHTML = "<br/>Incomplete task specification.<br/>Please go back to the <a href='/'>home page</a>.";
+        document.getElementById('message-text')!.innerHTML = "<br/>Incomplete or incorrect task specification.<br/>Please go back to the <a href='/'>home page</a>.";
         document.getElementById('analyze')!.style.display = 'none';
         return;
     }
     document.getElementById('footer')!.style.display = 'none';
     renderProteinView(data!); //we have already checked that data is not null
-})();
+};
+
+initialize();

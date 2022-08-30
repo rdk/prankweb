@@ -32,7 +32,7 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);
     
     // Compute average conservation for each pocket.
-    prediction = computePocketConservationAverage(prediction);
+    prediction = computePocketConservationAndAFAverage(prediction);
 
     return [prediction, rcsbPlugin];
 }
@@ -48,23 +48,30 @@ function getResidueIndices(toBeFound: string[], allResidues: string[]) {
     return final;
 }
 
-function computePocketConservationAverage(data: PredictionData) {
+function computePocketConservationAndAFAverage(data: PredictionData) {
     if (!data.structure.scores) {
         data.pockets.forEach(pocket => {pocket.avgConservation = 0});
+        data.pockets.forEach(pocket => {pocket.avgAlphaFold = 0});
     }
 
     data.pockets.forEach(pocket => {
-        let avg = 0;
+        let avgConservation = 0;
+        let avgAlphaFold = 0;
+        
         getResidueIndices(pocket.residues, data.structure.indices).forEach(index => {
             if(data.structure.scores.conservation) {
-                avg += data.structure.scores.conservation[index];
+                avgConservation += data.structure.scores.conservation[index];
             }
-            else if(data.structure.scores.plddt) {
-                avg += data.structure.scores.plddt[index];
+            if(data.structure.scores.plddt) {
+                avgAlphaFold += data.structure.scores.plddt[index];
             }
         });
-        avg /= pocket.residues.length;
-        pocket.avgConservation = Number(avg.toFixed(3));
+
+        avgAlphaFold /= pocket.residues.length;
+        pocket.avgAlphaFold = Number(avgAlphaFold.toFixed(3));
+
+        avgConservation /= pocket.residues.length;
+        pocket.avgConservation = Number(avgConservation.toFixed(3));
     });
 
     return data;
@@ -80,4 +87,4 @@ async function downloadJsonFromUrl(url: string) {
     } catch (error) {
         console.error(error);
     }
-  }
+}

@@ -1,6 +1,6 @@
 import { RcsbFv, RcsbFvDisplayTypes, RcsbFvTrackDataElementInterface, RcsbFvRowConfigInterface, RcsbFvBoardConfigInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import { PredictionData, MolstarResidue, chainResidueAtom } from '../custom-types';
+import { PredictionData, AlphaFoldColorsRcsb, AlphaFoldThresholdsRcsb, DefaultPocketColors } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
 export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
@@ -232,8 +232,8 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.AREA,
             displayColor: {
-                "thresholds":[0.5, 0.7, 0.9],
-                "colors":["#ff7d45", "#ffdb13", "#65cbf3","#0053d6"] //those are the colors from ALPHAFOLD db
+                "thresholds": AlphaFoldThresholdsRcsb,
+                "colors": AlphaFoldColorsRcsb, //those are the colors from ALPHAFOLD db
             },
             rowTitle: "AF CONFIDENCE",
             trackData: alphafoldData,
@@ -250,19 +250,8 @@ function getLogBaseX(x : number, y : number) {
 
 //pick a color for the pocket, try to choose one from the preset ones otherwise generate a random one
 function pickColor(pocketId: number) {
-    //colorblind edited scheme 'Wong' from https://davidmathlogic.com/colorblind/ 
-    const defaultColors = [
-        "000000",
-        "CE0000",
-        "F0E442",
-        "E69F00",
-        "56B4E9",
-        "009E73",
-        "0072B2",
-        "DA74AD"
-    ]
-    if(pocketId >= defaultColors.length) {
-        return Math.floor(Math.random()*16777215).toString(16);
+    if(pocketId >= DefaultPocketColors.length) {
+        return Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
     }
-    return defaultColors[pocketId];
+    return DefaultPocketColors[pocketId];
 }

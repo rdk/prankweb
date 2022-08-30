@@ -19,7 +19,7 @@ export default class ToolsBox extends React.Component<{
   onShowConfidentChange: () => void,
 }, {
   /**
-   * True for expanded component false for minimized component.
+   * True for expanded component, false for minimized component.
    */
   visible: boolean
 }> {

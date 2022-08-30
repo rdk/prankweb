@@ -3,7 +3,7 @@ import React from "react";
 export default class PocketProperty extends React.Component
     <{
         title: string,
-        data: any,
+        data: string | number,
         inDialog: boolean // not needed now. but in other cases the implementation could be potentially different.
     }, {}> {
 

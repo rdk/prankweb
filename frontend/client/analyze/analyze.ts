@@ -9,7 +9,6 @@ enum UserInterface {
   progressMessage = "progress-message",
   progressQuestions = "progress-questions",
   progressStdout = "progress-stdout",
-  analyze = "analyze",
 }
 
 /**
@@ -17,12 +16,6 @@ enum UserInterface {
  * check period over time to maximum.
  */
 let queuedTimeout = 500;
-
-let callback = (info: PredictionInfo) => {};
-
-export function waitForTaskToFinish() {
-  checkTaskStatus();
-}
 
 async function checkTaskStatus() {
   const params = getUrlQueryParams();
@@ -80,7 +73,7 @@ function renderInvalidTask() {
     UserInterface.progressMessage,
     UserInterface.progressQuestions
   ]);
-  setProgressMessage("<br/>Incomplete task specification.<br/>Please go back to the <a href='/'>home page</a>.");
+  setProgressMessage("<br/>Incomplete or incorrect task specification.<br/>Please go back to the <a href='/'>home page</a>.");
 }
 
 function showOnlyElements(identifiersToShow: UserInterface[]) {
@@ -105,7 +98,7 @@ function renderInvalidHttpResponse() {
     UserInterface.progressMessage,
   ]);
   setProgressMessage(
-    "<br/>Failed to contact the server. <br/>\n" +
+    "<br/>Failed to contact the server.<br/>\n" +
     "We will retry in a few seconds."
   );
 }
@@ -134,18 +127,14 @@ function renderQueued() {
     UserInterface.progressMessage,
     UserInterface.progressRunning
   ]);
-  setProgressMessage("Waiting in queue ...");
+  setProgressMessage("Waiting in queue...");
 }
 
-function renderTaskFinished(task:PredictionInfo) {
-  showOnlyElements([
-    UserInterface.analyze,
-  ]);
-
-  sendPostRequest(task);
-
-  callback(task);
-  // From now on the control is in the hands of the protein-view.
+function renderTaskFinished(data: PredictionInfo) {
+  //this method redirects to the viewer page with all the needed information
+  const result = `./viewer?id=${data.id}&database=${data.database}&created=${data.created}&lastChange=${data.lastChange}
+  &structureName=${data.metadata.structureName}&predictionName=${data.metadata.predictionName}&predictedStructure=${data.metadata.predictedStructure}`;
+  window.location.href = result;
 }
 
 function renderFailedTask(database: string, id: string) {
@@ -155,14 +144,8 @@ function renderFailedTask(database: string, id: string) {
     UserInterface.progressQuestions,
     UserInterface.progressStdout
   ]);
-  setProgressMessage("Task failed, see log bellow for more details.");
+  setProgressMessage("Task failed, see the log below for more details.");
   setStdout(database, id);
-}
-
-function setStdout(database: string, id: string) {
-  fetchPredictionLog(database, id).then(response => {
-    document.getElementById("progress-stdout-text")!.innerText = response;
-  });
 }
 
 function renderRunningTask(database: string, id: string) {
@@ -173,20 +156,21 @@ function renderRunningTask(database: string, id: string) {
     UserInterface.progressStdout
   ]);
   setProgressMessage(
-    "Please wait, running analysis ... <br/> " +
+    "Please wait, running analysis...<br/> " +
     "Some operations may take a longer time to compute.<br/>" +
-    "You can monitor progress in the log bellow."
+    "You can monitor progress in the log below."
   );
   setStdout(database, id);
 }
 
-function sendPostRequest(data: PredictionInfo) {
-  let result = "./viewer?id=" + data.id + "&database=" + data.database + "&created=" + data.created + 
-  "&lastChange=" + data.lastChange + "&structureName=" + data.metadata.structureName + "&predictionName=" 
-  + data.metadata.predictionName + "&predictedStructure=" + data.metadata.predictedStructure;
-  window.location.href = result;
+function setStdout(database: string, id: string) {
+  fetchPredictionLog(database, id).then(response => {
+    document.getElementById("progress-stdout-text")!.innerText = response;
+  });
 }
 
-(function initialize() {
-  waitForTaskToFinish();
-})();
+function initialize() {
+  checkTaskStatus();
+};
+
+initialize();

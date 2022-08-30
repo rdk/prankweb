@@ -1,9 +1,9 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { PredictionData, PocketData, MolstarResidue, ChainData, PolymerRepresentation, PolymerColorType, PolymerViewType, PocketRepresentation, PocketsViewType } from '../custom-types';
+import { AlphaFoldColorsMolStar, AlphaFoldThresholdsMolStar, PredictionData, PocketData, MolstarResidue, ChainData, PolymerRepresentation, PolymerColorType, PolymerViewType, PocketRepresentation, PocketsViewType } from '../custom-types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
-import { MolScriptBuilder as MS} from "molstar/lib/mol-script/language/builder";
+import { MolScriptBuilder as MS } from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
 import { StructureSelection, QueryContext, StructureElement, StructureProperties, Unit, Bond } from "molstar/lib/mol-model/structure"
 import { Script } from "molstar/lib/mol-script/script"
@@ -14,10 +14,12 @@ import { Bundle } from "molstar/lib/mol-model/structure/structure/element/bundle
 import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
 import { State, StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
 
+//the representations are updated by the React component states
 let polymerRepresentations: PolymerRepresentation[] = [];
 let pocketRepresentations: PocketRepresentation[] = [];
 let predictedPolymerRepresentations: PolymerRepresentation[] = [];
 
+//normalized conservation is saved here, so it doesn't need to be recalculated every time
 let conservationNormalized: number[];
 
 export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string, predicted: boolean) {
@@ -236,13 +238,8 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
     if(!prediction.structure.scores.plddt) return;
 
     const params = [];
-    const thresholds = [90, 70, 50, 0];
-    const colors : Color[] = [ //those are the colors from ALPHAFOLD db
-        Color.fromRgb(0, 83, 214),
-        Color.fromRgb(101, 203, 243),
-        Color.fromRgb(255, 219, 19),
-        Color.fromRgb(255, 125, 69),
-    ]
+
+    
     const selections : ChainData[] = [];
 
     for(let i = 0; i < prediction.structure.indices.length; i++) {
@@ -253,14 +250,14 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
 
         let score = prediction.structure.scores.plddt[i];
 
-        for(let y = 0; y < thresholds.length; y++) {
-            if(score > thresholds[y]) {
-                let element = selections.find(e => e.threshold === thresholds[y] && e.chainId == chain);
+        for(let y = 0; y < AlphaFoldThresholdsMolStar.length; y++) {
+            if(score > AlphaFoldThresholdsMolStar[y]) {
+                let element = selections.find(e => e.threshold === AlphaFoldThresholdsMolStar[y] && e.chainId == chain);
                 if(element) {
                     element.residueNums.push(id);
                 }
                 else {
-                    selections.push({chainId: chain, residueNums: [id], threshold: thresholds[y]});
+                    selections.push({chainId: chain, residueNums: [id], threshold: AlphaFoldThresholdsMolStar[y]});
                 }
                 break;
             }
@@ -273,7 +270,7 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
 
         params.push({
           bundle: bundle,
-          color: colors[thresholds.findIndex(e => e === selections[i].threshold)],
+          color: AlphaFoldColorsMolStar[AlphaFoldThresholdsMolStar.findIndex(e => e === selections[i].threshold)],
           clear: false
         });
     }

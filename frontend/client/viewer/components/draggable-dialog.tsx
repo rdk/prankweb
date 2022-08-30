@@ -27,7 +27,7 @@ export default class DraggableDialog extends React.Component<{
     visible: false,
   };
 
-  constructor(props: any) {
+  constructor(props: {pocket: PocketData}) {
     super(props);
     this.toggleDetailsVisibility = this.toggleDetailsVisibility.bind(this);
   }

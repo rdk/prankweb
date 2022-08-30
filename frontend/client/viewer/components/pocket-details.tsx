@@ -21,8 +21,8 @@ export default class PocketDetails extends React.Component
                 <PocketProperty inDialog={this.props.inDialog} title="Probability score" data={pocket.probability || "N/A"}/>
                 <PocketProperty inDialog={this.props.inDialog} title="AA count" data={pocket.residues.length}/>
                 <PocketProperty inDialog={this.props.inDialog} title="Conservation" data={pocket.avgConservation || "N/A"}/>
+                <PocketProperty inDialog={this.props.inDialog} title="AlphaFold avg" data={pocket.avgAlphaFold || "N/A"}/>
                 {this.props.inDialog && <PocketProperty inDialog={this.props.inDialog} title="Residues" data={pocket.residues.join(", ")}/>}
-                More info can be added.<br />
             </div>
         );
     }
