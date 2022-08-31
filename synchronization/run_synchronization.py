@@ -121,12 +121,14 @@ def change_prankweb_failed_to_new(database):
 def synchronize_prankweb_with_database(database, queue_limit):
     """Synchronize database with prankweb."""
     # Check those that we track as queued.
+    logger.info("Checking queued ...")
     queued_count = 0
     for code, record in database["data"].items():
         if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
             request_computation_from_prankweb_for_code(code, record)
         if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
             queued_count += 1
+    logger.info(f"Queued size {queued_count}")
     # Start new predictions, so the queued size is under given limit.
     for code, record in database["data"].items():
         if queued_count > queue_limit:
@@ -139,7 +141,6 @@ def synchronize_prankweb_with_database(database, queue_limit):
 
 def request_computation_from_prankweb_for_code(code: str, record):
     """Request computation or check for status."""
-    logger.debug(f"Checking for '{code}' with status '{record['status']}'")
     response = prankweb_service.retrieve_info(code)
     if response.status == -1:
         # This indicates error with the connection.
@@ -157,8 +158,12 @@ def request_computation_from_prankweb_for_code(code: str, record):
         record["status"] = EntryStatus.PREDICTED.value
     elif response.body["status"] == "failed":
         record["status"] = EntryStatus.PRANKWEB_FAILED.value
+    elif response.body["status"] == "queued" or \
+            response.body["status"] == "running":
+        # For both we see it as queued for completion.
+        record["status"] = EntryStatus.PRANKWEB_QUEUED.value
     else:
-        # The prediction is still running, so no change here.
+        # We do not know what to do.
         ...
     logger.debug(f"Status changed to '{record['status']}' for '{code}' "
                  f" due to response '{response.body['status']}'")
