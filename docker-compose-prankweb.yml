@@ -97,4 +97,5 @@ volumes:
     external: True
     name: prankweb_rabbitmq
   services:
+    external: True
     name: prankweb_services

@@ -87,4 +87,5 @@ volumes:
     external: True
     name: prankweb_predictions
   services:
+    external: True
     name: prankweb_services
