@@ -205,7 +205,7 @@ def prepare_funpdbe_file(
         record["status"] = EntryStatus.EMPTY.value
         return
     except Exception as ex:
-        logger.exception(f"Can't convert {code}.")
+        logger.exception(f"Can't convert {code} to FunPDBe record.")
         error_log_file = os.path.join(working_directory, "error.log")
         with open(error_log_file, "w") as stream:
             stream.write(str(ex))
