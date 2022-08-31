@@ -44,7 +44,7 @@ def _read_arguments() -> typing.Dict[str, str]:
         action="store_true",
         default=False)
     parser.add_argument(
-        "--queue-size",
+        "--queue-limit",
         help="Limit the number of execution in a queue "
              "managed by the synchronization.",
         default=64)
@@ -69,7 +69,7 @@ def main(args):
         logger.info(f"Reverted {counter} prankweb failed tasks.")
     logger.info("Synchronizing with prankweb server ...")
     prankweb_service.initialize(args["server"], args["server_directory"])
-    synchronize_prankweb_with_database(database)
+    synchronize_prankweb_with_database(database, args["queue_limit"])
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
     logger.info("Downloading result from prankweb server ...")
@@ -118,7 +118,7 @@ def change_prankweb_failed_to_new(database):
     return result
 
 
-def synchronize_prankweb_with_database(database, queued_limit):
+def synchronize_prankweb_with_database(database, queue_limit):
     """Synchronize database with prankweb."""
     # Check those that we track as queued.
     queued_count = 0
@@ -129,7 +129,7 @@ def synchronize_prankweb_with_database(database, queued_limit):
             queued_count += 1
     # Start new predictions, so the queued size is under given limit.
     for code, record in database["data"].items():
-        if queued_count > queued_limit:
+        if queued_count > queue_limit:
             break
         if record["status"] == EntryStatus.NEW.value:
             request_computation_from_prankweb_for_code(code, record)
