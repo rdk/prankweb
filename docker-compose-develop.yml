@@ -22,13 +22,19 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     volumes:
       - rabbitmq:/var/lib/rabbitmq/
+    healthcheck:
+      test: rabbitmq-diagnostics -q status
+      interval: 30s
+      timeout: 30s
+      retries: 3
   flower:
     build: https://github.com/mher/flower.git
     command: "celery flower --url_prefix=service/flower"
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
     depends_on:
-      - rabbitmq
+      rabbitmq:
+          condition: service_healthy
   web-server:
     build:
       context: ./
@@ -37,7 +43,8 @@ services:
         UID: ${UID}
         GID: ${GID}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       PRANKWEB_DATA: "/data/prankweb"
@@ -51,12 +58,24 @@ services:
         UID: ${UID}
         GID: ${GID}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
     volumes:
       - conservation:/data/conservation
       - predictions:/data/prankweb
+  prometheus:
+    build:
+      context: ./
+      dockerfile: ./prometheus/Dockerfile
+    volumes:
+      - services:/data
+    depends_on:
+      - flower
+      - rabbitmq
+    ports:
+      - "9090:9090"
 volumes:
   rabbitmq:
     external: True
@@ -67,3 +86,5 @@ volumes:
   predictions:
     external: True
     name: prankweb_predictions
+  services:
+    name: prankweb_services
