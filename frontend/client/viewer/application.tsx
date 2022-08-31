@@ -28,7 +28,8 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
               controlsDisplay: "reactive",
               regionState: {
                   top: "hidden",    //sequence
-                  left: "collapsed",//tree with some components
+                  left: (window.innerWidth >= 768) ? "collapsed" : "full", 
+                                    //tree with some components
                   bottom: "hidden", //shows log information
                   right: "hidden"   //structure tools
               }

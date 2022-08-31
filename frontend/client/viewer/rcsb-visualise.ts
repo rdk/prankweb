@@ -3,8 +3,13 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, AlphaFoldColorsRcsb, AlphaFoldThresholdsRcsb, DefaultPocketColors } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
+/**
+ * Method which initializes the Rcsb viewer and adds the tracks to it.
+ * @param data Prediction data
+ * @param molstarPlugin Mol* plugin
+ * @returns The rendered Rcsb plugin.
+ */
 export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
-
     const width = calculateViewerWidth();
 
     const boardConfigData : RcsbFvBoardConfigInterface = {
@@ -12,8 +17,8 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
         trackWidth: width,
         includeAxis: true,
         highlightHoverPosition: true,
-        highlightHoverCallback: (n: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, molstarPlugin, n),
-        elementClickCallBack: (d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) => elementClicked(data, molstarPlugin, d, e)
+        highlightHoverCallback: (trackData: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, molstarPlugin, trackData),
+        elementClickCallBack: (trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) => elementClicked(data, molstarPlugin, trackData, event)
     };
 
     const rowConfigData = createRowConfigDataRcsb(data);
@@ -29,6 +34,10 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
     return rcsbPlugin;
 }
 
+/**
+ * Method to calculate the width of the viewer
+ * @returns The width
+ */
 function calculateViewerWidth() {
     const width = window.innerWidth;
 
@@ -47,13 +56,17 @@ function calculateViewerWidth() {
     return Math.floor(width * (10/12)) - 230;
 }
 
-
-//TODO : maybe edit these
-function elementClicked(data: PredictionData, molstarPlugin: PluginUIContext, d?: RcsbFvTrackDataElementInterface, e?: MouseEvent) {
-    console.log(d);
-    if(d) {
-        if(data) {
-            let element = data.structure.indices[d.begin - 1];
+/**
+ * Method called when any element is clicked in the viewer.
+ * @param predictionData Prediction data
+ * @param molstarPlugin Mol* plugin
+ * @param trackData Data of the clicked track
+ * @param event Mouse event
+ */
+function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIContext, trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) {
+    if(trackData) {
+        if(predictionData) {
+            let element = predictionData.structure.indices[trackData.begin - 1];
             if(element) {
                 let id = Number(element.substring(element.indexOf('_') + 1));
                 highlightInViewerAuthId(molstarPlugin, element[0], [id]);
@@ -62,11 +75,16 @@ function elementClicked(data: PredictionData, molstarPlugin: PluginUIContext, d?
     }
 }
 
-function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, n: Array<RcsbFvTrackDataElementInterface>) {
-    console.log(n);
-    if(n && n.length > 0) {
+/**
+ * Method called when any element is highlighted in the viewer.
+ * @param data Prediction data
+ * @param molstarPlugin Mol* plugin
+ * @param trackData Data of the clicked track
+ */
+function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, trackData: Array<RcsbFvTrackDataElementInterface>) {
+    if(trackData && trackData.length > 0) {
         if(data) {
-            let element = data.structure.indices[n[0].begin - 1];
+            let element = data.structure.indices[trackData[0].begin - 1];
             if(element) {
                 let id = Number(element.substring(element.indexOf('_') + 1));
                 highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
@@ -75,10 +93,13 @@ function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, n: Ar
     }
 }
 
+/**
+ * Method which creates all of the tracks for the Rcsb viewer.
+ * @param data Prediction data
+ * @returns Configuration for the viewer
+ */
 function createRowConfigDataRcsb(data: PredictionData) {
-
     const rowConfigData : Array<RcsbFvRowConfigInterface> = [];
-    //firstly add the sequence
     rowConfigData.push({
         trackId: "sequenceTrack",
         trackHeight: 20,
@@ -97,6 +118,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         const bindingData : RcsbFvTrackData = [];
 
         //create the blocks
+        //seems complicated but we need to create the "holes" as well
         for(let i = 0; i < data.structure.binding.length; i++) {
             let firstElement = data.structure.binding[i];
             if(i < data.structure.binding.length - 1) {
@@ -170,22 +192,11 @@ function createRowConfigDataRcsb(data: PredictionData) {
     if(data.structure.scores.conservation) {
         const conservationData = [];
     
-        /* NOT NEEDED NOW!
-        //the first thing we have to do - if there are some gaps inbetween, we have to adjust the conservation scores array...
-        //so when we encounter a space in the sequence, then add a zero to the conservation array
-        for (let i = 0; i < finalseqString.length; i++) {
-            if(finalseqString[i] === ' ') {
-                data.structure.scores.conservation.splice(i, 0, 0);
-            }
-        }
-        */
-    
         //we need to normalize the scores to fit in properly
         //by the definition of conservation scoring the maximum is log_2(20)
         const maximum = getLogBaseX(2, 20);
     
         for (let i = 0; i < data.structure.scores.conservation.length; i++) {
-            //console.log(data.structure.scores.conservation[i] / maximum);
             conservationData.push({
                 begin: i+1,
                 //do not forget to normalize
@@ -199,11 +210,6 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackColor: "#F9F9F9",
             displayType: RcsbFvDisplayTypes.AREA,
             displayColor: "#6d6d6d",
-            /*
-            displayColor: {
-                "thresholds":[0.5],
-                "colors":["#8484FF","#FF8484"]
-            },*/
             rowTitle: "CONSERVATION",
             trackData: conservationData,
         })
@@ -233,22 +239,26 @@ function createRowConfigDataRcsb(data: PredictionData) {
             displayType: RcsbFvDisplayTypes.AREA,
             displayColor: {
                 "thresholds": AlphaFoldThresholdsRcsb,
-                "colors": AlphaFoldColorsRcsb, //those are the colors from ALPHAFOLD db
+                "colors": AlphaFoldColorsRcsb,
             },
             rowTitle: "AF CONFIDENCE",
             trackData: alphafoldData,
         })
     }
-    console.log(rowConfigData);
+
     return rowConfigData;
 }
 
-//returns log_x(y)
+/** Method that returns log_x(y) */
 function getLogBaseX(x : number, y : number) { 
     return Math.log(y) / Math.log(x);
 }
 
-//pick a color for the pocket, try to choose one from the preset ones otherwise generate a random one
+/**
+ * Method which assigns a color to a pocket, tries to choose one from the preset ones otherwise generates a random one
+ * @param pocketId Pocket number
+ * @returns A new color for the pocket
+ */
 function pickColor(pocketId: number) {
     if(pocketId >= DefaultPocketColors.length) {
         return Math.floor(Math.random()*16777215).toString(16); //picks a totally random color

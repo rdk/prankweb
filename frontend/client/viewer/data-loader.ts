@@ -1,18 +1,24 @@
 import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
-import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, getConfidentResiduesFromPrediction, addPredictedPolymerRepresentation } from './molstar-visualise';
+import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, addPredictedPolymerRepresentation } from './molstar-visualise';
 import { PredictionData } from "../custom-types";
 import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 
+/**
+ * Method that initializes both of the plugins.
+ * @param molstarPlugin Mol* plugin
+ * @param database Database name for the API endpoint
+ * @param identifier Identifier for the API endpoint
+ * @param structureName Name of the structure
+ * @param predicted True if the structure is predicted
+ * @returns An updated prediction and the Rcsb plugin
+ */
 export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database: string, identifier: string, structureName: string, predicted: boolean) : Promise<[PredictionData, RcsbFv]>{
     const baseUrl: string = getApiEndpoint(database, identifier) + "/public";
-    
-    /*console.log(`${baseUrl}/${structureName}`)
-    console.log(`${baseUrl}/prediction.json`);*/
 
     // Download pdb/mmcif and create a model in Mol*.
-    const molData = await loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`, predicted).then(result => result);
+    const molData = await loadStructureIntoMolstar(molstarPlugin, `${baseUrl}/${structureName}`).then(result => result);
     
     const structure = molData[1];
 
@@ -48,6 +54,11 @@ function getResidueIndices(toBeFound: string[], allResidues: string[]) {
     return final;
 }
 
+/**
+ * Method which computes the average conservation and average AlphaFold score for each pocket.
+ * @param data Prediction data
+ * @returns Updated prediction data with average conservation and average AlphaFold score for each pocket
+ */
 function computePocketConservationAndAFAverage(data: PredictionData) {
     if (!data.structure.scores) {
         data.pockets.forEach(pocket => {pocket.avgConservation = 0});

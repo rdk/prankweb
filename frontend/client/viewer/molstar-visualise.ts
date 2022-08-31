@@ -12,7 +12,7 @@ import { RcsbFv } from '@rcsb/rcsb-saguaro';
 import { Loci } from "molstar/lib/mol-model/loci";
 import { Bundle } from "molstar/lib/mol-model/structure/structure/element/bundle";
 import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
-import { State, StateBuilder, StateObjectSelector } from 'molstar/lib/mol-state';
+import { StateObjectSelector } from 'molstar/lib/mol-state';
 
 //the representations are updated by the React component states
 let polymerRepresentations: PolymerRepresentation[] = [];
@@ -22,16 +22,14 @@ let predictedPolymerRepresentations: PolymerRepresentation[] = [];
 //normalized conservation is saved here, so it doesn't need to be recalculated every time
 let conservationNormalized: number[];
 
-export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string, predicted: boolean) {
-    // if (plugin) {
-    //     await plugin.clear();
-    // }
-    /* let getUrl = (pdbId: string) => `https://www.ebi.ac.uk/pdbe/static/entry/${pdbId.toLowerCase()}_updated.cif`
-
-    if(predicted) getUrl = (pdbId: string) => `https://alphafold.ebi.ac.uk/files/AF-${pdbId.toUpperCase()}-F1-model_v2.cif`
-    */
-
-    let data = await plugin.builders.data.download({
+/**
+ * Loads the structure to be predicted and adds the polymer representations to the viewer.
+ * @param plugin Mol* plugin
+ * @param structureUrl URL of the structure to be predicted
+ * @returns An array containing the model and structure.
+ */
+export async function loadStructureIntoMolstar(plugin: PluginUIContext, structureUrl: string) {
+    const data = await plugin.builders.data.download({
         url: Asset.Url(structureUrl),
         isBinary: false
     }, {state: {isGhost: true}});
@@ -40,6 +38,7 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
     if(structureUrl.endsWith("cif")) trajectory = await plugin.builders.structure.parseTrajectory(data, "mmcif");
     else trajectory = await plugin.builders.structure.parseTrajectory(data, "pdb");
 
+    //create the initial model
     const model = await plugin.builders.structure.createModel(trajectory);
     const structure : StateObjectSelector = await plugin.builders.structure.createStructure(model, {name: 'model', params: {}});
 
@@ -49,7 +48,7 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
         polymerRepresentations.push({
             type: PolymerViewType.Gaussian_Surface,
             representation: await plugin.builders.structure.representation.addRepresentation(polymer, {
-                type: 'gaussian-surface', //molecular-surface is probably better, but slower
+                type: 'gaussian-surface', //molecular-surface could be probably better, but is slower
                 color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
                 ref: "polymer_gaussian"
             })
@@ -88,7 +87,6 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
     const water = await plugin.builders.structure.tryCreateComponentStatic(structure, 'water');
     if (water) {
         await plugin.builders.structure.representation.addRepresentation(water, {
-            //type: 'gaussian-surface',
             type: 'ball-and-stick',
         });
     }
@@ -101,13 +99,21 @@ export async function loadStructureIntoMolstar(plugin: PluginUIContext, structur
         });
     }
 
-    return [model, structure, polymer]
+    return [model, structure];
 }
 
+/** Method returning log_x(y) */
 function getLogBaseX(x : number, y : number) { 
     return Math.log(y) / Math.log(x);
 }
 
+/**
+ * Method used to show only the currently selected representation.
+ * @param value Currently shown type of polymer representation
+ * @param plugin Mol* plugin
+ * @param showConfidentResidues Whether to show only the confident residues 
+ * @returns void
+ */
 export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContext, showConfidentResidues: boolean) {
     //firstly check if the structure is a predicted one
     //and if we're supposed to show only confident residues
@@ -144,6 +150,13 @@ export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContex
     }
 }
 
+/**
+ * Method used to overpaint the currently selected polymer representation.
+ * @param value Currently shown type of polymer representation
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
 export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUIContext, prediction: PredictionData) {
     switch(value) {
         case PolymerColorType.Clean:
@@ -161,7 +174,13 @@ export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUI
     }
 }
 
-async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
+/**
+ * Overpaints the structure with a white color.
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
+async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) {
     const chains : ChainData[] = [];
     const params = [];
 
@@ -197,6 +216,12 @@ async function overPaintStructureClear(plugin: PluginUIContext, prediction: Pred
     }
 }
 
+/**
+ * Overpaints the pockets' whole residues (not atoms!) with white color
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
 async function overPaintPocketsClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
     for(const pocket of prediction.pockets) {
         const builder = plugin.state.data.build();
@@ -234,25 +259,30 @@ async function overPaintPocketsClear(plugin: PluginUIContext, prediction: Predic
     }
 }
 
+/**
+ * Overpaints the structure with AlphaFold colors
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
 async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) { //paints the structure with the alpha fold prediction
     if(!prediction.structure.scores.plddt) return;
 
     const params = [];
-
-    
     const selections : ChainData[] = [];
 
+    //create the selections for the pockets
     for(let i = 0; i < prediction.structure.indices.length; i++) {
-        let residue = prediction.structure.indices[i];
+        const residue = prediction.structure.indices[i];
         const splitResidue = residue.split("_");
         const chain = splitResidue[0];
         const id = Number(splitResidue[1]);
 
-        let score = prediction.structure.scores.plddt[i];
+        const score = prediction.structure.scores.plddt[i];
 
         for(let y = 0; y < AlphaFoldThresholdsMolStar.length; y++) {
             if(score > AlphaFoldThresholdsMolStar[y]) {
-                let element = selections.find(e => e.threshold === AlphaFoldThresholdsMolStar[y] && e.chainId == chain);
+                const element = selections.find(e => e.threshold === AlphaFoldThresholdsMolStar[y] && e.chainId == chain);
                 if(element) {
                     element.residueNums.push(id);
                 }
@@ -263,6 +293,7 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
             }
         }
     }
+
     //color the residues
     for(let i = 0; i < selections.length; i++) {
         const sel = getSelectionFromChainAuthId(plugin, selections[i].chainId, selections[i].residueNums);
@@ -286,6 +317,12 @@ async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, predicti
     }
 }
 
+/**
+ * Overpaints the pockets' whole residues (not atoms!) with AlphaFold colors
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
 async function overPaintPocketsWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) {
     if(!prediction.structure.scores.plddt) return;
 
@@ -307,12 +344,12 @@ async function overPaintPocketsWithAlphaFold(plugin: PluginUIContext, prediction
             const chain = splitResidue[0];
             const id = Number(splitResidue[1]);
     
-            let index = prediction.structure.indices.findIndex(e => e === residue);
-            let score = prediction.structure.scores.plddt[index];
+            const index = prediction.structure.indices.findIndex(e => e === residue);
+            const score = prediction.structure.scores.plddt[index];
     
             for(let y = 0; y < thresholds.length; y++) {
                 if(score > thresholds[y]) {
-                    let element = selections.find(e => e.threshold === thresholds[y] && e.chainId == chain);
+                    const element = selections.find(e => e.threshold === thresholds[y] && e.chainId == chain);
                     if(element) {
                         element.residueNums.push(id);
                     }
@@ -347,19 +384,27 @@ async function overPaintPocketsWithAlphaFold(plugin: PluginUIContext, prediction
     }
 }
 
+function computeNormalizedConservation(prediction: PredictionData) {
+    if(!prediction.structure.scores.conservation) return;
+    //by the definition of conservation scoring the maximum is log_2(20)
+    const maxConservation = getLogBaseX(2, 20);
+    conservationNormalized = [];
+    for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
+        conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
+    }
+}
+
+/**
+ * Overpaints the structure with grayscale colors based on the conservation scores for each residue
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
 async function overPaintStructureWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
     if(!prediction.structure.scores.conservation) return;
 
-    //we need to normalize the scores to fit in properly
-    //by the definition of conservation scoring the maximum is log_2(20)
-    const maxConservation = getLogBaseX(2, 20);
-
-    if(conservationNormalized === undefined) {
-        conservationNormalized = [];
-        for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
-            conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
-        }
-    }
+    //if the normalized conservation is not computed yet
+    if(conservationNormalized === undefined) computeNormalizedConservation(prediction);
 
     const params = [];
     const thresholds = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0];
@@ -420,12 +465,16 @@ async function overPaintStructureWithConservation(plugin: PluginUIContext, predi
     }
 }
 
+/**
+ * Overpaints the pockets' whole residues (not atoms!) with grayscale colors based on the conservation scores for each residue
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @returns void
+ */
 async function overPaintPocketsWithConservation(plugin: PluginUIContext, prediction: PredictionData) {
     if(!prediction.structure.scores.conservation) return;
 
-    //we need to normalize the scores to fit in properly
-    //by the definition of conservation scoring the maximum is log_2(20)
-    const maxConservation = getLogBaseX(2, 20);
+    if(conservationNormalized === undefined) computeNormalizedConservation(prediction);
 
     const thresholds = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0];
     const colors : Color[] = [];
@@ -441,13 +490,6 @@ async function overPaintPocketsWithConservation(plugin: PluginUIContext, predict
     for(const pocket of prediction.pockets) {
         const builder = plugin.state.data.build();
         const params = [];
-    
-        if(conservationNormalized === undefined) {
-            conservationNormalized = [];
-            for (let i = 0; i < prediction.structure.scores.conservation.length; i++) {
-                conservationNormalized.push(prediction.structure.scores.conservation[i] / maxConservation);
-            }
-        }
         const selections : ChainData[] = [];
         
         for(const residue of pocket.residues) {
@@ -497,31 +539,47 @@ async function overPaintPocketsWithConservation(plugin: PluginUIContext, predict
     }
 }
 
-//creates the pocket holder group
+/**
+ * Method to create the pocket holder group (called "Pockets" in the tree)
+ * @param plugin Mol* plugin
+ * @param structure Mol* structure (returned from the first call of loadStructureIntoMolstar())
+ * @param groupName Group name (in this case "Pockets")
+ * @param prediction Prediction data
+ */
 export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: StateObjectSelector, groupName: string, prediction: PredictionData) {
     const builder = plugin.state.data.build();
     const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName});
     for(let i = 0; i < prediction.pockets.length; i++) {
-        createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], `Pocket ${i+1}`, Number("0x" + prediction.pockets[i].color), group);
+        createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], `Pocket ${i+1}`, group);
     }
     await builder.commit();
 }
 
 //creates pockets' representation one by one and assigns them to the groups
-async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: StateObjectSelector, pocket: PocketData, groupName: string, color: number, group: any) { //group should not be any but i cannot figure out the right type
+/**
+ * 
+ * @param plugin Mol* plugin
+ * @param structure Mol* structure (returned from the first call of loadStructureIntoMolstar())
+ * @param pocket Current pocket data
+ * @param groupName Name of the group to which the pocket will be assigned
+ * @param group Group to which the pocket will be assigned (from createPocketsGroupFromJson())
+ * @returns void
+ */
+async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: StateObjectSelector, pocket: PocketData, groupName: string, group: any) { //group should not be any but i cannot figure out the right type
     const group2 = group.apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName}, {selectionTags: groupName});
 
-    let atomsExpression = MS.struct.generator.atomGroups({
+    const atomsExpression = MS.struct.generator.atomGroups({
         'atom-test': MS.core.set.has([MS.set(...pocket.surface.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
     });
 
     //this selects the whole residues
-    let wholeResiduesExpression = MS.struct.modifier.wholeResidues({0: atomsExpression});
+    const wholeResiduesExpression = MS.struct.modifier.wholeResidues({0: atomsExpression});
 
     //create the gaussian surface representations...
     //we need to create one for the whole residue and one for the atoms
     const wholeResiduesSelection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: wholeResiduesExpression});
     const atomsSelection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: atomsExpression});
+    const color = Number("0x" + pocket.color);
 
     const repr_surface : StateObjectSelector = wholeResiduesSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'gaussian-surface',
@@ -577,6 +635,14 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
 }
 
 //sets the pocket visibility in mol* in one representation
+/**
+ * Method which sets the visibility of the pockets in the desired representation
+ * @param plugin Mol* plugin
+ * @param representationType Type of the representation to be shown
+ * @param pocketIndex Index of the pocket
+ * @param isVisible Visibility of the pocket
+ * @returns void
+ */
 export function showPocketInCurrentRepresentation(plugin: PluginUIContext, representationType: PocketsViewType, pocketIndex: number, isVisible: boolean) {
     if(isVisible) {
         //show the pocket
@@ -601,7 +667,13 @@ export function showPocketInCurrentRepresentation(plugin: PluginUIContext, repre
     }
 }
 
-//focuses on the residues loci specidfied by the user, can be called from anywhere
+/**
+ * Method which focuses on the residues loci specidfied by the user, can be called from anywhere
+ * @param plugin Mol* plugin
+ * @param chain Chain (letter) to be focused on
+ * @param ids 
+ * @returns void
+ */
 export function highlightInViewerLabelIdWithoutFocus(plugin: PluginUIContext, chain: string, ids: number[]) {
     const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
     if (!data) return;
@@ -612,7 +684,13 @@ export function highlightInViewerLabelIdWithoutFocus(plugin: PluginUIContext, ch
     plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
 }
 
-//focuses on the loci specidfied by the user, can be called from anywhere
+/**
+ * Highlights the selected surface atoms, if toggled, the method will focus on them as well
+ * @param plugin Mol* plugin
+ * @param ids Surface atoms ids
+ * @param focus Focus on the surface atoms (if false, it will only highlight them)
+ * @returns 
+ */
 export function highlightSurfaceAtomsInViewerLabelId(plugin: PluginUIContext, ids: string[], focus: boolean) {
     const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
     if (!data) return;
@@ -623,7 +701,12 @@ export function highlightSurfaceAtomsInViewerLabelId(plugin: PluginUIContext, id
     if(focus) plugin.managers.camera.focusLoci(loci);
 }
 
-//gets selection from surface atom numbers
+/**
+ * Method which gets selection from surface atom numbers
+ * @param plugin Mol* plugin
+ * @param ids Surface atoms ids
+ * @returns StructureSelection of the surface atoms
+ */
 function getSurfaceAtomSelection(plugin: PluginUIContext, ids: string[]) {
     const query = MS.struct.generator.atomGroups({
         'atom-test': MS.core.set.has([MS.set(...ids.map(Number)), MS.struct.atomProperty.macromolecular.id()]) 
@@ -631,7 +714,14 @@ function getSurfaceAtomSelection(plugin: PluginUIContext, ids: string[]) {
     return Script.getStructureSelection(query, plugin.managers.structure.hierarchy.current.structures[0].cell.obj!.data);
 }
 
-//gets selection from chainId
+
+/**
+ * Method which gets selection from specified chainId and residues
+ * @param plugin Mol* plugin
+ * @param chainId Chain (letter) to be focused on
+ * @param positions Residue ids
+ * @returns StructureSelection of the desired residues
+ */
 function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, positions: number[]) { 
     const query = MS.struct.generator.atomGroups({
         'chain-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_asym_id(), chainId]),
@@ -641,7 +731,12 @@ function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, p
     return Script.getStructureSelection(query, plugin.managers.structure.hierarchy.current.structures[0].cell.obj!.data);
 }
 
-//adds predicted structure representation
+/**
+ * Method which adds predicted structure representation to the viewer
+ * @param plugin Mol* plugin
+ * @param prediction Prediction data
+ * @param structure Mol* structure (returned from the first call of loadStructureIntoMolstar())
+ */
 export async function addPredictedPolymerRepresentation(plugin: PluginUIContext, prediction: PredictionData, structure: StateObjectSelector) {
     const builder = plugin.state.data.build();
     const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: "Confident Polymer 70"}, {ref: "Confident Polymer 70"});
@@ -688,7 +783,11 @@ export async function addPredictedPolymerRepresentation(plugin: PluginUIContext,
     setSubtreeVisibility(plugin.state.data, repr_cartoon_predict.ref, true);
 }
 
-//gets selection of the confident residues (plddt > 70) for predicted structures
+/**
+ * Method which gets selection of the confident residues (plddt > 70) for predicted structures
+ * @param prediction Prediction data
+ * @returns Expression with the selection of the confident residues
+ */
 export function getConfidentResiduesFromPrediction(prediction: PredictionData) { 
     const queries = [];
     //for each chain create a query for the residues
@@ -720,7 +819,13 @@ export function getConfidentResiduesFromPrediction(prediction: PredictionData) {
     return finalQuery;
 }
 
-//focuses on the loci specidfied by the user, can be called from anywhere
+/**
+ * Method which focuses on the loci specified by the user
+ * @param plugin Mol* plugin
+ * @param chain Chain (letter) to be focused on
+ * @param ids Residue ids
+ * @returns void
+ */
 export function highlightInViewerAuthId(plugin: PluginUIContext, chain: string, ids: number[]) {
     const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
     if (!data) return;
@@ -731,6 +836,7 @@ export function highlightInViewerAuthId(plugin: PluginUIContext, chain: string, 
     plugin.managers.camera.focusLoci(loci);
 }
 
+//cc: https://github.com/scheuerv/molart/
 function getStructureElementLoci(loci: Loci): StructureElement.Loci | undefined {
     if (loci.kind == "bond-loci") {
         return Bond.toStructureElementLoci(loci);
@@ -740,8 +846,13 @@ function getStructureElementLoci(loci: Loci): StructureElement.Loci | undefined 
     return undefined;
 }
 
-//connects Mol* viewer activity to the RCSB plugin
-export function linkMolstarToRcsb(plugin: PluginUIContext, structureData: PredictionData, rcsbPlugin: RcsbFv) {
+/**
+ * Method which connects Mol* viewer activity to the RCSB plugin
+ * @param plugin Mol* plugin
+ * @param predictionData Prediction data
+ * @param rcsbPlugin Rcsb plugin
+ */
+export function linkMolstarToRcsb(plugin: PluginUIContext, predictionData: PredictionData, rcsbPlugin: RcsbFv) {
     //cc: https://github.com/scheuerv/molart/
     //listens for hover event over anything on Mol* plugin and then it determines
     //if it is loci of type StructureElement. If it is StructureElement then it
@@ -749,7 +860,6 @@ export function linkMolstarToRcsb(plugin: PluginUIContext, structureData: Predic
     //in our modification it also highlights the section in RCSB viewer
     plugin.canvas3d?.interaction.hover.subscribe((event: Canvas3D.HoverEvent) => {
         const structureElementLoci = getStructureElementLoci(event.current.loci);
-        console.log(rcsbPlugin);
         if(structureElementLoci)
         {
             const structureElement = StructureElement.Stats.ofLoci(structureElementLoci);
@@ -772,19 +882,14 @@ export function linkMolstarToRcsb(plugin: PluginUIContext, structureData: Predic
                     index: StructureProperties.chain.key(location)
                 }
             };
-            let toFind = residue.chain.authAsymId + "_" + residue.authSeqNumber;
-            let element = structureData.structure.indices.indexOf(toFind);
+            const toFind = residue.chain.authAsymId + "_" + residue.authSeqNumber;
+            const element = predictionData.structure.indices.indexOf(toFind);
             rcsbPlugin.setSelection({
                 elements: {
                     begin: element + 1
                 },
                 mode: 'hover'
             })
-            // console.log(residue);
-            // console.log(plugin.managers.structure.hierarchy.current.structures[0].components);
-            //highlightInViewer([60,61,62,63]);
-            //this.mouseOverHighlightedResiduesInStructure = [structureElementLoci];
-            //this.emitOnHover.emit(residue);
         }
     });
 }

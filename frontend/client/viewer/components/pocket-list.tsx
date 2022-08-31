@@ -5,7 +5,6 @@ import Pocket from "./pocket";
 import "./pocket-list.css";
 
 import { AiOutlineEye } from 'react-icons/ai';
-import { IconContext } from "react-icons";
 
 export default class PocketList extends React.Component
   <{
