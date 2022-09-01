@@ -20,11 +20,14 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--database", required=True,
         help="Path of target prankweb database directory, e.g. 'v3'.")
     parser.add_argument(
+        "--queued", action="store_true",
+        help="If set queued tasks are removed.")
+    parser.add_argument(
         "--running", action="store_true",
-        help="If set failed tasks are also removed.")
+        help="If set failed tasks are removed.")
     parser.add_argument(
         "--failed", action="store_true",
-        help="If set failed tasks are also removed.")
+        help="If set failed tasks are removed.")
     return vars(parser.parse_args())
 
 
@@ -76,6 +79,7 @@ def list_prankweb_predictions(predictions_directory: str) \
 
 def should_be_deleted(info, arguments):
     return (info["status"] == "running" and arguments["running"]) or \
+           (info["status"] == "queued" and arguments["queued"]) or \
            (info["status"] == "failed" and arguments["failed"])
 
 

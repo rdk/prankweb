@@ -44,7 +44,7 @@ def _read_arguments() -> typing.Dict[str, str]:
         action="store_true",
         default=False)
     parser.add_argument(
-        "--queue-size",
+        "--queue-limit",
         help="Limit the number of execution in a queue "
              "managed by the synchronization.",
         default=64)
@@ -69,7 +69,7 @@ def main(args):
         logger.info(f"Reverted {counter} prankweb failed tasks.")
     logger.info("Synchronizing with prankweb server ...")
     prankweb_service.initialize(args["server"], args["server_directory"])
-    synchronize_prankweb_with_database(database)
+    synchronize_prankweb_with_database(database, args["queue_limit"])
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
     logger.info("Downloading result from prankweb server ...")
@@ -118,18 +118,20 @@ def change_prankweb_failed_to_new(database):
     return result
 
 
-def synchronize_prankweb_with_database(database, queued_limit):
+def synchronize_prankweb_with_database(database, queue_limit):
     """Synchronize database with prankweb."""
     # Check those that we track as queued.
+    logger.info("Checking queued ...")
     queued_count = 0
     for code, record in database["data"].items():
         if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
             request_computation_from_prankweb_for_code(code, record)
         if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
             queued_count += 1
+    logger.info(f"Queued size {queued_count}")
     # Start new predictions, so the queued size is under given limit.
     for code, record in database["data"].items():
-        if queued_count > queued_limit:
+        if queued_count > queue_limit:
             break
         if record["status"] == EntryStatus.NEW.value:
             request_computation_from_prankweb_for_code(code, record)
@@ -139,7 +141,6 @@ def synchronize_prankweb_with_database(database, queued_limit):
 
 def request_computation_from_prankweb_for_code(code: str, record):
     """Request computation or check for status."""
-    logger.debug(f"Checking for '{code}' with status '{record['status']}'")
     response = prankweb_service.retrieve_info(code)
     if response.status == -1:
         # This indicates error with the connection.
@@ -157,8 +158,12 @@ def request_computation_from_prankweb_for_code(code: str, record):
         record["status"] = EntryStatus.PREDICTED.value
     elif response.body["status"] == "failed":
         record["status"] = EntryStatus.PRANKWEB_FAILED.value
+    elif response.body["status"] == "queued" or \
+            response.body["status"] == "running":
+        # For both we see it as queued for completion.
+        record["status"] = EntryStatus.PRANKWEB_QUEUED.value
     else:
-        # The prediction is still running, so no change here.
+        # We do not know what to do.
         ...
     logger.debug(f"Status changed to '{record['status']}' for '{code}' "
                  f" due to response '{response.body['status']}'")
@@ -200,7 +205,7 @@ def prepare_funpdbe_file(
         record["status"] = EntryStatus.EMPTY.value
         return
     except Exception as ex:
-        logger.exception(f"Can't convert {code}.")
+        logger.exception(f"Can't convert {code} to FunPDBe record.")
         error_log_file = os.path.join(working_directory, "error.log")
         with open(error_log_file, "w") as stream:
             stream.write(str(ex))
