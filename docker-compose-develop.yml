@@ -74,6 +74,7 @@ services:
     depends_on:
       - flower
       - rabbitmq
+    restart: unless-stopped
     ports:
       - "9090:9090"
 volumes:
