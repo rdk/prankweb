@@ -3,11 +3,11 @@ import collections
 import os
 import datetime
 import shutil
-
 import zipfile
 import typing
 import argparse
 import logging
+
 import database_service
 from database_service import EntryStatus
 import pdb_service
@@ -47,7 +47,8 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--queue-limit",
         help="Limit the number of execution in a queue "
              "managed by the synchronization.",
-        default=64)
+        type=int,
+        default=4)
     return vars(parser.parse_args())
 
 
