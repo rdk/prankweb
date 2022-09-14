@@ -19,7 +19,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def _read_arguments() -> typing.Dict[str, str]:
-    from_date = datetime.datetime.today() - datetime.timedelta(weeks=2)
+    from_date = datetime.datetime.today() - datetime.timedelta(weeks=1)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--server",
@@ -35,6 +35,11 @@ def _read_arguments() -> typing.Dict[str, str]:
         "--from",
         default=from_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
         help="XSD data to from which update in format 2021-12-01T00:00:00Z.")
+    parser.add_argument(
+        "--check-pdb",
+        help="If set new records are fetch from PDB.",
+        action="store_true",
+        default=False)
     parser.add_argument(
         "--p2rank-version",
         help="Used p2rank version.")
@@ -57,13 +62,16 @@ def main(args):
     data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
-    logger.info(f"Fetching PDB records from '{args['from']} ...")
-    new_pdb_records = pdb_service.get_deposited_from(args["from"])
-    logger.info(f"Found {len(new_pdb_records)} new records.")
-    logger.debug("New records: " + ",".join(
-        [record.code for record in new_pdb_records]))
-    add_pdb_to_database(database, new_pdb_records)
-    database_service.save_database(data_directory, database)
+    if args["check_pdb"]:
+        ...
+    else:
+        logger.info(f"Fetching PDB records from '{args['from']} ...")
+        new_pdb_records = pdb_service.get_deposited_from(args["from"])
+        logger.info(f"Found {len(new_pdb_records)} new records.")
+        logger.debug("New records: " + ",".join(
+            [record.code for record in new_pdb_records]))
+        add_pdb_to_database(database, new_pdb_records)
+        database_service.save_database(data_directory, database)
     if args["retry_prankweb"]:
         counter = change_prankweb_failed_to_new(database)
         database_service.save_database(data_directory, database)
@@ -129,10 +137,10 @@ def synchronize_prankweb_with_database(database, queue_limit):
             request_computation_from_prankweb_for_code(code, record)
         if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
             queued_count += 1
-    logger.info(f"Queued size {queued_count}")
+    logger.info(f"Queued count: {queued_count}")
     # Start new predictions, so the queued size is under given limit.
     for code, record in database["data"].items():
-        if queued_count > queue_limit:
+        if queued_count >= queue_limit:
             break
         if record["status"] == EntryStatus.NEW.value:
             request_computation_from_prankweb_for_code(code, record)
