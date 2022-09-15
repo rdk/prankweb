@@ -49,6 +49,11 @@ def _read_arguments() -> typing.Dict[str, str]:
         action="store_true",
         default=False)
     parser.add_argument(
+        "--retry-funpdbe",
+        help="Re-run failed FunPDBe tasks.",
+        action="store_true",
+        default=False)
+    parser.add_argument(
         "--queue-limit",
         help="Limit the number of execution in a queue "
              "managed by the synchronization.",
@@ -74,12 +79,16 @@ def main(args):
         counter = change_prankweb_failed_to_new(database)
         database_service.save_database(data_directory, database)
         logger.info(f"Reverted {counter} prankweb failed tasks.")
+    if args["retry_funpdbe"]:
+        counter = change_funpdbe_failed_to_predicted(database)
+        database_service.save_database(data_directory, database)
+        logger.info(f"Reverted {counter} FunPDBe failed tasks.")
     logger.info("Synchronizing with prankweb server ...")
     prankweb_service.initialize(args["server"], args["server_directory"])
     synchronize_prankweb_with_database(database, args["queue_limit"])
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
-    logger.info("Downloading result from prankweb server ...")
+    logger.info("Preparing predictions for FunPDBe ...")
     try:
         prepare_funpdbe_files(args["p2rank_version"], data_directory, database)
     except:
@@ -122,6 +131,14 @@ def change_prankweb_failed_to_new(database):
     for code, record in database["data"].items():
         if record["status"] == EntryStatus.PRANKWEB_FAILED.value:
             record["status"] = EntryStatus.NEW.value
+    return result
+
+
+def change_funpdbe_failed_to_predicted(database):
+    result = 0
+    for code, record in database["data"].items():
+        if record["status"] == EntryStatus.FUNPDBE_FAILED.value:
+            record["status"] = EntryStatus.PREDICTED.value
     return result
 
 
