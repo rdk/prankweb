@@ -144,6 +144,7 @@ def synchronize_prankweb_with_database(database, queue_limit):
             request_computation_from_prankweb_for_code(code, record)
         if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
             queued_count += 1
+            logger.info(f"Started new prediction: '{code}'")
 
 
 def request_computation_from_prankweb_for_code(code: str, record):
@@ -206,7 +207,7 @@ def prepare_funpdbe_file(
     # Check for missing files.
     if not os.path.exists(predictions_file) or \
             not os.path.exists(residues_file):
-        logger.error(f"Missing files for {code}.")
+        logger.error(f"Missing files for '{code}'.")
         with open(error_log_file, "w") as stream:
             stream.write(
                 f"Missing files '{predictions_file}', '{residues_file}")
@@ -246,20 +247,30 @@ def retrieve_prediction_files(working_directory: str, code: str):
         return None, None
     unpack_from_zip(
         zip_path,
-        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
+        # We may have pdb or cif file.
+        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv",
+         "structure.cif_predictions.csv", "structure.cif_residues.csv"},
         working_directory
     )
-    unpack_from_zip(
-        zip_path,
-        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
-        working_directory
-    )
-    predictions_file = os.path.join(
-        working_directory,
-        "structure.pdb_predictions.csv")
-    residues_file = os.path.join(
-        working_directory,
-        "structure.pdb_residues.csv")
+    predictions_file = None
+    predictions_pdb_file = os.path.join(
+        working_directory, "structure.pdb_predictions.csv")
+    if os.path.exists(predictions_pdb_file):
+        predictions_file = predictions_pdb_file
+    predictions_cif_file = os.path.join(
+        working_directory, "structure.cif_predictions.csv")
+    if os.path.exists(predictions_cif_file):
+        predictions_file = predictions_cif_file
+
+    residues_file = None
+    residues_pdb_file = os.path.join(
+        working_directory, "structure.pdb_residues.csv")
+    if os.path.exists(residues_pdb_file):
+        residues_file = residues_pdb_file
+    residues_cif_file = os.path.join(
+        working_directory, "structure.cif_residues.csv")
+    if os.path.exists(residues_cif_file):
+        residues_file = residues_cif_file
     return predictions_file, residues_file
 
 
