@@ -63,8 +63,6 @@ def main(args):
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
     if args["check_pdb"]:
-        ...
-    else:
         logger.info(f"Fetching PDB records from '{args['from']} ...")
         new_pdb_records = pdb_service.get_deposited_from(args["from"])
         logger.info(f"Found {len(new_pdb_records)} new records.")
@@ -204,6 +202,17 @@ def prepare_funpdbe_file(
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
         return
     working_output = os.path.join(working_directory, f"{code.lower()}.json")
+    error_log_file = os.path.join(working_directory, "error.log")
+    # Check for missing files.
+    if not os.path.exists(predictions_file) or \
+            not os.path.exists(residues_file):
+        logger.error(f"Missing files for {code}.")
+        with open(error_log_file, "w") as stream:
+            stream.write(
+                f"Missing files '{predictions_file}', '{residues_file}")
+        record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        return
+    # Try conversion.
     try:
         p2rank_to_funpdbe.convert_p2rank_to_pdbe(
             configuration, code, predictions_file, residues_file,
@@ -215,7 +224,6 @@ def prepare_funpdbe_file(
         return
     except Exception as ex:
         logger.exception(f"Can't convert {code} to FunPDBe record.")
-        error_log_file = os.path.join(working_directory, "error.log")
         with open(error_log_file, "w") as stream:
             stream.write(str(ex))
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
