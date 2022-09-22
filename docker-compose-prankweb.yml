@@ -84,8 +84,7 @@ services:
     depends_on:
       - flower
       - rabbitmq
-    ports:
-      - "9090:9090"
+    restart: unless-stopped
 volumes:
   conservation:
     external: True
