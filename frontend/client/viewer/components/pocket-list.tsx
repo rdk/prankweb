@@ -1,17 +1,14 @@
 import React from "react";
+import { PredictionData } from "../../custom-types";
 import Pocket from "./pocket";
-import {PrankPocket} from "../prediction-entity";
 
 import "./pocket-list.css";
 
+import { AiOutlineEye } from 'react-icons/ai';
+
 export default class PocketList extends React.Component
   <{
-    pockets: {
-      pocket: PrankPocket,
-      conservation: string,
-      isVisible: boolean,
-      selection: any,
-    }[],
+    data: PredictionData,
     showAll: () => void,
     setPocketVisibility: (index: number, isVisible: boolean) => void,
     showOnlyPocket: (index: number) => void,
@@ -20,7 +17,7 @@ export default class PocketList extends React.Component
   }, {}> {
 
   render() {
-    if (this.props.pockets.length === 0) {
+    if (this.props.data.pockets.length === 0) {
       return (
         <div className="pockets">
           <h3 className="text-center">No pockets found</h3>
@@ -37,16 +34,14 @@ export default class PocketList extends React.Component
             title="Show all pockets."
             onClick={this.props.showAll}
           >
-            <span className="fontello-icon">&#59430;</span>
+              <AiOutlineEye />
           </button>
         </h3>
-        {this.props.pockets.map((item, index) => (
+        {this.props.data.pockets.map((item, index) => (
           <Pocket
             key={index}
-            pocket={item.pocket}
+            pocket={item}
             index={index}
-            conservation={item.conservation}
-            isVisible={item.isVisible}
             setPocketVisibility={this.props.setPocketVisibility}
             showOnlyPocket={this.props.showOnlyPocket}
             focusPocket={this.props.focusPocket}
@@ -55,5 +50,4 @@ export default class PocketList extends React.Component
         ))}
       </div>);
   }
-
 }
