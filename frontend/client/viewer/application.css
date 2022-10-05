@@ -1,0 +1,88 @@
+#analyze {
+    margin: 0;
+    height: calc(100vh - 68px);
+}
+
+#message {
+    display: none;
+}
+
+#footer {
+    display: block;
+}
+
+#application-molstar {
+    position: absolute;
+    bottom: 0;
+    height: 70vh;
+}
+
+#application-rcsb {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: auto;
+    height: calc(30vh - 68px);
+}
+
+#pocket-list-aside {
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    #application-rcsb {
+        height: auto;
+    }
+
+    #analyze {
+        position: relative;
+        height: auto;
+    }
+
+    #application-molstar {
+        position: relative;
+        bottom: auto;
+    }
+}
+
+/* Set for Bootstrap md breakpoint. */
+@media (min-width: 768px) {
+    #pocket-list-aside {
+        overflow-y: scroll;
+    }
+}
+
+#sequence-view {
+    user-select: none;
+}
+
+.fontello-icon {
+    font-family: "fontello";
+}
+
+.btn.btn-predicted {
+    color: #6c757d;
+    border-color: #6c757d;
+    background-color: #fff3cd;
+}
+
+.btn.btn-predicted:hover {
+    color: #fff3cd;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.card-body.predicted {
+    color: #664d03;
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+}
+
+/* Bootstrap updates to make the view more compact. */
+
+.card .card-header {
+    padding: 0.2rem 1rem 0 1rem;
+}
+
+.card .card-body {
+    padding: 0.5rem 1rem;
+}

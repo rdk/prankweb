@@ -1,23 +1,25 @@
 import React from "react";
-import LiteMol from "litemol";
-import {PolymerViewType, PocketsViewType} from "../application";
 
 import "./tools-box.css";
+import { PocketsViewType, PolymerViewType, PolymerColorType } from "../../custom-types";
+import { IconContext } from "react-icons";
+import { FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 
 export default class ToolsBox extends React.Component<{
-  plugin: LiteMol.Plugin.Controller,
   downloadUrl: string,
   downloadAs: string,
   polymerView: PolymerViewType,
   pocketsView: PocketsViewType,
+  polymerColor: PolymerColorType,
   onPolymerViewChange: (value: PolymerViewType) => void,
   onPocketsViewChange: (value: PocketsViewType) => void,
+  onPolymerColorChange: (value: PolymerColorType) => void,
   isPredicted: boolean,
   isShowOnlyPredicted: boolean,
   onShowConfidentChange: () => void,
 }, {
   /**
-   * True for expanded component false for minimized component.
+   * True for expanded component, false for minimized component.
    */
   visible: boolean
 }> {
@@ -30,7 +32,10 @@ export default class ToolsBox extends React.Component<{
   constructor(props: any) {
     super(props);
     this.toggleVisible = this.toggleVisible.bind(this);
-    this.toggleSequenceView = this.toggleSequenceView.bind(this);
+  }
+
+  toggleVisible() {
+    this.setState({"visible": !this.state.visible});
   }
 
   render() {
@@ -42,18 +47,18 @@ export default class ToolsBox extends React.Component<{
             <button
               type="button"
               className="btn btn-default btn-icon-right"
-              title="Show/Hyde tools."
+              title="Show/Hide tools."
               onClick={this.toggleVisible}
             >
-              {
-                this.state.visible ?
-                  <span className="fontello-icon">
-                    &#xe87f;
-                  </span> :
-                  <span className="fontello-icon">
-                    &#xe882;
-                  </span>
-              }
+            {this.state.visible ? 
+            <IconContext.Provider value={{ size: "1.5em" }}>
+                      <FiArrowUpCircle />
+                  </IconContext.Provider>
+                  : 
+                  <IconContext.Provider value={{ size: "1.5em" }}>
+                      <FiArrowDownCircle />
+                  </IconContext.Provider>
+                  }
             </button>
           </h3>
         </div>
@@ -61,11 +66,12 @@ export default class ToolsBox extends React.Component<{
           <ControlBoxContent
             downloadUrl={this.props.downloadUrl}
             downloadAs={this.props.downloadAs}
-            toggleSequenceView={this.toggleSequenceView}
             polymerView={this.props.polymerView}
             onPolymerViewChange={this.props.onPolymerViewChange}
             pocketsView={this.props.pocketsView}
             onPocketsViewChange={this.props.onPocketsViewChange}
+            onPolymerColorChange={this.props.onPolymerColorChange}
+            polymerColor={this.props.polymerColor}
             isPredicted={this.props.isPredicted}
             isShowOnlyPredicted={this.props.isShowOnlyPredicted}
             onShowConfidentChange={this.props.onShowConfidentChange}
@@ -75,38 +81,18 @@ export default class ToolsBox extends React.Component<{
       </div>
     );
   }
-
-  toggleVisible() {
-    this.setState({"visible": !this.state.visible});
-  }
-
-  toggleSequenceView() {
-    let regionStates =
-      this.props.plugin.context.layout.latestState.regionStates;
-    // TODO FIX Resize!
-    if (!regionStates) {
-      return;
-    }
-    let regionState = regionStates[LiteMol.Bootstrap.Components.LayoutRegion.Top];
-    this.props.plugin.command(LiteMol.Bootstrap.Command.Layout.SetState, {
-      "regionStates": {
-        [LiteMol.Bootstrap.Components.LayoutRegion.Top]:
-          regionState == "Sticky" ? "Hidden" : "Sticky",
-      },
-    })
-  }
-
 }
 
 function ControlBoxContent(
   props: {
     downloadUrl: string,
     downloadAs: string,
-    toggleSequenceView: () => void,
     polymerView: PolymerViewType,
     onPolymerViewChange: (value: PolymerViewType) => void,
     pocketsView: PocketsViewType,
+    polymerColor: PolymerColorType,
     onPocketsViewChange: (value: PocketsViewType) => void,
+    onPolymerColorChange: (value: PolymerColorType) => void,
     isPredicted: boolean,
     isShowOnlyPredicted: boolean,
     onShowConfidentChange: () => void,
@@ -118,8 +104,7 @@ function ControlBoxContent(
         href={props.downloadUrl}
         download={props.downloadAs}
       >
-        <span className="fontello-icon">&#xe82d;</span>&nbsp;
-        Download
+        Download data
       </a>
       <label>
         Protein visualisation
@@ -146,6 +131,20 @@ function ControlBoxContent(
         >
           <option value="0">Balls and Sticks</option>
           <option value="1">Surface</option>
+        </select>
+      </label>
+      <label>
+        Polymer coloring
+        <select
+          id="polymer-coloring"
+          className="form-select"
+          value={props.polymerColor}
+          onChange={(event) =>
+            props.onPolymerColorChange(parseInt(event.target.value))}
+        >
+          <option value="0">Clear</option>
+          <option value="1">Conservation</option>
+          <option value="2">AlphaFold confidence</option>
         </select>
       </label>
       {props.isPredicted && (

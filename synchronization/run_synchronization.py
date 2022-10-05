@@ -3,11 +3,11 @@ import collections
 import os
 import datetime
 import shutil
-
 import zipfile
 import typing
 import argparse
 import logging
+
 import database_service
 from database_service import EntryStatus
 import pdb_service
@@ -17,8 +17,9 @@ import p2rank_to_funpdbe
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 def _read_arguments() -> typing.Dict[str, str]:
-    from_date = datetime.datetime.today() - datetime.timedelta(weeks=2)
+    from_date = datetime.datetime.today() - datetime.timedelta(weeks=1)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--server",
@@ -35,13 +36,29 @@ def _read_arguments() -> typing.Dict[str, str]:
         default=from_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
         help="XSD data to from which update in format 2021-12-01T00:00:00Z.")
     parser.add_argument(
+        "--check-pdb",
+        help="If set new records are fetch from PDB.",
+        action="store_true",
+        default=False)
+    parser.add_argument(
         "--p2rank-version",
         help="Used p2rank version.")
     parser.add_argument(
-        "--strict-funpdbe",
-        help="Stop on any FunPDBe related error.",
+        "--retry-prankweb",
+        help="Re-run failed tasks.",
         action="store_true",
         default=False)
+    parser.add_argument(
+        "--retry-funpdbe",
+        help="Re-run failed FunPDBe tasks.",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "--queue-limit",
+        help="Limit the number of execution in a queue "
+             "managed by the synchronization.",
+        type=int,
+        default=4)
     return vars(parser.parse_args())
 
 
@@ -50,26 +67,35 @@ def main(args):
     data_directory = args["data"]
     os.makedirs(data_directory, exist_ok=True)
     database = database_service.load_database(data_directory)
-    logger.info(f"Fetching PDB records from '{args['from']} ...")
-    new_pdb_records = pdb_service.get_deposited_from(args["from"])
-    logger.info(f"Found {len(new_pdb_records)} new records")
-    logger.debug("New records: "+ ",".join(new_pdb_records))
-    add_pdb_to_database(database, new_pdb_records)
-    database_service.save_database(data_directory, database)
+    if args["check_pdb"]:
+        logger.info(f"Fetching PDB records from '{args['from']} ...")
+        new_pdb_records = pdb_service.get_deposited_from(args["from"])
+        logger.info(f"Found {len(new_pdb_records)} new records.")
+        logger.debug("New records: " + ",".join(
+            [record.code for record in new_pdb_records]))
+        add_pdb_to_database(database, new_pdb_records)
+        database_service.save_database(data_directory, database)
+    if args["retry_prankweb"]:
+        counter = change_prankweb_failed_to_new(database)
+        database_service.save_database(data_directory, database)
+        logger.info(f"Reverted {counter} prankweb failed tasks.")
+    if args["retry_funpdbe"]:
+        counter = change_funpdbe_failed_to_predicted(database)
+        database_service.save_database(data_directory, database)
+        logger.info(f"Reverted {counter} FunPDBe failed tasks.")
     logger.info("Synchronizing with prankweb server ...")
     prankweb_service.initialize(args["server"], args["server_directory"])
-    synchronize_prankweb_with_database(database)
+    synchronize_prankweb_with_database(database, args["queue_limit"])
     database["pdb"]["lastSynchronization"] = args["from"]
     database_service.save_database(data_directory, database)
-    logger.info("Downloading result from prankweb server ...")
+    logger.info("Preparing predictions for FunPDBe ...")
     try:
-        prepare_funpdbe_files(
-            args["strict_funpdbe"], args["p2rank_version"],
-            data_directory, database)
+        prepare_funpdbe_files(args["p2rank_version"], data_directory, database)
     except:
         database_service.save_database(data_directory, database)
         logger.info("Can't prepare functional PDBe files.")
     database_service.save_database(data_directory, database)
+    log_status_count(database)
     logger.info("All done")
 
 
@@ -100,25 +126,46 @@ def add_pdb_to_database(
         }
 
 
-def synchronize_prankweb_with_database(database):
-    """Synchronize database with prankweb."""
-    status_to_update = [
-        EntryStatus.NEW.value,
-        EntryStatus.PRANKWEB_QUEUED.value,
-    ]
-    count_by_status = collections.defaultdict(int)
+def change_prankweb_failed_to_new(database):
+    result = 0
     for code, record in database["data"].items():
-        if record["status"] in status_to_update:
-            request_computation_from_prankweb(code, record)
-            count_by_status[record["status"]] += 1
-    message = "\n".join(f"    {name}: {value}"
-                        for name, value in count_by_status.items())
-    logger.info("Synchronization summary: \n" + message)
+        if record["status"] == EntryStatus.PRANKWEB_FAILED.value:
+            record["status"] = EntryStatus.NEW.value
+    return result
 
 
-def request_computation_from_prankweb(code: str, record):
+def change_funpdbe_failed_to_predicted(database):
+    result = 0
+    for code, record in database["data"].items():
+        if record["status"] == EntryStatus.FUNPDBE_FAILED.value:
+            record["status"] = EntryStatus.PREDICTED.value
+    return result
+
+
+def synchronize_prankweb_with_database(database, queue_limit):
+    """Synchronize database with prankweb."""
+    # Check those that we track as queued.
+    logger.info("Checking queued ...")
+    queued_count = 0
+    for code, record in database["data"].items():
+        if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
+            request_computation_from_prankweb_for_code(code, record)
+        if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
+            queued_count += 1
+    logger.info(f"Queued count: {queued_count}")
+    # Start new predictions, so the queued size is under given limit.
+    for code, record in database["data"].items():
+        if queued_count >= queue_limit:
+            break
+        if record["status"] == EntryStatus.NEW.value:
+            request_computation_from_prankweb_for_code(code, record)
+        if record["status"] == EntryStatus.PRANKWEB_QUEUED.value:
+            queued_count += 1
+            logger.info(f"Started new prediction: '{code}'")
+
+
+def request_computation_from_prankweb_for_code(code: str, record):
     """Request computation or check for status."""
-    logger.debug(f"Checking for '{code}' with status '{record['status']}'")
     response = prankweb_service.retrieve_info(code)
     if response.status == -1:
         # This indicates error with the connection.
@@ -135,29 +182,30 @@ def request_computation_from_prankweb(code: str, record):
     if response.body["status"] == "successful":
         record["status"] = EntryStatus.PREDICTED.value
     elif response.body["status"] == "failed":
-        # We try it again later.
-        ...
+        record["status"] = EntryStatus.PRANKWEB_FAILED.value
+    elif response.body["status"] == "queued" or \
+            response.body["status"] == "running":
+        # For both we see it as queued for completion.
+        record["status"] = EntryStatus.PRANKWEB_QUEUED.value
     else:
-        # The prediction is still running, so no change here.
+        # We do not know what to do.
         ...
     logger.debug(f"Status changed to '{record['status']}' for '{code}' "
-                f" due to response '{response.body['status']}'")
+                 f" due to response '{response.body['status']}'")
 
 
-def prepare_funpdbe_files(
-        strict_mode: bool, p2rank_version: str, data_directory: str, database):
+def prepare_funpdbe_files(p2rank_version: str, data_directory: str, database):
     ftp_directory = get_ftp_directory(data_directory)
     os.makedirs(ftp_directory, exist_ok=True)
     configuration = funpdbe_configuration(p2rank_version)
     os.makedirs(os.path.join(data_directory, "working"), exist_ok=True)
     for code, record in database["data"].items():
         prepare_funpdbe_file(
-            strict_mode, ftp_directory, data_directory, configuration,
-            code, record)
+            ftp_directory, data_directory, configuration, code, record)
 
 
 def prepare_funpdbe_file(
-        strict_mode: bool, ftp_directory: str, data_directory: str,
+        ftp_directory: str, data_directory: str,
         configuration: p2rank_to_funpdbe.Configuration,
         code: str, record):
     if not record["status"] == EntryStatus.PREDICTED.value:
@@ -169,12 +217,20 @@ def prepare_funpdbe_file(
     if residues_file is None or residues_file is None:
         logger.error(f"Can't obtain prediction files for {code}, "
                      f"record ignored.")
-        if strict_mode:
-            raise RuntimeError(f"Failed to prepare '{code}'.")
-        else:
-            return
-
+        record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        return
     working_output = os.path.join(working_directory, f"{code.lower()}.json")
+    error_log_file = os.path.join(working_directory, "error.log")
+    # Check for missing files.
+    if not os.path.exists(predictions_file) or \
+            not os.path.exists(residues_file):
+        logger.error(f"Missing files for '{code}'.")
+        with open(error_log_file, "w") as stream:
+            stream.write(
+                f"Missing files '{predictions_file}', '{residues_file}")
+        record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        return
+    # Try conversion.
     try:
         p2rank_to_funpdbe.convert_p2rank_to_pdbe(
             configuration, code, predictions_file, residues_file,
@@ -185,15 +241,11 @@ def prepare_funpdbe_file(
         record["status"] = EntryStatus.EMPTY.value
         return
     except Exception as ex:
-        logger.exception(f"Can't convert {code}, record ignored.")
-        record["status"] = EntryStatus.FUNPDBE_FAILED.value
-        error_log_file = os.path.join(working_directory, "error.log")
+        logger.exception(f"Can't convert {code} to FunPDBe record.")
         with open(error_log_file, "w") as stream:
             stream.write(str(ex))
-        if strict_mode:
-            raise RuntimeError(f"Failed to prepare '{code}'.")
-        else:
-            return
+        record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        return
     target_directory = os.path.join(ftp_directory, code.lower()[1:3])
     os.makedirs(target_directory, exist_ok=True)
     target_output = os.path.join(target_directory, f"{code.lower()}.json")
@@ -212,20 +264,30 @@ def retrieve_prediction_files(working_directory: str, code: str):
         return None, None
     unpack_from_zip(
         zip_path,
-        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
+        # We may have pdb or cif file.
+        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv",
+         "structure.cif_predictions.csv", "structure.cif_residues.csv"},
         working_directory
     )
-    unpack_from_zip(
-        zip_path,
-        {"structure.pdb_predictions.csv", "structure.pdb_residues.csv"},
-        working_directory
-    )
-    predictions_file = os.path.join(
-        working_directory,
-        "structure.pdb_predictions.csv")
-    residues_file = os.path.join(
-        working_directory,
-        "structure.pdb_residues.csv")
+    predictions_file = None
+    predictions_pdb_file = os.path.join(
+        working_directory, "structure.pdb_predictions.csv")
+    if os.path.exists(predictions_pdb_file):
+        predictions_file = predictions_pdb_file
+    predictions_cif_file = os.path.join(
+        working_directory, "structure.cif_predictions.csv")
+    if os.path.exists(predictions_cif_file):
+        predictions_file = predictions_cif_file
+
+    residues_file = None
+    residues_pdb_file = os.path.join(
+        working_directory, "structure.pdb_residues.csv")
+    if os.path.exists(residues_pdb_file):
+        residues_file = residues_pdb_file
+    residues_cif_file = os.path.join(
+        working_directory, "structure.cif_residues.csv")
+    if os.path.exists(residues_cif_file):
+        residues_file = residues_cif_file
     return predictions_file, residues_file
 
 
@@ -256,6 +318,16 @@ def funpdbe_configuration(p2rank_version: str) \
         prankweb_service.prediction_url_template(),
         p2rank_version
     )
+
+
+def log_status_count(database):
+    """Count and log the number of predictions for each type."""
+    count_by_status = collections.defaultdict(int)
+    for code, record in database["data"].items():
+        count_by_status[record["status"]] += 1
+    message = "\n".join(
+        [f"    {name}: {value}" for name, value in count_by_status.items()])
+    logger.info("Server synchronization summary: \n" + message)
 
 
 if __name__ == "__main__":

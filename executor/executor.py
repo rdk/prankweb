@@ -87,7 +87,7 @@ def _prepare_raw_structure_file(
         logger.info("I'm lazy and structure file already exists")
         return result
     if configuration.structure_code is not None:
-        configuration.structure_extension = "pdb"
+        configuration.structure_extension = "cif"
         result += configuration.structure_extension
         _download_from_pdb(configuration.structure_code, result)
     elif configuration.structure_file is not None:
@@ -106,7 +106,7 @@ def _prepare_raw_structure_file(
 
 
 def _download_from_pdb(code: str, destination: str) -> None:
-    url = f"https://files.rcsb.org/download/{code}.pdb"
+    url = f"https://files.rcsb.org/download/{code}.cif"
     _download(url, destination)
 
 

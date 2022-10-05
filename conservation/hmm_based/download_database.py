@@ -19,6 +19,7 @@ def main():
 
 def prepare_database(directory: str):
     print(f"Preparing database to '{directory}' ...")
+    os.makedirs(directory, exist_ok=True)
     print("This process may take a while.")
     tmp_file_name = "uniref50.fasta.zip"
     print("Downloading file ...")

@@ -69,7 +69,18 @@ function initializeWebpack(app) {
         // Anything starting with 'analyze'.
         serveFromWebpack("analyze.html", res);
       }
-    } else if (url.includes(".")) {
+    } 
+    else if(url.startsWith("viewer")) {
+      if (url.includes("viewer.js")) {
+        serveFromWebpack("viewer.js", res);
+      } else if (url.includes("assets")) {
+        serveFromFile(getAssetsPath(), url.replace(/.*assets\//, ""), res);
+      } else {
+        // Anything starting with 'viewer'.
+        serveFromWebpack("viewer.html", res);
+      }
+    }   
+    else if (url.includes(".")) {
       // Full path with extension.
       serveFromWebpack(url, res);
     } else {
