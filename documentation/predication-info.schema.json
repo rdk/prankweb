@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Prediction information",
+  "description": "Represent information about prediction.",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Prediction identification in a database."
+    },
+    "database": {
+      "type": "string",
+      "description": "Name of a database.",
+      "enum": [
+        "v1",
+        "v1-conservation",
+        "v2",
+        "v2-conservation",
+        "v3",
+        "v3-alphafold",
+        "v3-alphafold-conservation-hmm",
+        "v3-conservation-hmm",
+        "v3-user-upload"
+      ]
+    },
+    "created": {
+      "type": "string",
+      "description": "When was the prediction created."
+    },
+    "lastChange": {
+      "type": "string",
+      "description": "Time of last change to the prediction."
+    },
+    "status": {
+      "type": "string",
+      "description": "Prediction status.",
+      "enum": [
+        "queued",
+        "running",
+        "failed",
+        "successful"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata based on the prediction."
+    }
+  },
+  "required": [
+    "id",
+    "database",
+    "created",
+    "lastChange",
+    "status"
+  ]
+}
