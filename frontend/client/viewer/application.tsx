@@ -204,6 +204,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       return (
         <div>
           <ToolsBox
+            predictionData={this.state.data}
             downloadUrl={getApiDownloadUrl(predictionInfo)}
             downloadAs={downloadAs}
             polymerView={this.state.polymerView}

@@ -189,7 +189,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     }
 
     //then resolve the conservation, if available
-    if(data.structure.scores.conservation) {
+    if(data.structure.scores.conservation && !data.structure.scores.conservation.every((value) => value === 0)) {
         const conservationData = [];
     
         //we need to normalize the scores to fit in properly
@@ -216,7 +216,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     }
 
     //then resolve alphafold scores, if available
-    if(data.structure.scores.plddt) 
+    if(data.structure.scores.plddt && !data.structure.scores.plddt.every((value) => value === 0)) 
     {
         const alphafoldData = [];
     

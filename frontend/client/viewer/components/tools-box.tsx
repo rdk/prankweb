@@ -1,11 +1,12 @@
 import React from "react";
 
 import "./tools-box.css";
-import { PocketsViewType, PolymerViewType, PolymerColorType } from "../../custom-types";
+import { PocketsViewType, PolymerViewType, PolymerColorType, PredictionData } from "../../custom-types";
 import { IconContext } from "react-icons";
 import { FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 
 export default class ToolsBox extends React.Component<{
+  predictionData: PredictionData,
   downloadUrl: string,
   downloadAs: string,
   polymerView: PolymerViewType,
@@ -64,6 +65,7 @@ export default class ToolsBox extends React.Component<{
         </div>
         {this.state.visible && <div className="card-body">
           <ControlBoxContent
+            predictionData={this.props.predictionData}
             downloadUrl={this.props.downloadUrl}
             downloadAs={this.props.downloadAs}
             polymerView={this.props.polymerView}
@@ -83,8 +85,8 @@ export default class ToolsBox extends React.Component<{
   }
 }
 
-function ControlBoxContent(
-  props: {
+class ControlBoxContent extends React.Component<{
+    predictionData: PredictionData,
     downloadUrl: string,
     downloadAs: string,
     polymerView: PolymerViewType,
@@ -96,68 +98,79 @@ function ControlBoxContent(
     isPredicted: boolean,
     isShowOnlyPredicted: boolean,
     onShowConfidentChange: () => void,
-  }) {
-  return (
-    <div className="d-grid gap-2">
-      <a
-        className="btn btn-outline-secondary"
-        href={props.downloadUrl}
-        download={props.downloadAs}
-      >
-        Download data
-      </a>
-      <label>
-        Protein visualisation
-        <select
-          id="polymer-visual"
-          className="form-select"
-          value={props.polymerView}
-          onChange={(event) =>
-            props.onPolymerViewChange(parseInt(event.target.value))}
-        >
-          <option value="0">Balls and Sticks</option>
-          <option value="1">Surface</option>
-          <option value="2">Cartoon</option>
-        </select>
-      </label>
-      <label>
-        Pockets visualisation
-        <select
-          id="pockets-visual"
-          className="form-select"
-          value={props.pocketsView}
-          onChange={(event) =>
-            props.onPocketsViewChange(parseInt(event.target.value))}
-        >
-          <option value="0">Balls and Sticks</option>
-          <option value="1">Surface</option>
-        </select>
-      </label>
-      <label>
-        Polymer coloring
-        <select
-          id="polymer-coloring"
-          className="form-select"
-          value={props.polymerColor}
-          onChange={(event) =>
-            props.onPolymerColorChange(parseInt(event.target.value))}
-        >
-          <option value="0">Clear</option>
-          <option value="1">Conservation</option>
-          <option value="2">AlphaFold confidence</option>
-        </select>
-      </label>
-      {props.isPredicted && (
-        <button
-          type="button"
-          className="btn btn-predicted"
-          onClick={props.onShowConfidentChange}
-        >
-          {props.isShowOnlyPredicted ?
-            "Show all regions" :
-            "Show confident regions"}
-        </button>
-      )}
-    </div>
-  )
+  }, {}> {
+
+    constructor(props: any) {
+      super(props);
+      this.scoresDataAvailable = this.scoresDataAvailable.bind(this);
+    }
+
+    scoresDataAvailable(data: number[] | undefined) {
+      if(data === undefined) return false;
+      return !data.every((value) => value === 0); //if every value is 0, then we consider that data is not available
+    }
+  
+    render() {
+      return <div className="d-grid gap-2">
+          <a
+            className="btn btn-outline-secondary"
+            href={this.props.downloadUrl}
+            download={this.props.downloadAs}
+          >
+            Download data
+          </a>
+          <label>
+            Protein visualisation
+            <select
+              id="polymer-visual"
+              className="form-select"
+              value={this.props.polymerView}
+              onChange={(event) =>
+                this.props.onPolymerViewChange(parseInt(event.target.value))}
+            >
+              <option value="0">Balls and Sticks</option>
+              <option value="1">Surface</option>
+              <option value="2">Cartoon</option>
+            </select>
+          </label>
+          <label>
+            Pockets visualisation
+            <select
+              id="pockets-visual"
+              className="form-select"
+              value={this.props.pocketsView}
+              onChange={(event) =>
+                this.props.onPocketsViewChange(parseInt(event.target.value))}
+            >
+              <option value="0">Balls and Sticks</option>
+              <option value="1">Surface</option>
+            </select>
+          </label>
+          <label>
+            Polymer coloring
+            <select
+              id="polymer-coloring"
+              className="form-select"
+              value={this.props.polymerColor}
+              onChange={(event) =>
+                this.props.onPolymerColorChange(parseInt(event.target.value))}
+            >
+              <option value="0">Clear</option>
+              {this.scoresDataAvailable(this.props.predictionData.structure.scores.conservation) && <option value="1">Conservation</option>}
+              {this.scoresDataAvailable(this.props.predictionData.structure.scores.plddt) && <option value="2">AlphaFold confidence</option>}
+            </select>
+          </label>
+          {this.props.isPredicted && (
+            <button
+              type="button"
+              className="btn btn-predicted"
+              onClick={this.props.onShowConfidentChange}
+            >
+              {this.props.isShowOnlyPredicted ?
+                "Show all regions" :
+                "Show confident regions"}
+            </button>
+          )}
+        </div>
+    }
 }

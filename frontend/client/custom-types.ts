@@ -41,7 +41,7 @@ export interface PocketData {
 }
 
 export interface Metadata {
-    //metadata can contain everything at this point
+    //metadata can contain anything at this point
 }
 
 export interface PredictionData {
