@@ -2,8 +2,6 @@ import React from "react";
 
 import "./tools-box.css";
 import { PocketsViewType, PolymerViewType, PolymerColorType, PredictionData } from "../../custom-types";
-import { IconContext } from "react-icons";
-import { FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 
 export default class ToolsBox extends React.Component<{
   predictionData: PredictionData,
@@ -52,14 +50,10 @@ export default class ToolsBox extends React.Component<{
               onClick={this.toggleVisible}
             >
             {this.state.visible ? 
-            <IconContext.Provider value={{ size: "1.5em" }}>
-                      <FiArrowUpCircle />
-                  </IconContext.Provider>
-                  : 
-                  <IconContext.Provider value={{ size: "1.5em" }}>
-                      <FiArrowDownCircle />
-                  </IconContext.Provider>
-                  }
+            <i className="bi bi-dash-circle" style={{"width": "1em"}}></i>
+            :
+            <i className="bi bi-plus-circle" style={{"width": "1em"}}></i>
+            }
             </button>
           </h3>
         </div>

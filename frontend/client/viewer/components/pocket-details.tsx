@@ -16,6 +16,7 @@ export default class PocketDetails extends React.Component
     checkValidValue(data: number | undefined) {
         //here double equal sign is used intentionally
         if(data == undefined || data == 0) return false;
+        return true;
     }
 
     render() {
