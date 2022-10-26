@@ -28,9 +28,10 @@
     height: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     #application-rcsb {
         height: auto;
+        padding-bottom: 10%; /* to ensure there is at least some space for horizontal scrolling */
     }
 
     #analyze {
