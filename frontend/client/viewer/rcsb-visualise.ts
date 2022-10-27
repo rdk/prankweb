@@ -261,7 +261,11 @@ function getLogBaseX(x : number, y : number) {
  */
 function pickColor(pocketId: number) {
     if(pocketId >= DefaultPocketColors.length) {
-        return Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
+        let result = Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
+        if(result.length < 6) {
+            result = "0".repeat(6 - result.length) + result;
+        }
+        return result; 
     }
     return DefaultPocketColors[pocketId];
 }

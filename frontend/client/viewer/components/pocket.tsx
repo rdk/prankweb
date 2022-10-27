@@ -82,7 +82,7 @@ export default class Pocket extends React.Component
   }
 
   computePocketTextColor() {
-    if (!this.state.visible) {
+    if (!this.props.pocket.isVisible) {
       return "white";
     }
     
