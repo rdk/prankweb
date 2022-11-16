@@ -18,6 +18,7 @@ Create mount for rabbitmq, predictions and conservation:
 docker volume create --name prankweb_rabbitmq --opt type=none --opt device=/tmp/rabbitmq --opt o=bind
 docker volume create --name prankweb_conservation --opt type=none --opt device=/tmp/conservation --opt o=bind
 docker volume create --name prankweb_predictions --opt type=none --opt device=/tmp/predictions --opt o=bind
+docker volume create --name prankweb_services --opt type=none --opt device=/tmp/services --opt o=bind
 ```
 Please update the paths to the ```tmp``` directory to reflect your setup.
 
@@ -31,5 +32,6 @@ Finally, you can start the application using:
 ```
 docker compose up
 ```
+You should be able to see the frontend at [localhost:8020](http://localhost:8020).
 
 [p2rank]: <https://github.com/rdk/p2rank>
