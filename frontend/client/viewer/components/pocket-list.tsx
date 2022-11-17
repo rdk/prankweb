@@ -4,8 +4,6 @@ import Pocket from "./pocket";
 
 import "./pocket-list.css";
 
-import { AiOutlineEye } from 'react-icons/ai';
-
 export default class PocketList extends React.Component
   <{
     data: PredictionData,
@@ -34,7 +32,7 @@ export default class PocketList extends React.Component
             title="Show all pockets."
             onClick={this.props.showAll}
           >
-              <AiOutlineEye />
+          <i className="bi bi-eye" style={{"width": "1em"}}></i>
           </button>
         </h3>
         {this.props.data.pockets.map((item, index) => (

@@ -8,6 +8,8 @@ import { IconContext } from "react-icons";
 import { FiCrosshair, FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
 import { RiCloseFill, RiCheckFill } from 'react-icons/ri';
 
+import "bootstrap-icons/font/bootstrap-icons.css";
+
 export default class Pocket extends React.Component
   <{
     pocket: PocketData,
@@ -18,12 +20,14 @@ export default class Pocket extends React.Component
     highlightPocket: (index: number, isHighlighted: boolean) => void
   }, {
     visible: boolean,
-    details: boolean
+    details: boolean,
+    pocketTextColor: string
   }> {
 
   state = {
     "visible": true,
-    "details": false
+    "details": false,
+    "pocketTextColor": "black"
   };
 
   constructor(props: any) {
@@ -35,6 +39,7 @@ export default class Pocket extends React.Component
     this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
     this.toggleCardVisibility = this.toggleCardVisibility.bind(this);
     this.showPocketDetails = this.showPocketDetails.bind(this);
+    this.computePocketTextColor = this.computePocketTextColor.bind(this);
   }
 
   onPocketMouseEnter() {
@@ -65,6 +70,7 @@ export default class Pocket extends React.Component
 
   togglePocketVisibility() {
     this.props.setPocketVisibility(this.props.index, !this.props.pocket.isVisible);
+    this.setState({ "pocketTextColor": this.computePocketTextColor() });
   }
 
   toggleCardVisibility() {
@@ -75,99 +81,102 @@ export default class Pocket extends React.Component
     this.setState({ "details": true });
   }
 
+  computePocketTextColor() {
+    if (!this.props.pocket.isVisible) {
+      return "white";
+    }
+    
+    //code from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+    //How to decide font color in white or black depending on background color?
+    //cc SudoPlz
+    const bgColor = this.props.pocket.color!;
+    const color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
+    const r = parseInt(color.substring(0, 2), 16); // hexToR
+    const g = parseInt(color.substring(2, 4), 16); // hexToG
+    const b = parseInt(color.substring(4, 6), 16); // hexToB
+    return (((r * 0.299) + (g * 0.587) + (b * 0.114)) > 186) ? "black" : "white";
+  }
+
+  componentDidMount() {
+    this.setState({ "pocketTextColor": this.computePocketTextColor() });
+  }
+
   render() {
     const pocket = this.props.pocket;
-    let borderColor = "#" + this.props.pocket.color;
+    let pocketColor = "#" + this.props.pocket.color;
     if (pocket.isVisible === undefined) { //for pockets that load for the first time
       pocket.isVisible = true;
     }
     if (!this.props.pocket.isVisible) {
-      borderColor = "gray";
+      pocketColor = "gray";
     }
     return (
       <div>
-        <div className="card pocket" style={{ "borderColor": borderColor }}>
-          <div className="card-header text-center" style={{ marginBottom: "0.5rem" }}>
-            <div className="row">
+        <div className="card pocket" style={{ "borderColor": pocketColor }}>
+          <div className="card-header text-center" style={{ "backgroundColor": pocketColor, "marginTop": "0.05em"}}>
+            <div className="row" style={{"marginTop": "0.25em", "marginBottom": "0.5em"}}>
               <div className="col-8">
-                <h4 className="card-title" style={{ marginTop: "0.35rem" }}>Pocket {pocket.rank}</h4>
+                <h4 className="card-title" style={{"marginBottom": 0, "color": this.state.pocketTextColor}}>Pocket {pocket.rank}</h4>
               </div>
               <div className="col-4">
                 <button
                   type="button"
                   title="HIDE/SHOW"
-                  className="btn btn-outline-secondary"
+                  className="btn btn-outline-secondary btnIcon"
                   onClick={this.toggleCardVisibility}
-                  style={{ marginTop: "0.25rem" }}
+                  style={{"color": this.state.pocketTextColor}}
                 >
                   {this.state.visible ? 
-                  <IconContext.Provider value={{ size: "1.25em" }}>
-                      <FiArrowUpCircle />
-                  </IconContext.Provider>
-                  : 
-                  <IconContext.Provider value={{ size: "1.25em" }}>
-                      <FiArrowDownCircle />
-                  </IconContext.Provider>
+                  <i className="bi bi-dash-circle" style={{"width": "1em"}}></i>
+                  :
+                  <i className="bi bi-plus-circle" style={{"width": "1em"}}></i>
                   }
                 </button>
               </div>
             </div>
           </div>
           {this.state.visible && <PocketDetails pocket={pocket} inDialog={false}/>}
-          {this.state.visible && <div className="card-footer">
-            <div className="container">
+          {this.state.visible && <div className="card-footer" style={{"padding": "0.5rem",}}>
+            <div className="container" style={{"padding": 0}}>
               <div className="row">
-                <div className="col-6">
+                <div className="col-3">
                   <DraggableDialog pocket={this.props.pocket} />
                 </div>
-                <div className="col-6">
+                <div className="col-3">
                   <button
                     type="button"
                     title="Show only this pocket"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary btnIcon"
                     onClick={this.showOnlyClick}
-                    style={{"float": "right"}}
                   >
-                    <IconContext.Provider value={{ size: "1.25em" }}>
-                      <AiOutlineEye />
-                    </IconContext.Provider>
+                    <i className="bi bi-eye" style={{"width": "1em"}}></i>
                   </button>
                 </div>
-              </div>
-              <hr />
-              <div className="row">
-                <div className="col-6">
+                <div className="col-3">
                   <button
-                    type="button"
-                    style={{
-                      "display": this.props.pocket.isVisible ? "inherit" : "none",
-                    }}
-                    title="Focus/highlight to this pocket."
-                    className="btn btn-outline-secondary"
-                    onClick={this.onPocketClick}
-                    onMouseEnter={this.onPocketMouseEnter}
-                    onMouseLeave={this.onPocketMouseLeave}
-                  >
-                    <IconContext.Provider value={{ size: "1.25em" }}>
-                      <FiCrosshair />
-                    </IconContext.Provider>
+                      type="button"
+                      style={{
+                        "display": this.props.pocket.isVisible ? "inherit" : "none",
+                      }}
+                      title="Focus/highlight to this pocket."
+                      className="btn btn-outline-secondary btnIcon"
+                      onClick={this.onPocketClick}
+                      onMouseEnter={this.onPocketMouseEnter}
+                      onMouseLeave={this.onPocketMouseLeave}
+                    >
+                    <i className="bi bi-search" style={{"width": "1em"}}></i>
                   </button>
                 </div>
-                <div className="col-6">
+                <div className="col-3">
                   <button
                     type="button"
                     title="Show / Hide pocket."
-                    className="btn btn-outline-secondary"
-                    style={{"float": "right"}}
+                    className="btn btn-outline-secondary btnIcon"
                     onClick={this.togglePocketVisibility}>
                     {this.props.pocket.isVisible ?
-                      <IconContext.Provider value={{ size: "1.25em" }}>
-                        <RiCloseFill />
-                      </IconContext.Provider>
+                      <i className="bi bi-x-circle" style={{"width": "1em"}}></i>
                       : 
-                      <IconContext.Provider value={{ size: "1.25em" }}>
-                        <RiCheckFill />
-                      </IconContext.Provider>
+                      <i className="bi bi-check-circle" style={{"width": "1em"}}></i>
                     }
                   </button>
                 </div>

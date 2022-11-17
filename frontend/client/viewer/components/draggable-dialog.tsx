@@ -45,12 +45,10 @@ export default class DraggableDialog extends React.Component<{
         <button
           type="button"
           title="Show details"
-          className="btn btn-outline-secondary"
+          className="btn btn-outline-secondary btnIcon"
           onClick={(e) => this.toggleDetailsVisibility(e, "btnClick")}
         >
-          <IconContext.Provider value={{ size: "1.25em" }}>
-            <MdOutlineInfo />
-          </IconContext.Provider>
+          <i className="bi bi-info-circle" style={{"width": "1em"}}></i>
         </button>
         <Draggable
           handle={'[class*="MuiDialog-root"]'}

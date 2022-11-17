@@ -189,7 +189,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     }
 
     //then resolve the conservation, if available
-    if(data.structure.scores.conservation) {
+    if(data.structure.scores.conservation && !data.structure.scores.conservation.every((value) => value === 0)) {
         const conservationData = [];
     
         //we need to normalize the scores to fit in properly
@@ -216,7 +216,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     }
 
     //then resolve alphafold scores, if available
-    if(data.structure.scores.plddt) 
+    if(data.structure.scores.plddt && !data.structure.scores.plddt.every((value) => value === 0)) 
     {
         const alphafoldData = [];
     
@@ -261,7 +261,11 @@ function getLogBaseX(x : number, y : number) {
  */
 function pickColor(pocketId: number) {
     if(pocketId >= DefaultPocketColors.length) {
-        return Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
+        let result = Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
+        if(result.length < 6) {
+            result = "0".repeat(6 - result.length) + result;
+        }
+        return result; 
     }
     return DefaultPocketColors[pocketId];
 }
