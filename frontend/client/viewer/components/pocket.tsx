@@ -106,7 +106,7 @@ export default class Pocket extends React.Component
 
   render() {
     const pocket = this.props.pocket;
-    let pocketColor = this.calculatePocketColorWithAlpha(0.5, this.props.pocket.color!);
+    let pocketColor = this.calculatePocketColorWithAlpha(0.75, this.props.pocket.color!);
 
     if (pocket.isVisible === undefined) { //for pockets that load for the first time
       pocket.isVisible = true;
@@ -119,10 +119,10 @@ export default class Pocket extends React.Component
         <div className="card pocket" style={{ "borderColor": pocketColor }}>
           <div className="card-header text-center" style={{ "backgroundColor": pocketColor, "marginTop": "0.05em"}}>
             <div className="row" style={{"marginTop": "0.25em", "marginBottom": "0.5em"}}>
-              <div className="col-8">
+              <div className="col-9">
                 <h4 className="card-title" style={{"marginBottom": 0, "color": this.state.pocketTextColor}}>Pocket {pocket.rank}</h4>
               </div>
-              <div className="col-4">
+              <div className="col-3">
                 <button
                   type="button"
                   title="HIDE/SHOW"
