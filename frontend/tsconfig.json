@@ -15,7 +15,8 @@
     "noEmit": false, // Do not emit output (meaning do not compile code, only perform type checking)
     "sourceMap": false, // Generate corresponding .map file
     "declaration": false, // Generate corresponding .d.ts file
-    "jsx": "react"
+    "jsx": "react",
+    "types": []
   },
   "exclude": [
     "node_modules"
