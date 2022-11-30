@@ -50,9 +50,9 @@ export default class ToolsBox extends React.Component<{
               onClick={this.toggleVisible}
             >
             {this.state.visible ? 
-            <i className="bi bi-dash-circle" style={{"width": "1em"}}></i>
+            <i className="bi bi-caret-up" style={{"width": "1em"}}></i>
             :
-            <i className="bi bi-plus-circle" style={{"width": "1em"}}></i>
+            <i className="bi bi-caret-down" style={{"width": "1em"}}></i>
             }
             </button>
           </h3>
