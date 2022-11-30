@@ -24,7 +24,7 @@ Please update the paths to the ```tmp``` directory to reflect your setup.
 
 Download conservation file(s) using following command this may take a while.
 ```
-docker compose run --rm executor python3 /opt/hmm-based-conservation/download_database.py```
+docker compose run --rm executor python3 /opt/hmm-based-conservation/download_database.py
 ```
 Be aware that you need about 18&nbsp;GB of space to download the file(s).
 
