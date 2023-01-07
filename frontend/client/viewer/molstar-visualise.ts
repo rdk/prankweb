@@ -581,6 +581,7 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
     const atomsSelection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: atomsExpression});
     const color = Number("0x" + pocket.color);
 
+    //the first one selects the whole residues and does not color them -> for overpaints
     const repr_surface : StateObjectSelector = wholeResiduesSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'gaussian-surface',
         color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
@@ -588,11 +589,12 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
 
     pocketRepresentations.push({
         pocketId: pocket.name,
-        type: PocketsViewType.Surface,
+        type: PocketsViewType.Surface_Atoms_Color,
         representation: repr_surface,
         coloredPocket: false,
     });
 
+    //the second one selects the atoms and colors them
     const repr_surface2 : StateObjectSelector = atomsSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'gaussian-surface',
         color: 'uniform', colorParams: {value: Color(color)},
@@ -601,12 +603,27 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
 
     pocketRepresentations.push({
         pocketId: pocket.name,
-        type: PocketsViewType.Surface,
+        type: PocketsViewType.Surface_Atoms_Color,
         representation: repr_surface2,
         coloredPocket: true,
     });
 
+    //the third one selects the whole residues and colors them
+    const repr_surface3 : StateObjectSelector = wholeResiduesSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'gaussian-surface',
+        color: 'uniform', colorParams: {value: Color(color)},
+        size: 'physical', sizeParams: {scale: 1.10}
+    }));
+
+    pocketRepresentations.push({
+        pocketId: pocket.name,
+        type: PocketsViewType.Surface_Residues_Color,
+        representation: repr_surface3,
+        coloredPocket: true,
+    });
+
     //create the ball and stick representations
+    //the first one selects the whole residues and does not color them -> again for overpaints
     const repr_ball_stick : StateObjectSelector = wholeResiduesSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'ball-and-stick',
         color: 'uniform', colorParams: {value: Color(0xFFFFFF)},
@@ -615,11 +632,12 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
 
     pocketRepresentations.push({
         pocketId: pocket.name,
-        type: PocketsViewType.Atoms,
+        type: PocketsViewType.Ball_Stick_Residues_Color,
         representation: repr_ball_stick,
         coloredPocket: false,
     });
 
+    //the second one selects the atoms and colors them
     const repr_ball_stick2 : StateObjectSelector = atomsSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
         type: 'ball-and-stick',
         color: 'uniform', colorParams: {value: Color(color)},
@@ -628,15 +646,29 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
 
     pocketRepresentations.push({
         pocketId: pocket.name,
-        type: PocketsViewType.Atoms,
+        type: PocketsViewType.Ball_Stick_Atoms_Color,
         representation: repr_ball_stick2,
+        coloredPocket: true,
+    });
+
+    //the third one selects the whole residues and colors them
+    const repr_ball_stick3 : StateObjectSelector = wholeResiduesSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
+        type: 'ball-and-stick',
+        color: 'uniform', colorParams: {value: Color(color)},
+        size: 'physical', sizeParams: {scale: 1.50}
+    }));
+
+    pocketRepresentations.push({
+        pocketId: pocket.name,
+        type: PocketsViewType.Ball_Stick_Residues_Color,
+        representation: repr_ball_stick3,
         coloredPocket: true,
     });
 }
 
 //sets the pocket visibility in mol* in one representation
 /**
- * Method which sets the visibility of the pockets in the desired representation
+ * Method which sets the visibility of one pocket in the desired representation
  * @param plugin Mol* plugin
  * @param representationType Type of the representation to be shown
  * @param pocketIndex Index of the pocket
@@ -649,7 +681,7 @@ export function showPocketInCurrentRepresentation(plugin: PluginUIContext, repre
         const currentPocketRepr = pocketRepresentations.filter(e => e.type === representationType && e.pocketId === `pocket${pocketIndex+1}`);
 
         for(const element of currentPocketRepr) {
-            setSubtreeVisibility(plugin.state.data, element.representation.ref , false);
+            setSubtreeVisibility(plugin.state.data, element.representation.ref, false);
         }
 
         //hide other representations
@@ -664,6 +696,24 @@ export function showPocketInCurrentRepresentation(plugin: PluginUIContext, repre
     const pocketRepr = pocketRepresentations.filter(e => e.pocketId === `pocket${pocketIndex+1}`);
     for(const element of pocketRepr) {
         setSubtreeVisibility(plugin.state.data, element.representation.ref, true);
+    }
+}
+
+/**
+ * Method which sets the visibility of all the pockets in the desired representation
+ * @param plugin Mol* plugin
+ * @param representationType Type of the representation to be shown
+ * @returns void
+ */
+export function showAllPocketsInRepresentation(plugin: PluginUIContext, representationType: PocketsViewType) {
+    for(const representation of pocketRepresentations) {
+        if(representation.type === representationType) {
+            setSubtreeVisibility(plugin.state.data, representation.representation.ref, false);
+        }
+
+        else {
+            setSubtreeVisibility(plugin.state.data, representation.representation.ref, true);
+        }
     }
 }
 

@@ -115,8 +115,10 @@ export enum PolymerViewType {
 }
 
 export enum PocketsViewType {
-    Atoms = 0,
-    Surface = 1
+    Ball_Stick_Atoms_Color = 0,
+    Ball_Stick_Residues_Color = 1,
+    Surface_Atoms_Color = 2,
+    Surface_Residues_Color = 3
 }
 
 export enum PolymerColorType {
@@ -134,8 +136,7 @@ export interface PocketRepresentation {
     pocketId: string;
     type: PocketsViewType;
     representation: StateObjectSelector; //Mol* representation
-    coloredPocket: boolean; //there are two types of pocket representations, one for the whole residues and one for the atoms
-                            //true represents the atoms, false the whole residues
+    coloredPocket: boolean; //for efficiency when overpainting
 }
 
 /**
