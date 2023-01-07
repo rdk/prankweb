@@ -6,17 +6,30 @@ export default class PocketClientTask extends React.Component
         title: string,
         inDialog: boolean // not needed now. but in other cases the implementation could be potentially different.
     }, {
+        computed: boolean,
         loading: boolean
     }> {
 
     constructor(props: any) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
-        this.state = {loading: false};
+        this.sampleClick = this.sampleClick.bind(this);
+        this.state = {loading: false, computed: false};
     }
 
-    handleClick() {
-        this.state.loading ? this.setState({loading: false}) : this.setState({loading: true});
+    async sampleClick() {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        this.setState({loading: false, computed: true});
+    }
+
+    async handleClick() {
+        //this.state.loading ? this.setState({loading: false}) : this.setState({loading: true});
+        if(this.state.computed) {
+            return;
+        }
+        this.setState({loading: true});
+        await this.sampleClick();
     }
 
     render() {
@@ -27,10 +40,11 @@ export default class PocketClientTask extends React.Component
                     size="small"
                     onClick={this.handleClick}
                     loading={this.state.loading}
-                    variant="outlined"
+                    variant="contained"
                     style={{float: "right", marginLeft: "1rem"}}
                 >
-                    Fetch data
+                    {!this.state.computed && "Fetch data"}
+                    {this.state.computed && "Computed"}
                 </LoadingButton>
             </div>
         );
