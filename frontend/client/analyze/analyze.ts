@@ -132,8 +132,7 @@ function renderQueued() {
 
 function renderTaskFinished(data: PredictionInfo) {
   //this method redirects to the viewer page with all the needed information
-  const result = `./viewer?id=${data.id}&database=${data.database}&created=${data.created}&lastChange=${data.lastChange}
-  &structureName=${data.metadata.structureName}&predictionName=${data.metadata.predictionName}&predictedStructure=${data.metadata.predictedStructure}`;
+  const result = `./viewer?id=${data.id}&database=${data.database}`;
   window.location.href = result;
 }
 
