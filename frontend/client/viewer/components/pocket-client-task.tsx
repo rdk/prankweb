@@ -1,6 +1,6 @@
 import React from "react";
 import { LoadingButton } from '@mui/lab';
-import { sendRandomJSONData } from '../client-example-task';
+import { sendRandomJSONData } from '../../tasks/client-example-task';
 import { SampleJSONData } from '../../custom-types';
 
 export default class PocketClientTask extends React.Component
