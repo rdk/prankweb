@@ -44,7 +44,7 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   const container = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
   const root = createRoot(container!);
   root.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
-    pocketsView={PocketsViewType.Surface} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
+    pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
 }
 
 export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
