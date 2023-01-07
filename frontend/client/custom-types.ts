@@ -205,3 +205,7 @@ export const DefaultPocketColors = [
     "0072B2",
     "DA74AD"
 ];
+
+export interface SampleJSONData {
+    value: number;
+}
