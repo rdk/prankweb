@@ -150,12 +150,11 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     //resolve RCSB at first - do it by recoloring the pocket to the default color value
     //currently there is no other way to "remove" one of the pockets without modyfing the others
     const newColor = isVisible ? "#" + this.state.data.pockets[index].color : "#F9F9F9";
-    //@ts-ignore Property 'rowConfigData' is private and only accessible within class 'RcsbFv'. - there is no other way to get to the rowConfigData though...
-    const track = this.state.pluginRcsb.rowConfigData.find(e => e.trackId === "pocketsTrack");
+    const track = this.state.pluginRcsb.getBoardData().find(e => e.trackId === "pocketsTrack");
     if(track) {
-      track.trackData.filter((e : RcsbFvTrackDataElementInterface) => e.provenanceName === `pocket${index+1}`).forEach((foundPocket : RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
+      track.trackData!.filter((e : RcsbFvTrackDataElementInterface) => e.provenanceName === `pocket${index+1}`).forEach((foundPocket : RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
       const newData = track.trackData;
-      this.state.pluginRcsb.updateTrackData("pocketsTrack", newData);
+      this.state.pluginRcsb.updateTrackData("pocketsTrack", newData!);
     }
 
     //then resolve Mol*
