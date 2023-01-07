@@ -24,6 +24,24 @@
     height: calc(30vh - 68px);
 }
 
+#application-rcsb::-webkit-scrollbar {
+    height: 5px;    /* horizontal scrollbar */
+    width: 5px;     /* vertical scrollbar */
+}
+
+#application-rcsb::-webkit-scrollbar-track {   
+    background: #f1f1f1;
+}
+
+#application-rcsb::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+#application-rcsb::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+
 #pocket-list-aside {
     height: 100%;
 }
