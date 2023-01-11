@@ -1,6 +1,7 @@
 import React from "react";
 import { PocketData } from "../../custom-types";
 import PocketProperty from "./pocket-property";
+import PocketClientTask from "./pocket-client-task";
 
 export default class PocketDetails extends React.Component
     <{

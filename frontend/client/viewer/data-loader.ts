@@ -1,7 +1,7 @@
 import { getApiEndpoint } from "../prankweb-api";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
-import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, addPredictedPolymerRepresentation } from './molstar-visualise';
-import { PredictionData } from "../custom-types";
+import { loadStructureIntoMolstar, createPocketsGroupFromJson, linkMolstarToRcsb, addPredictedPolymerRepresentation, showAllPocketsInRepresentation } from './molstar-visualise';
+import { PocketsViewType, PredictionData } from "../custom-types";
 import { initRcsb } from './rcsb-visualise'
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 
@@ -33,6 +33,9 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
 
     // Add predicted polymer representation.
     if(predicted) await addPredictedPolymerRepresentation(molstarPlugin, prediction, structure!);
+
+    // Show only the wanted pocket representations.
+    showAllPocketsInRepresentation(molstarPlugin, PocketsViewType.Surface_Atoms_Color);
 
     // Link Molstar to RCSB.
     linkMolstarToRcsb(molstarPlugin, prediction, rcsbPlugin);

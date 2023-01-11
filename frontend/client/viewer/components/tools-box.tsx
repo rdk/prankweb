@@ -50,9 +50,9 @@ export default class ToolsBox extends React.Component<{
               onClick={this.toggleVisible}
             >
             {this.state.visible ? 
-            <i className="bi bi-dash-circle" style={{"width": "1em"}}></i>
+            <i className="bi bi-caret-up" style={{"width": "1em"}}></i>
             :
-            <i className="bi bi-plus-circle" style={{"width": "1em"}}></i>
+            <i className="bi bi-caret-down" style={{"width": "1em"}}></i>
             }
             </button>
           </h3>
@@ -128,7 +128,7 @@ class ControlBoxContent extends React.Component<{
             </select>
           </label>
           <label>
-            Pockets visualisation
+            Pockets visualisation (color by)
             <select
               id="pockets-visual"
               className="form-select"
@@ -136,8 +136,10 @@ class ControlBoxContent extends React.Component<{
               onChange={(event) =>
                 this.props.onPocketsViewChange(parseInt(event.target.value))}
             >
-              <option value="0">Balls and Sticks</option>
-              <option value="1">Surface</option>
+              <option value="0">Balls and Sticks (atoms)</option>
+              <option value="1">Balls and Sticks (residues)</option>
+              <option value="2">Surface (atoms)</option>
+              <option value="3">Surface (residues)</option>
             </select>
           </label>
           <label>

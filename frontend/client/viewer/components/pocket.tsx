@@ -3,11 +3,6 @@ import { PocketData } from "../../custom-types";
 import DraggableDialog from './draggable-dialog'
 import PocketDetails from "./pocket-details";
 
-import { AiOutlineEye } from 'react-icons/ai';
-import { IconContext } from "react-icons";
-import { FiCrosshair, FiArrowDownCircle, FiArrowUpCircle } from 'react-icons/fi';
-import { RiCloseFill, RiCheckFill } from 'react-icons/ri';
-
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 export default class Pocket extends React.Component
@@ -101,9 +96,18 @@ export default class Pocket extends React.Component
     this.setState({ "pocketTextColor": this.computePocketTextColor() });
   }
 
+  calculatePocketColorWithAlpha(alpha: number, bgColor: string) {
+    const color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
+    const r = parseInt(color.substring(0, 2), 16); // hexToR
+    const g = parseInt(color.substring(2, 4), 16); // hexToG
+    const b = parseInt(color.substring(4, 6), 16); // hexToB
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
   render() {
     const pocket = this.props.pocket;
-    let pocketColor = "#" + this.props.pocket.color;
+    let pocketColor = this.calculatePocketColorWithAlpha(0.75, this.props.pocket.color!);
+
     if (pocket.isVisible === undefined) { //for pockets that load for the first time
       pocket.isVisible = true;
     }
@@ -115,10 +119,10 @@ export default class Pocket extends React.Component
         <div className="card pocket" style={{ "borderColor": pocketColor }}>
           <div className="card-header text-center" style={{ "backgroundColor": pocketColor, "marginTop": "0.05em"}}>
             <div className="row" style={{"marginTop": "0.25em", "marginBottom": "0.5em"}}>
-              <div className="col-8">
+              <div className="col-9">
                 <h4 className="card-title" style={{"marginBottom": 0, "color": this.state.pocketTextColor}}>Pocket {pocket.rank}</h4>
               </div>
-              <div className="col-4">
+              <div className="col-3">
                 <button
                   type="button"
                   title="HIDE/SHOW"
@@ -127,9 +131,9 @@ export default class Pocket extends React.Component
                   style={{"color": this.state.pocketTextColor}}
                 >
                   {this.state.visible ? 
-                  <i className="bi bi-dash-circle" style={{"width": "1em"}}></i>
+                  <i className="bi bi-caret-up" style={{"width": "1em"}}></i>
                   :
-                  <i className="bi bi-plus-circle" style={{"width": "1em"}}></i>
+                  <i className="bi bi-caret-down" style={{"width": "1em"}}></i>
                   }
                 </button>
               </div>

@@ -3,6 +3,8 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, AlphaFoldColorsRcsb, AlphaFoldThresholdsRcsb, DefaultPocketColors } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
+let lastElement: number = -1;
+
 /**
  * Method which initializes the Rcsb viewer and adds the tracks to it.
  * @param data Prediction data
@@ -82,15 +84,21 @@ function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIC
  * @param trackData Data of the clicked track
  */
 function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, trackData: Array<RcsbFvTrackDataElementInterface>) {
-    if(trackData && trackData.length > 0) {
-        if(data) {
-            let element = data.structure.indices[trackData[0].begin - 1];
-            if(element) {
-                let id = Number(element.substring(element.indexOf('_') + 1));
-                highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
+    if(trackData.length === 0) return;
+    lastElement = trackData[0].begin;
+
+    //first attempt to debounce the function
+    setTimeout(() => {
+        if(trackData && trackData.length > 0 && lastElement === trackData[0].begin) {
+            if(data) {
+                let element = data.structure.indices[trackData[0].begin - 1];
+                if(element) {
+                    let id = Number(element.substring(element.indexOf('_') + 1));
+                    highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
+                }
             }
         }
-    }
+    }, 100);
 }
 
 /**
