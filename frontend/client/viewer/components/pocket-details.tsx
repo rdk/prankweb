@@ -31,7 +31,6 @@ export default class PocketDetails extends React.Component
                 {this.checkValidValue(pocket.avgConservation) && <PocketProperty inDialog={this.props.inDialog} title="Conservation" data={pocket.avgConservation!}/>}
                 {this.checkValidValue(pocket.avgAlphaFold) && <PocketProperty inDialog={this.props.inDialog} title="AlphaFold avg" data={pocket.avgAlphaFold!}/>}
                 {this.props.inDialog && <PocketProperty inDialog={this.props.inDialog} title="Residues" data={pocket.residues.join(", ")}/>}
-                {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Sample client task"/>}
             </div>
         );
     }
