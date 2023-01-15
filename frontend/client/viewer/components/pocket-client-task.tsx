@@ -1,14 +1,17 @@
 import React from "react";
 import { LoadingButton } from '@mui/lab';
-import { sendRandomJSONData } from '../../tasks/client-example-task';
-import { SampleJSONData } from '../../custom-types';
+import { computePocketVolume } from '../../tasks/client-atoms-volume';
+import { ClientTaskData, PocketData } from '../../custom-types';
+import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
 export default class PocketClientTask extends React.Component
     <{
         title: string,
-        inDialog: boolean // not needed now. but in other cases the implementation could be potentially different.
+        inDialog: boolean, // not needed now. but in other cases the implementation could be potentially different.
+        pocket: PocketData,
+        plugin: PluginUIContext
     }, {
-        data: SampleJSONData | undefined, //this may be changed to any type (the best way is to define some interface)
+        data: ClientTaskData | undefined, //this may be changed to any type (the best way is to define some interface)
         computed: boolean,
         loading: boolean
     }> {
@@ -16,23 +19,22 @@ export default class PocketClientTask extends React.Component
     constructor(props: any) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
-        this.sampleClick = this.sampleClick.bind(this);
+        this.clickCompute = this.clickCompute.bind(this);
         this.state = {loading: false, computed: false, data: undefined};
     }
 
-    async sampleClick() {
-        const json : SampleJSONData = await sendRandomJSONData();
+    async clickCompute() {
+        const json : ClientTaskData = await computePocketVolume(this.props.plugin, this.props.pocket);
         
         this.setState({loading: false, computed: true, data: json});
     }
 
     async handleClick() {
-        //this.state.loading ? this.setState({loading: false}) : this.setState({loading: true});
         if(this.state.computed) {
             return;
         }
         this.setState({loading: true});
-        await this.sampleClick();
+        await this.clickCompute();
     }
 
     render() {
@@ -54,8 +56,9 @@ export default class PocketClientTask extends React.Component
                 }
                 {
                     this.state.computed &&
-                    <span style={{float: "right", marginLeft: "1rem"}}>{this.state.data!.value}</span>
-                    // here the data should be properly formatted and again, we may change this to a new component
+                    <span style={{float: "right", marginLeft: "1rem"}}>{this.state.data!.numericValue}</span>
+                    // here the data should be properly formatted based on the returned type
+                    // i.e for number arrays we could potentially add a diagram instead of just showing a number
                 }
             </div>
         );

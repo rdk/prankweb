@@ -2,11 +2,13 @@ import React from "react";
 import { PocketData } from "../../custom-types";
 import PocketProperty from "./pocket-property";
 import PocketClientTask from "./pocket-client-task";
+import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
 export default class PocketDetails extends React.Component
     <{
         pocket: PocketData,
         inDialog: boolean,
+        plugin: PluginUIContext
     }, {}> {
 
     constructor(props: any) {
@@ -31,7 +33,7 @@ export default class PocketDetails extends React.Component
                 {this.checkValidValue(pocket.avgConservation) && <PocketProperty inDialog={this.props.inDialog} title="Conservation" data={pocket.avgConservation!}/>}
                 {this.checkValidValue(pocket.avgAlphaFold) && <PocketProperty inDialog={this.props.inDialog} title="AlphaFold avg" data={pocket.avgAlphaFold!}/>}
                 {this.props.inDialog && <PocketProperty inDialog={this.props.inDialog} title="Residues" data={pocket.residues.join(", ")}/>}
-                {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Sample client task"/>}
+                {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Sample client task" pocket={this.props.pocket} plugin={this.props.plugin}/>}
             </div>
         );
     }

@@ -4,6 +4,7 @@ import DraggableDialog from './draggable-dialog'
 import PocketDetails from "./pocket-details";
 
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
 export default class Pocket extends React.Component
   <{
@@ -12,7 +13,8 @@ export default class Pocket extends React.Component
     setPocketVisibility: (index: number, isVisible: boolean) => void,
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
-    highlightPocket: (index: number, isHighlighted: boolean) => void
+    highlightPocket: (index: number, isHighlighted: boolean) => void,
+    plugin: PluginUIContext
   }, {
     visible: boolean,
     details: boolean,
@@ -139,12 +141,12 @@ export default class Pocket extends React.Component
               </div>
             </div>
           </div>
-          {this.state.visible && <PocketDetails pocket={pocket} inDialog={false}/>}
+          {this.state.visible && <PocketDetails pocket={pocket} inDialog={false} plugin={this.props.plugin}/>}
           {this.state.visible && <div className="card-footer" style={{"padding": "0.5rem",}}>
             <div className="container" style={{"padding": 0}}>
               <div className="row">
                 <div className="col-3">
-                  <DraggableDialog pocket={this.props.pocket} />
+                  <DraggableDialog pocket={this.props.pocket} plugin={this.props.plugin}/>
                 </div>
                 <div className="col-3">
                   <button

@@ -9,6 +9,7 @@ import Paper, { PaperProps } from '@mui/material/Paper';
 import Draggable from 'react-draggable';
 import { PocketData } from "../../custom-types";
 import PocketDetails from "./pocket-details";
+import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 
 function PaperComponent(props: PaperProps) {
   return (<Paper {...props} style={{ margin: 0, maxHeight: '100%' }} />
@@ -16,7 +17,8 @@ function PaperComponent(props: PaperProps) {
 }
 
 export default class DraggableDialog extends React.Component<{
-  pocket: PocketData
+  pocket: PocketData,
+  plugin: PluginUIContext
 }, {
   visible: boolean
 }> {
@@ -25,7 +27,7 @@ export default class DraggableDialog extends React.Component<{
     visible: false,
   };
 
-  constructor(props: {pocket: PocketData}) {
+  constructor(props: {pocket: PocketData, plugin: PluginUIContext}) {
     super(props);
     this.toggleDetailsVisibility = this.toggleDetailsVisibility.bind(this);
   }
@@ -70,7 +72,7 @@ export default class DraggableDialog extends React.Component<{
             </DialogTitle>
             <DialogContent>
               <DialogContentText component={'div'}>
-                <PocketDetails pocket={this.props.pocket} inDialog={true}/>
+                <PocketDetails pocket={this.props.pocket} inDialog={true} plugin={this.props.plugin}/>
               </DialogContentText>
             </DialogContent>
             <DialogActions>

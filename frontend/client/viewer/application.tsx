@@ -227,6 +227,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             showOnlyPocket={this.onShowOnlyPocket}
             focusPocket={this.onFocusPocket}
             highlightPocket={this.onHighlightPocket}
+            plugin={this.props.molstarPlugin}
           />
         </div>
       );

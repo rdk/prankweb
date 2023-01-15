@@ -3,6 +3,7 @@ import { PredictionData } from "../../custom-types";
 import Pocket from "./pocket";
 
 import "./pocket-list.css";
+import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
 export default class PocketList extends React.Component
   <{
@@ -11,7 +12,8 @@ export default class PocketList extends React.Component
     setPocketVisibility: (index: number, isVisible: boolean) => void,
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
-    highlightPocket: (index: number, isHighlighted: boolean) => void
+    highlightPocket: (index: number, isHighlighted: boolean) => void,
+    plugin: PluginUIContext
   }, {}> {
 
   render() {
@@ -44,6 +46,7 @@ export default class PocketList extends React.Component
             showOnlyPocket={this.props.showOnlyPocket}
             focusPocket={this.props.focusPocket}
             highlightPocket={this.props.highlightPocket}
+            plugin={this.props.plugin}
           />
         ))}
       </div>);
