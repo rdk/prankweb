@@ -1,7 +1,7 @@
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { Color } from "molstar/lib/mol-util/color";
 import { Asset } from "molstar/lib/mol-util/assets";
-import { AlphaFoldColorsMolStar, AlphaFoldThresholdsMolStar, PredictionData, PocketData, MolstarResidue, ChainData, PolymerRepresentation, PolymerColorType, PolymerViewType, PocketRepresentation, PocketsViewType } from '../custom-types';
+import { AlphaFoldColorsMolStar, AlphaFoldThresholdsMolStar, PredictionData, PocketData, MolstarResidue, ChainData, PolymerRepresentation, PolymerColorType, PolymerViewType, PocketRepresentation, PocketsViewType, Point3D } from '../custom-types';
 import { StateTransforms } from "molstar/lib/mol-plugin-state/transforms";
 import { MolScriptBuilder as MS } from "molstar/lib/mol-script/language/builder";
 import { createStructureRepresentationParams } from "molstar/lib/mol-plugin-state/helpers/structure-representation-params";
@@ -884,6 +884,30 @@ export function highlightInViewerAuthId(plugin: PluginUIContext, chain: string, 
     const loci = StructureSelection.toLociWithSourceUnits(sel);
     plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
     plugin.managers.camera.focusLoci(loci);
+}
+
+/**
+ * Method which returns coordinates of the surface atoms
+ * @param plugin Mol* plugin
+ * @param ids Surface atom ids
+ * @returns An array of coordinates
+ */
+export function getPocketAtomCoordinates(plugin: PluginUIContext, ids: string[]) {
+    const coordinates: Point3D[] = [];
+
+    //could this be potentially improved? not sure whether we can do it just with one selection
+    for(let i of ids) {
+        const sel = getSurfaceAtomSelection(plugin, [i]);
+        const loci = getStructureElementLoci(StructureSelection.toLociWithSourceUnits(sel));
+    
+        if(loci) {
+            const structureElement = StructureElement.Stats.ofLoci(loci);
+            const location = structureElement.firstElementLoc;
+            coordinates.push({x: StructureProperties.atom.x(location), y: StructureProperties.atom.y(location), z: StructureProperties.atom.z(location)});
+        }
+    }
+
+    return coordinates;
 }
 
 //cc: https://github.com/scheuerv/molart/
