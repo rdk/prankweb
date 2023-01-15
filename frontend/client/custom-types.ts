@@ -206,6 +206,12 @@ export const DefaultPocketColors = [
     "DA74AD"
 ];
 
-export interface SampleJSONData {
-    value: number;
+export interface ClientTaskData {
+    numericValue?: number;
+}
+
+export interface Point3D {
+    x: number;
+    y: number;
+    z: number;
 }
