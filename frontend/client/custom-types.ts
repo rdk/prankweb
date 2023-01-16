@@ -206,7 +206,12 @@ export const DefaultPocketColors = [
     "DA74AD"
 ];
 
+export enum ClientTaskType {
+    Volume = 0
+}
+
 export interface ClientTaskData {
+    type: ClientTaskType;
     numericValue?: number;
 }
 
