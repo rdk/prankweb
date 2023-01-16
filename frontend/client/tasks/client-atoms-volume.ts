@@ -5,18 +5,31 @@ import qh from 'quickhull3d';
 
 const pocketVolumes = new Map<string, number>();
 
-// https://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up-t
-function SignedVolumeOfTriangle(p1: Point3D, p2: Point3D, p3: Point3D) {
-    const v321 = p3.x*p2.y*p1.z;
-    const v231 = p2.x*p3.y*p1.z;
-    const v312 = p3.x*p1.y*p2.z;
-    const v132 = p1.x*p3.y*p2.z;
-    const v213 = p2.x*p1.y*p3.z;
-    const v123 = p1.x*p2.y*p3.z;
+/**
+ * This method computes the volume of a triangle in 3D space.
+ * https://stackoverflow.com/questions/1406029/
+ * @param p1 First point of the triangle
+ * @param p2 Second point of the triangle
+ * @param p3 Third point of the triangle
+ * @returns Volume of the triangle
+ */
+function computeTriangleVolume(p1: Point3D, p2: Point3D, p3: Point3D) {
+    const v321 = p3.x * p2.y * p1.z;
+    const v231 = p2.x * p3.y * p1.z;
+    const v312 = p3.x * p1.y * p2.z;
+    const v132 = p1.x * p3.y * p2.z;
+    const v213 = p2.x * p1.y * p3.z;
+    const v123 = p1.x * p2.y * p3.z;
 
     return (1.0/6.0)*(-v321 + v231 + v312 - v132 - v213 + v123);
 }
 
+/**
+ * This method computes the volume of a pocket.
+ * @param plugin Mol* plugin
+ * @param pocket Pocket data
+ * @returns Computed pocket volume
+ */
 export async function computePocketVolume(plugin: PluginUIContext, pocket: PocketData): Promise<ClientTaskData> {
 
     if(pocketVolumes.has(pocket.name)) {
@@ -40,7 +53,7 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
     const volumes = [];
     
     for(const face of hull) {
-        volumes.push(SignedVolumeOfTriangle(coords[face[0]], coords[face[1]], coords[face[2]]));
+        volumes.push(computeTriangleVolume(coords[face[0]], coords[face[1]], coords[face[2]]));
     }
 
     const finalVolume = Math.abs(volumes.reduce((a, b) => a + b, 0));
