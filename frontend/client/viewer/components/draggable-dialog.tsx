@@ -18,7 +18,9 @@ function PaperComponent(props: PaperProps) {
 
 export default class DraggableDialog extends React.Component<{
   pocket: PocketData,
-  plugin: PluginUIContext
+  plugin: PluginUIContext,
+  pocketTextColor: string,
+  pocketHeaderColor: string
 }, {
   visible: boolean
 }> {
@@ -27,7 +29,7 @@ export default class DraggableDialog extends React.Component<{
     visible: false,
   };
 
-  constructor(props: {pocket: PocketData, plugin: PluginUIContext}) {
+  constructor(props: {pocket: PocketData, plugin: PluginUIContext, pocketTextColor: string, pocketHeaderColor: string}) {
     super(props);
     this.toggleDetailsVisibility = this.toggleDetailsVisibility.bind(this);
   }
@@ -67,7 +69,7 @@ export default class DraggableDialog extends React.Component<{
               width: 'fit-content',   // exactly the same size as its contents
             }}
           >
-            <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+            <DialogTitle style={{ cursor: 'move', color: this.props.pocketTextColor, backgroundColor: this.props.pocketHeaderColor }} id="draggable-dialog-title">
               Pocket {this.props.pocket.rank}
             </DialogTitle>
             <DialogContent>

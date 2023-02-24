@@ -146,7 +146,7 @@ export default class Pocket extends React.Component
             <div className="container" style={{"padding": 0}}>
               <div className="row">
                 <div className="col-3">
-                  <DraggableDialog pocket={this.props.pocket} plugin={this.props.plugin}/>
+                  <DraggableDialog pocket={this.props.pocket} plugin={this.props.plugin} pocketTextColor={this.state.pocketTextColor} pocketHeaderColor={pocketColor}/>
                 </div>
                 <div className="col-3">
                   <button
