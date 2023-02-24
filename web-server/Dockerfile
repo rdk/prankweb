@@ -6,7 +6,8 @@ ARG GID=5988
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-ENV PRANKWEB_DATA="/data/database"
+ENV PRANKWEB_DATA_PREDICTIONS="/data/prankweb/"
+ENV PRANKWEB_DATA_DOCKING="/data/prankweb/"
 
 RUN apt-get update \
  && apt-get -y --no-install-recommends install \

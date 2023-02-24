@@ -118,8 +118,9 @@ class NestedReadOnlyDatabase(Database, metaclass=abc.ABCMeta):
 
 
 def get_database_directory() -> str:
-    return os.environ.get(
-        "PRANKWEB_DATA",
+    dc = os.environ.get(
+        "PRANKWEB_DATA_PREDICTIONS",
         # For local development.
         os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                     "..", "..", "data", "predictions"))
+                    "..", "..", "..", "data", "predictions"))
+    return dc

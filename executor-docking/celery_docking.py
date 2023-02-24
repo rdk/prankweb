@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 import os
-import celery
+import celery.signals
+import run_task
 
 prankweb = celery.Celery("prankweb")
 
@@ -22,8 +24,20 @@ elif "CELERY_BROKER_PATH" in os.environ:
     })
 
 
-def submit_directory_for_execution(directory):
-    prankweb.send_task("prediction", args=[directory])
+@celery.signals.setup_logging.connect
+def setup_celery_logging(**kwargs):
+    # We do nothing here to disable logging.
+    ...
 
-def submit_directory_for_sample_task(directory):
-    prankweb.send_task("sample_task", args=[directory])
+
+# https://github.com/celery/celery/issues/2509
+prankweb.log.setup()
+
+
+@prankweb.task(name="sample_task")
+def celery_run_sample_task(directory: str):
+    print(directory)
+    if os.path.isdir(directory):
+        run_task.execute_directory_task(directory, keep_working=False)
+    else:
+        print(f"Given directory does not exist {directory}")
