@@ -1,37 +1,18 @@
 #!/usr/bin/env python3
 #
-# Run p2rank task.
+# Run a sample task.
 #
 import os
 import sys
 import datetime
-import logging
-import typing
 import enum
 import json
-import time
 
 class Status(enum.Enum):
     QUEUED = "queued"
     RUNNING = "running"
     FAILED = "failed"
     SUCCESSFUL = "successful"
-
-"""
-def main():
-    arguments = _read_arguments()
-    directory = arguments["directory"]
-    if not os.path.exists(directory) or not os.path.isdir(directory):
-        return
-    execute_directory_task(
-        directory,
-        arguments["keep_working"],
-        arguments["lazy_execution"],
-        arguments["stdout"])
-"""
-
-def main():
-    pass
 
 def _load_json(path: str):
     with open(path, encoding="utf-8") as stream:
@@ -50,137 +31,57 @@ def _save_json(path: str, content: any):
     os.replace(path_swp, path)
 
 def execute_directory_task(directory: str):
-    #the directory is in the format docking\v3\SR\2SRC
-    time.sleep(1)
-    """
-    log_file2 = os.path.join(directory, "logTest3")
-    #pred_path = os.path.join(str.replace(directory, "docking", "predictions"), "public", "prediction.json")
+    #print(os.listdir(os.path.join(directory, "..", "..", "..", "..")))
+    if not os.path.exists(directory) or not os.path.isdir(directory):
+        return
+    #first update the status file
+    status_file = os.path.join(directory, "info.json")
+    status = _load_json(status_file)
 
-    with open(log_file2, "w", encoding="utf-8") as stream:
+    status["status"] = Status.RUNNING.value
+    _save_status_file(status_file, status)
+
+    #then load the prediction file
+    pred_path = os.path.join(str.replace(directory, "docking", "predictions"), "public", "prediction.json")
+    prediction = _load_json(pred_path)
+
+    #parse the prediction file and do some calculations
+    obj = []
+    for pocket in prediction["pockets"]:
+        obj.append({
+            "rank": pocket["rank"],
+            "count": len(pocket["residues"])
+        })
+    
+    final_obj = json.dumps(obj)
+
+    #save the result file
+    os.makedirs(os.path.join(directory, "public"), exist_ok=True)
+    result_file = os.path.join(directory, "public", "result.json")
+
+    with open(result_file, "w", encoding="utf-8") as stream:
         try:
-            stream.write(f"Starting task at {datetime.datetime.now()}")
-            stream.write(f"Directory: {directory}\n")
+            stream.write(final_obj)
         finally:
             stream.flush()
-
-    #prediction = _load_json(pred_path)
-    """
     
-    #status_file = os.path.join(directory, "info.json")
-    #status = _load_json(status_file)
+    #update the status file
+    status["status"] = Status.SUCCESSFUL.value
+    _save_status_file(status_file, status)
 
-    #status["status"] = Status.RUNNING.value
-    #_save_status_file(status_file, status)
-
+    """
     log_file = os.path.join(directory, "logTest")
     with open(log_file, "w", encoding="utf-8") as stream:
         try:
             stream.write(f"Starting task at {datetime.datetime.now()}")
             stream.write(f"Directory: {directory}")
-            #stream.write(f"Prediction: {prediction}")
-            #_execute_directory_task(directory, stream, keep_working, lazy_execution)
+            stream.write(f"Prediction: {prediction}")
         finally:
             stream.flush()
+    """
 
-"""
-def _execute_directory_task(
-        directory: str, stream,
-        keep_working: bool, lazy_execution: bool):
-    status_file = os.path.join(directory, "info.json")
-    status = _load_json(status_file)
-
-    # We can check here if the task is running but, we assume that
-    # should we run given task it is regardless of the initial state.
-
-    status["status"] = Status.RUNNING.value
-    _save_status_file(status_file, status)
-
-    configuration = _load_json(
-        os.path.join(directory, "input", "configuration.json"))
-
-    this_directory = os.path.dirname(os.path.realpath(__file__))
-
-    execution = Execution(
-        p2rank=os.path.join(this_directory, "p2rank.sh"),
-        java_tools=os.environ.get("JAVA_TOOLS_CMD", None),
-        working_directory=os.path.join(directory, "working"),
-        output_directory=os.path.join(directory, "public"),
-        output_type=OutputType.PRANKWEB,
-        stdout=stream,
-        stderr=stream,
-        p2rank_configuration=configuration.get("p2rank_configuration", None),
-        structure_code=configuration.get("structure_code", None),
-        structure_file=_structure_path(directory, configuration),
-        structure_uniprot=configuration.get("structure_uniprot", None),
-        structure_sealed=configuration.get("structure_sealed", False),
-        chains=configuration.get("chains", []),
-        conservation=_conservation_type(configuration),
-        lazy_execution=lazy_execution
-    )
-    try:
-        result = execute(execution)
-        status["status"] = Status.SUCCESSFUL.value
-        status["metadata"] = {
-            **status.get("metadata", {}),
-            "predictionName": _output_name(execution),
-            "structureName": result.output_structure_file,
-        }
-    except subprocess.CalledProcessError:
-        status["status"] = Status.FAILED.value
-        logger.exception("External process failed.")
-    except:
-        status["status"] = Status.FAILED.value
-        logger.exception("Execution failed.")
-
-    _save_status_file(status_file, status)
-
-    if not keep_working:
-        shutil.rmtree(os.path.join(directory, "working"))
-
-
-
-def _save_status_file(path: str, status: any):
-    now = datetime.datetime.today()
-    status["lastChange"] = now.strftime('%Y-%m-%dT%H:%M:%S')
-    _save_json(path, status)
-
-
-def _save_json(path: str, content: any):
-    path_swp = path + ".swp"
-    with open(path_swp, "w", encoding="utf-8") as stream:
-        json.dump(content, stream, ensure_ascii=True)
-    os.replace(path_swp, path)
-
-
-def _structure_path(directory: str, configuration):
-    structure_file = configuration.get("structure_file", None)
-    if not structure_file:
-        return None
-    return os.path.join(directory, "input", structure_file)
-
-
-def _conservation_type(configuration):
-    if "conservation" not in configuration:
-        return ConservationType.NONE
-    name = configuration["conservation"]
-    for conservationType in ConservationType:
-        if conservationType.value == name:
-            return conservationType
-    return ConservationType.NONE
-
-
-def _output_name(execution: Execution):
-    if execution.structure_file:
-        file = execution.structure_file
-        return file[file.rindex("/") + 1:file.rindex(".")]
-    elif execution.structure_code:
-        suffix = ("_" + ",".join(execution.chains)) if execution.chains else ""
-        return execution.structure_code + suffix
-    elif execution.structure_uniprot:
-        return execution.structure_uniprot
-    else:
-        return "prediction-without-name"
-"""
+def main(arguments):
+    pass
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

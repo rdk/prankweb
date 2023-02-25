@@ -16,61 +16,30 @@ extensions = {
 }
 
 @dataclasses.dataclass
-class Prediction:
-    # Directory with given prediction task.
+class TaskInfo:
+    # Directory with given task.
     directory: str
     # User identifier of given task.
     identifier: str
-    # Name of a database.
-    database: str
-    # Name of a conservation to compute.
-    conservation: str
-    # If true structure is not modified before predictions.
-    structure_sealed: bool
-    # Configuration file for p2rank.
-    p2rank_configuration: str
-    # Additional metadata to save to info file.
-    metadata: typing.Dict
-    # Identification of experimental structure.
-    structure_code: typing.Optional[str] = None
-    # File with user provided structure.
-    structure_file: typing.Optional[str] = None
-    # Identification of predicted structure.
-    uniprot_code: typing.Optional[str] = None
-    # Restriction to given chains.
-    chains: typing.Optional[list[str]] = None
 
 class SampleTask:
     
     def __init__(self):
-        super().__init__()
-        self.root = os.path.join(
-            self._get_sample_task_directory(),
-            "v3")
+        self.root = os.path.join(self._get_sample_task_directory(), self.name())
 
     def name(self) -> str:
         return "v3"
 
     def get_sample_task_file(self, identifier: str):
-
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404
         if os.path.exists(directory):
             return self._response_file(directory, "info.json")
-        prediction = Prediction(
-            directory=directory,
-            identifier=identifier,
-            database=self.name(),
-            structure_sealed=True,
-            p2rank_configuration="alphafold",
-            uniprot_code=identifier,
-            conservation="none",
-            metadata={
-                "predictedStructure": True
-            },
-        )
-        return _create_sample_task_file(prediction)
+        
+        taskinfo = TaskInfo(directory=directory, identifier=identifier)
+
+        return _create_sample_task_file(taskinfo)
     
     def _get_directory(self, identifier: str) -> typing.Optional[str]:
         """Return directory for task with given identifier."""
@@ -98,64 +67,48 @@ class SampleTask:
         ext = file_name[file_name.rindex("."):]
         return extensions.get(ext, "text/plain")
 
-def _info_file(prediction: Prediction) -> str:
-    return os.path.join(prediction.directory, "info.json")
+def _info_file(taskinfo: TaskInfo) -> str:
+    return os.path.join(taskinfo.directory, "info.json")
 
-def _prepare_prediction_directory(prediction: Prediction):
+def _prepare_prediction_directory(taskinfo: TaskInfo):
     """Initialize content of a directory for given task."""
-    info = _create_info_file(prediction)
-    _save_json(_info_file(prediction), info)
-    input_directory = os.path.join(prediction.directory, "input")
-    os.makedirs(input_directory, exist_ok=True)
-    _save_json(
-        os.path.join(input_directory, "configuration.json"),
-        {
-            "p2rank_configuration": prediction.p2rank_configuration,
-            "structure_file": prediction.structure_file,
-            "structure_code": prediction.structure_code,
-            "structure_sealed": prediction.structure_sealed,
-            "structure_uniprot": prediction.uniprot_code,
-            "conservation": prediction.conservation,
-            "chains": prediction.chains,
-        })
+    info = _create_info_file(taskinfo)
+    _save_json(_info_file(taskinfo), info)
     return info
 
 def _save_json(path: str, content):
     with open(path, "w", encoding="utf-8") as stream:
         json.dump(content, stream, ensure_ascii=True)
 
-
-def _create_info_file(prediction: Prediction):
+def _create_info_file(taskinfo: TaskInfo):
     now = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
     return {
-        "id": prediction.identifier,
-        "database": prediction.database,
+        "id": taskinfo.identifier,
         "created": now,
         "lastChange": now,
-        "status": "queued",
-        "metadata": prediction.metadata,
+        "status": "queued"
     }
 
-def _create_sample_task_file(prediction: Prediction, force=False):
+def _create_sample_task_file(taskinfo: TaskInfo, force=False):
     try:
-        os.makedirs(prediction.directory, exist_ok=True)
+        os.makedirs(taskinfo.directory, exist_ok=True)
     except OSError:
         if not force:
-            return _prediction_can_not_be_created(prediction)
-    info = _prepare_prediction_directory(prediction)
-    submit_directory_for_sample_task(prediction.directory)
+            return _prediction_can_not_be_created(taskinfo)
+    info = _prepare_prediction_directory(taskinfo)
+    submit_directory_for_sample_task(taskinfo.directory)
     return flask.make_response(flask.jsonify(info), 201)
 
-def _prediction_can_not_be_created(prediction: Prediction):
+def _prediction_can_not_be_created(taskinfo: TaskInfo):
     # Not the best, but it is possible that someone else created
     # the task before us, so we wait some time, so they can finish the
     # initialization.
     time.sleep(1)
-    if os.path.isdir(prediction.directory) and \
-            os.path.isfile(_info_file(prediction)):
+    if os.path.isdir(taskinfo.directory) and \
+            os.path.isfile(_info_file(taskinfo)):
         # Somebody else created the task.
         return flask.send_from_directory(
-            prediction.directory, "info.json",
+            taskinfo.directory, "info.json",
             mimetype="application/json")
     else:
         return "", 500

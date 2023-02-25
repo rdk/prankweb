@@ -80,6 +80,7 @@ services:
     restart: unless-stopped
     volumes:
       - docking:/data/prankweb/docking
+      - predictions:/data/prankweb/predictions
     depends_on:
       rabbitmq:
         condition: service_healthy
