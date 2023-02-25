@@ -198,4 +198,4 @@ WORKDIR /opt/executor
 
 USER ${UID}:${GID}
 
-CMD ["celery", "--app=celery_p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
+CMD ["celery", "--app=celery_p2rank", "worker", "--queues=p2rank" ,"--concurrency=4", "--hostname=executor-p2rank"]

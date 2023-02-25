@@ -8,17 +8,14 @@ import datetime
 import logging
 import typing
 import enum
+import json
+import time
 
 class Status(enum.Enum):
     QUEUED = "queued"
     RUNNING = "running"
     FAILED = "failed"
     SUCCESSFUL = "successful"
-
-
-logging.getLogger().setLevel(logging.DEBUG)
-logger = logging.getLogger("prankweb")
-
 
 """
 def main():
@@ -36,34 +33,54 @@ def main():
 def main():
     pass
 
-def execute_directory_task(
-        directory: str,
-        keep_working: bool = False,
-        lazy_execution: bool = False,
-        stdout: bool = False):
-    log_file = os.path.join(directory, "logTest")
-    with open(log_file, "w", encoding="utf-8") as stream:
-        if stdout:
-            stream = sys.stdout
-        handler = _create_log_handler(stream)
-        logging.getLogger().addHandler(handler)
+def _load_json(path: str):
+    with open(path, encoding="utf-8") as stream:
+        return json.load(stream)
+
+def _save_status_file(path: str, status: any):
+    now = datetime.datetime.today()
+    status["lastChange"] = now.strftime('%Y-%m-%dT%H:%M:%S')
+    _save_json(path, status)
+
+
+def _save_json(path: str, content: any):
+    path_swp = path + ".swp"
+    with open(path_swp, "w", encoding="utf-8") as stream:
+        json.dump(content, stream, ensure_ascii=True)
+    os.replace(path_swp, path)
+
+def execute_directory_task(directory: str):
+    #the directory is in the format docking\v3\SR\2SRC
+    time.sleep(1)
+    """
+    log_file2 = os.path.join(directory, "logTest3")
+    #pred_path = os.path.join(str.replace(directory, "docking", "predictions"), "public", "prediction.json")
+
+    with open(log_file2, "w", encoding="utf-8") as stream:
         try:
             stream.write(f"Starting task at {datetime.datetime.now()}")
-            #_execute_directory_task(directory, stream, keep_working, lazy_execution)
+            stream.write(f"Directory: {directory}\n")
         finally:
-            handler.flush()
-            logging.getLogger().removeHandler(handler)
             stream.flush()
 
+    #prediction = _load_json(pred_path)
+    """
+    
+    #status_file = os.path.join(directory, "info.json")
+    #status = _load_json(status_file)
 
-def _create_log_handler(stream: typing.TextIO):
-    handler = logging.StreamHandler(stream)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s [%(levelname)s] : %(message)s",
-        "%Y-%m-%dT%H:%M:%S")
-    handler.setFormatter(formatter)
-    return handler
+    #status["status"] = Status.RUNNING.value
+    #_save_status_file(status_file, status)
+
+    log_file = os.path.join(directory, "logTest")
+    with open(log_file, "w", encoding="utf-8") as stream:
+        try:
+            stream.write(f"Starting task at {datetime.datetime.now()}")
+            stream.write(f"Directory: {directory}")
+            #stream.write(f"Prediction: {prediction}")
+            #_execute_directory_task(directory, stream, keep_working, lazy_execution)
+        finally:
+            stream.flush()
 
 """
 def _execute_directory_task(
@@ -120,10 +137,6 @@ def _execute_directory_task(
     if not keep_working:
         shutil.rmtree(os.path.join(directory, "working"))
 
-
-def _load_json(path: str):
-    with open(path, encoding="utf-8") as stream:
-        return json.load(stream)
 
 
 def _save_status_file(path: str, status: any):

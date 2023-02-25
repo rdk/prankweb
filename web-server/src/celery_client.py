@@ -3,6 +3,13 @@ import celery
 
 prankweb = celery.Celery("prankweb")
 
+prankweb.conf.update({
+    "task_routes": {
+        'prediction': 'p2rank',
+        'sample_task': 'docking',
+    }
+})
+
 if "CELERY_BROKER_URL" in os.environ:
     prankweb.conf.update({
         "broker_url":

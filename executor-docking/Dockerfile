@@ -45,4 +45,4 @@ WORKDIR /opt/executor-docking
 
 USER ${UID}:${GID}
 
-CMD ["celery", "--app=celery_docking", "worker", "--concurrency=4", "--hostname=executor-docking-p2rank"]
+CMD ["celery", "--app=celery_docking", "worker", "--queues=docking", "--concurrency=4", "--hostname=executor-docking-p2rank"]
