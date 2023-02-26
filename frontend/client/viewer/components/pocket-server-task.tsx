@@ -28,12 +28,13 @@ export default class PocketServerTask extends React.Component
     async clickCompute() {
         switch(this.props.taskType) {
             case ServerTaskType.Sample:
-                const json = await fetch(`./api/v2/sample/v3/${this.props.prediction.id}/post`).then(res => res.json()).catch(err => console.log(err));
+                const json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/post`).then(res => res.json()).catch(err => console.log(err));
                 //TODO: handle error in a better way
                 if(json["status"] !== "successful") {
                     setTimeout(() => this.clickCompute(), 1000);
+                    return;
                 }
-                const data = await fetch(`./api/v2/sample/v3/${this.props.prediction.id}/public/result.json`).then(res => res.json()).catch(err => console.log(err));
+                const data = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/public/result.json`).then(res => res.json()).catch(err => console.log(err));
                 /*
                 let data = {
                     "type": ServerTaskType.Sample,

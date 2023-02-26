@@ -68,7 +68,7 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
 )
 def route_post_sample_file(database_name: str, prediction_name: str):
     #return flask.response.jsonify({"status": "ok"})
-    st = SampleTask()
+    st = SampleTask(database_name=database_name)
     response = st.get_info_file(prediction_name.upper())
     return response
 
@@ -77,5 +77,5 @@ def route_post_sample_file(database_name: str, prediction_name: str):
     methods=["GET"]
 )
 def route_get_sample_file(database_name: str, prediction_name: str, file_name: str):
-    st = SampleTask()
+    st = SampleTask(database_name=database_name)
     return st.get_file(prediction_name.upper(), file_name)

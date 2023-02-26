@@ -25,12 +25,10 @@ class TaskInfo:
 
 class SampleTask:
     
-    def __init__(self):
-        self.root = os.path.join(self._get_sample_task_directory(), self.name())
+    def __init__(self, database_name: str):
+        self.name = database_name
+        self.root = os.path.join(self._get_sample_task_directory(), self.name)
 
-    def name(self) -> str:
-        return "v3"
-    
     def get_file(self, identifier: str, file_name: str):
         directory = self._get_directory(identifier)
         if directory is None or not os.path.isdir(directory):
