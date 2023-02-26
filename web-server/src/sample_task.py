@@ -6,6 +6,7 @@ import datetime
 import dataclasses
 import typing
 import re
+import werkzeug.utils
 
 from .celery_client import submit_directory_for_sample_task
 
@@ -29,8 +30,25 @@ class SampleTask:
 
     def name(self) -> str:
         return "v3"
+    
+    def get_file(self, identifier: str, file_name: str):
+        directory = self._get_directory(identifier)
+        if directory is None or not os.path.isdir(directory):
+            return "", 404
+        public_directory = os.path.join(directory, "public")
+        file_name = self._secure_filename(file_name)
+        file_path = os.path.join(public_directory, file_name)
+        print(file_path)
+        if os.path.isfile(file_path):
+            return self._response_file(public_directory, file_name)
+        return "", 404
+    
+    @staticmethod
+    def _secure_filename(file_name: str) -> str:
+        """Sanitize given file name."""
+        return werkzeug.utils.secure_filename(file_name)
 
-    def get_sample_task_file(self, identifier: str):
+    def get_info_file(self, identifier: str):
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404

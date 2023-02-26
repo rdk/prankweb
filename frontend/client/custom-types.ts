@@ -220,3 +220,7 @@ export interface Point3D {
     y: number;
     z: number;
 }
+
+export enum ServerTaskType {
+    Sample = 0
+}

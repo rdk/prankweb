@@ -4,6 +4,7 @@ import Pocket from "./pocket";
 
 import "./pocket-list.css";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
+import { PredictionInfo } from "../../prankweb-api";
 
 export default class PocketList extends React.Component
   <{
@@ -13,7 +14,8 @@ export default class PocketList extends React.Component
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
-    plugin: PluginUIContext
+    plugin: PluginUIContext,
+    prediction: PredictionInfo
   }, {}> {
 
   render() {
@@ -47,6 +49,7 @@ export default class PocketList extends React.Component
             focusPocket={this.props.focusPocket}
             highlightPocket={this.props.highlightPocket}
             plugin={this.props.plugin}
+            prediction={this.props.prediction}
           />
         ))}
       </div>);

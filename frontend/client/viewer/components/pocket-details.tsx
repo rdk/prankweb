@@ -1,14 +1,17 @@
 import React from "react";
-import { ClientTaskType, PocketData } from "../../custom-types";
+import { ClientTaskType, PocketData, ServerTaskType } from "../../custom-types";
 import PocketProperty from "./pocket-property";
 import PocketClientTask from "./pocket-client-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
+import PocketServerTask from "./pocket-server-task";
+import { PredictionInfo } from "../../prankweb-api";
 
 export default class PocketDetails extends React.Component
     <{
         pocket: PocketData,
         inDialog: boolean,
-        plugin: PluginUIContext
+        plugin: PluginUIContext,
+        prediction: PredictionInfo
     }, {}> {
 
     constructor(props: any) {
@@ -34,7 +37,8 @@ export default class PocketDetails extends React.Component
                 {this.checkValidValue(pocket.avgAlphaFold) && <PocketProperty inDialog={this.props.inDialog} title="AlphaFold avg" data={pocket.avgAlphaFold!}/>}
                 {this.props.inDialog && <PocketProperty inDialog={this.props.inDialog} title="Residues" data={pocket.residues.join(", ")}/>}
                 {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Total atoms volume (Å^3)" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.Volume}/>}
-            </div>
+                {this.props.inDialog && <PocketServerTask inDialog={this.props.inDialog} title="Sample" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Sample} prediction={this.props.prediction}/>}
+           </div>
         );
     }
 }

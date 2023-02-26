@@ -10,6 +10,7 @@ import Draggable from 'react-draggable';
 import { PocketData } from "../../custom-types";
 import PocketDetails from "./pocket-details";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
+import { PredictionInfo } from '../../prankweb-api';
 
 function PaperComponent(props: PaperProps) {
   return (<Paper {...props} style={{ margin: 0, maxHeight: '100%' }} />
@@ -19,6 +20,7 @@ function PaperComponent(props: PaperProps) {
 export default class DraggableDialog extends React.Component<{
   pocket: PocketData,
   plugin: PluginUIContext,
+  prediction: PredictionInfo,
   pocketTextColor: string,
   pocketHeaderColor: string
 }, {
@@ -29,7 +31,7 @@ export default class DraggableDialog extends React.Component<{
     visible: false,
   };
 
-  constructor(props: {pocket: PocketData, plugin: PluginUIContext, pocketTextColor: string, pocketHeaderColor: string}) {
+  constructor(props: any) {
     super(props);
     this.toggleDetailsVisibility = this.toggleDetailsVisibility.bind(this);
   }
@@ -74,7 +76,7 @@ export default class DraggableDialog extends React.Component<{
             </DialogTitle>
             <DialogContent>
               <DialogContentText component={'div'}>
-                <PocketDetails pocket={this.props.pocket} inDialog={true} plugin={this.props.plugin}/>
+                <PocketDetails pocket={this.props.pocket} inDialog={true} plugin={this.props.plugin} prediction={this.props.prediction}/>
               </DialogContentText>
             </DialogContent>
             <DialogActions>
