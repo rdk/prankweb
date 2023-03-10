@@ -30,6 +30,10 @@ def _save_json(path: str, content: any):
         json.dump(content, stream, ensure_ascii=True)
     os.replace(path_swp, path)
 
+def get_prediction_path(docking_directory: str):
+    #currently assuming that the docking and predictions paths are different just by the name
+    return os.path.join(str.replace(docking_directory, "docking", "predictions"), "public", "prediction.json")
+
 def execute_directory_task(directory: str):
     #print(os.listdir(os.path.join(directory, "..", "..", "..", "..")))
     if not os.path.exists(directory) or not os.path.isdir(directory):
@@ -42,7 +46,7 @@ def execute_directory_task(directory: str):
     _save_status_file(status_file, status)
 
     #then load the prediction file
-    pred_path = os.path.join(str.replace(directory, "docking", "predictions"), "public", "prediction.json")
+    pred_path = get_prediction_path(directory)
     prediction = _load_json(pred_path)
 
     #parse the prediction file and do some calculations
