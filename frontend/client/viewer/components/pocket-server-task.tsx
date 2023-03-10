@@ -25,51 +25,43 @@ export default class PocketServerTask extends React.Component
         this.state = {loading: false, computed: false, data: undefined};
     }
 
-    async clickCompute() {
+    async clickCompute(firstFetch: boolean = true) {
         switch(this.props.taskType) {
             case ServerTaskType.Sample:
-                const json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/post`).then(res => res.json()).catch(err => console.log(err));
+                if(firstFetch) {
+                    let json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/post`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "hash": "SOME_HASH",
+                            "pocket": this.props.pocket.rank,
+                        }),
+                    }).then(res => res.json()).catch(err => console.log(err));
+                }
+
+                let json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/tasks`, {cache: "no-store"}).then(res => res.json()).catch(err => console.log(err));
                 //TODO: handle error in a better way
-                if(json["status"] !== "successful") {
-                    setTimeout(() => this.clickCompute(), 1000);
+
+                console.log(json);
+                if((json["tasks"].filter((e: any) => e["data"]["hash"] === "SOME_HASH")[0]["status"]) !== "successful") {
+                    setTimeout(() => this.clickCompute(false), 1000);
                     return;
                 }
-                const data = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/public/result.json`).then(res => res.json()).catch(err => console.log(err));
-                /*
-                let data = {
-                    "type": ServerTaskType.Sample,
-                    "pockets": [
-                    {
-                        "rank": "1",
-                        "count": 37
+
+                const data = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/public/result.json`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    {
-                        "rank": "2",
-                        "count": 14
-                    },
-                    {
-                        "rank": "3",
-                        "count": 12
-                    },
-                    {
-                        "rank": "4",
-                        "count": 11
-                    },
-                    {
-                        "rank": "5",
-                        "count": 11
-                    },
-                    {
-                        "rank": "6",
-                        "count": 13
-                    },
-                    {
-                        "rank": "7",
-                        "count": 8
+                    body: JSON.stringify({
+                        "hash": "SOME_HASH",
                     }
-                    ]
-                }
-                */
+                )}).then(res => res.json()).catch(err => console.log(err));
+                //TODO: handle error in a better way
                 const dataWrapper = {
                     "type": ServerTaskType.Sample,
                     "pockets": data
