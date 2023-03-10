@@ -32,5 +32,5 @@ elif "CELERY_BROKER_PATH" in os.environ:
 def submit_directory_for_execution(directory):
     prankweb.send_task("prediction", args=[directory])
 
-def submit_directory_for_sample_task(directory):
-    prankweb.send_task("sample_task", args=[directory])
+def submit_directory_for_sample_task(directory, taskId):
+    prankweb.send_task("sample_task", args=[directory, taskId])

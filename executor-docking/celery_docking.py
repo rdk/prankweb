@@ -34,9 +34,8 @@ def setup_celery_logging(**kwargs):
 prankweb.log.setup()
 
 @prankweb.task(name="sample_task")
-def celery_run_sample_task(directory: str):
-    print(directory)
+def celery_run_sample_task(directory: str, taskId):
     if os.path.isdir(directory):
-        run_task.execute_directory_task(directory)
+        run_task.execute_directory_task(directory, taskId)
     else:
         print(f"Given directory does not exist {directory}")

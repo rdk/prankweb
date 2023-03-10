@@ -76,16 +76,12 @@ def route_post_sample_file(database_name: str, prediction_name: str):
     methods=["POST"]
 )
 def route_get_sample_file(database_name: str, prediction_name: str, file_name: str):
-    # TODO: fix this so that the program looks into the info file,
-    # gets the id of the task and returns the file from the specified folder
-    data = request.get_json(force=True) or {}
+    data = request.get_json(force=True)
+    param = data.get("hash", None)
+    if data is None or param is None:
+        return "", 404
     st = SampleTask(database_name=database_name)
-
-    st.get_file(prediction_name.upper(), file_name)
-
-    return flask.jsonify(data), 200
-
-    return st.get_file(prediction_name.upper(), file_name)
+    return st.get_file(prediction_name.upper(), file_name, param)
 
 @api_v2.route(
     "/sample/<database_name>/<prediction_name>/tasks",

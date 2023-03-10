@@ -23,7 +23,9 @@ class TaskInfo:
     # User identifier of given task.
     identifier: str
     # Data for given task.
-    data: typing.Optional[dict]
+    data: typing.Optional[dict] = None
+    # Task numeric identifier.
+    taskId: typing.Optional[int] = None
 
 class SampleTask:
     
@@ -31,14 +33,30 @@ class SampleTask:
         self.name = database_name
         self.root = os.path.join(self._get_sample_task_directory(), self.name)
 
-    def get_file(self, identifier: str, file_name: str):
+    def get_file(self, identifier: str, file_name: str, param: str):
         directory = self._get_directory(identifier)
         if directory is None or not os.path.isdir(directory):
             return "", 404
+    
+        try:
+            #we have to find the task id in the info file
+            with open(os.path.join(directory, "info.json"), "r") as f:
+                found = False
+                fileData = json.load(f)
+                for task in fileData["tasks"]:
+                    if task["data"]["hash"] == param:
+                        directory = os.path.join(directory, str(task["id"]))
+                        found = True
+                        break
+                if not found: #could not find the task in the info file
+                    return "", 404
+        
+        except OSError:
+            return "", 404
+
         public_directory = os.path.join(directory, "public")
         file_name = self._secure_filename(file_name)
         file_path = os.path.join(public_directory, file_name)
-        print(file_path)
         if os.path.isfile(file_path):
             return self._response_file(public_directory, file_name)
         return "", 404
@@ -54,15 +72,16 @@ class SampleTask:
             return "", 404
         if os.path.exists(directory):
             #if the info file exists, we have to append the new info to the existing file
+            taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
+
             with open(os.path.join(directory, "info.json"), "r+") as f:
                 fileData = json.load(f)
-                taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
-                taskId = len(fileData["tasks"])
-                fileData["tasks"].append(_create_info(taskinfo, taskId))
-
+                taskinfo.taskId = len(fileData["tasks"])
+                fileData["tasks"].append(_create_info(taskinfo))
                 f.seek(0)
                 f.write(json.dumps(fileData))
-
+            
+            submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
             return self._response_file(directory, "info.json")
         
         #else we create a new info file
@@ -104,7 +123,8 @@ def _info_file(taskinfo: TaskInfo) -> str:
 
 def _prepare_prediction_directory(taskinfo: TaskInfo):
     """Initialize content of a directory for given task."""
-    info = _create_info(taskinfo, 0)
+    taskinfo.taskId = 0
+    info = _create_info(taskinfo)
     json_info_skeleton = {"tasks": [info], "identifier": taskinfo.identifier}
     _save_json(_info_file(taskinfo), json_info_skeleton)
     return info
@@ -113,10 +133,10 @@ def _save_json(path: str, content):
     with open(path, "w", encoding="utf-8") as stream:
         json.dump(content, stream, ensure_ascii=True)
 
-def _create_info(taskinfo: TaskInfo, id: int):
+def _create_info(taskinfo: TaskInfo):
     now = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
     return {
-        "id": id,
+        "id": taskinfo.taskId,
         "created": now,
         "lastChange": now,
         "status": "queued",
@@ -130,7 +150,7 @@ def _create_sample_task_file(taskinfo: TaskInfo, force=False):
         if not force:
             return _prediction_can_not_be_created(taskinfo)
     info = _prepare_prediction_directory(taskinfo)
-    submit_directory_for_sample_task(taskinfo.directory)
+    submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
     return flask.make_response(flask.jsonify(info), 201)
 
 def _prediction_can_not_be_created(taskinfo: TaskInfo):
