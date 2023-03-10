@@ -33,7 +33,7 @@ class SampleTask:
         self.name = database_name
         self.root = os.path.join(self._get_sample_task_directory(), self.name)
 
-    def get_file(self, identifier: str, file_name: str, param: str):
+    def get_file_with_post_param(self, identifier: str, file_name: str, param: str):
         directory = self._get_directory(identifier)
         if directory is None or not os.path.isdir(directory):
             return "", 404
@@ -66,7 +66,7 @@ class SampleTask:
         """Sanitize given file name."""
         return werkzeug.utils.secure_filename(file_name)
 
-    def get_info_file(self, identifier: str, data: dict):
+    def post_task(self, identifier: str, data: dict):
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404
@@ -89,8 +89,14 @@ class SampleTask:
 
         return _create_sample_task_file(taskinfo)
     
-    def get_all_tasks(self):
-        pass
+    def get_all_tasks(self, identifier: str):
+        directory = self._get_directory(identifier)
+        if directory is None:
+            return "", 404
+        if os.path.exists(directory):
+            return self._response_file(directory, "info.json")
+        
+        return "", 404
     
     def _get_directory(self, identifier: str) -> typing.Optional[str]:
         """Return directory for task with given identifier."""
