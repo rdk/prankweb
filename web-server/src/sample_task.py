@@ -22,6 +22,8 @@ class TaskInfo:
     directory: str
     # User identifier of given task.
     identifier: str
+    # Data for given task.
+    data: typing.Optional[dict]
 
 class SampleTask:
     
@@ -46,16 +48,30 @@ class SampleTask:
         """Sanitize given file name."""
         return werkzeug.utils.secure_filename(file_name)
 
-    def get_info_file(self, identifier: str):
+    def get_info_file(self, identifier: str, data: dict):
         directory = self._get_directory(identifier)
         if directory is None:
             return "", 404
         if os.path.exists(directory):
+            #if the info file exists, we have to append the new info to the existing file
+            with open(os.path.join(directory, "info.json"), "r+") as f:
+                fileData = json.load(f)
+                taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
+                taskId = len(fileData["tasks"])
+                fileData["tasks"].append(_create_info(taskinfo, taskId))
+
+                f.seek(0)
+                f.write(json.dumps(fileData))
+
             return self._response_file(directory, "info.json")
         
-        taskinfo = TaskInfo(directory=directory, identifier=identifier)
+        #else we create a new info file
+        taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
 
         return _create_sample_task_file(taskinfo)
+    
+    def get_all_tasks(self):
+        pass
     
     def _get_directory(self, identifier: str) -> typing.Optional[str]:
         """Return directory for task with given identifier."""
@@ -88,21 +104,23 @@ def _info_file(taskinfo: TaskInfo) -> str:
 
 def _prepare_prediction_directory(taskinfo: TaskInfo):
     """Initialize content of a directory for given task."""
-    info = _create_info_file(taskinfo)
-    _save_json(_info_file(taskinfo), info)
+    info = _create_info(taskinfo, 0)
+    json_info_skeleton = {"tasks": [info], "identifier": taskinfo.identifier}
+    _save_json(_info_file(taskinfo), json_info_skeleton)
     return info
 
 def _save_json(path: str, content):
     with open(path, "w", encoding="utf-8") as stream:
         json.dump(content, stream, ensure_ascii=True)
 
-def _create_info_file(taskinfo: TaskInfo):
+def _create_info(taskinfo: TaskInfo, id: int):
     now = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
     return {
-        "id": taskinfo.identifier,
+        "id": id,
         "created": now,
         "lastChange": now,
-        "status": "queued"
+        "status": "queued",
+        "data": taskinfo.data
     }
 
 def _create_sample_task_file(taskinfo: TaskInfo, force=False):

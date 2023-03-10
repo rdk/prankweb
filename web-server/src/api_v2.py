@@ -1,5 +1,5 @@
 import flask
-from flask import Blueprint
+from flask import Blueprint, request
 from .database_v1 import register_database_v1
 from .database_v2 import register_database_v2
 from .database_v3 import register_database_v3
@@ -64,18 +64,33 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
 
 @api_v2.route(
     "/sample/<database_name>/<prediction_name>/post",
-    methods=["GET"]
+    methods=["POST"]
 )
 def route_post_sample_file(database_name: str, prediction_name: str):
-    #return flask.response.jsonify({"status": "ok"})
+    data = request.get_json(force=True) or {}
     st = SampleTask(database_name=database_name)
-    response = st.get_info_file(prediction_name.upper())
-    return response
+    return st.get_info_file(prediction_name.upper(), data)
 
 @api_v2.route(
     "/sample/<database_name>/<prediction_name>/public/<file_name>",
-    methods=["GET"]
+    methods=["POST"]
 )
 def route_get_sample_file(database_name: str, prediction_name: str, file_name: str):
+    # TODO: fix this so that the program looks into the info file,
+    # gets the id of the task and returns the file from the specified folder
+    data = request.get_json(force=True) or {}
     st = SampleTask(database_name=database_name)
+
+    st.get_file(prediction_name.upper(), file_name)
+
+    return flask.jsonify(data), 200
+
     return st.get_file(prediction_name.upper(), file_name)
+
+@api_v2.route(
+    "/sample/<database_name>/<prediction_name>/tasks",
+    methods=["GET"]
+)
+def route_get_all_sample_tasks(database_name: str, prediction_name: str):
+    st = SampleTask(database_name=database_name)
+    return st.get_all_tasks()
