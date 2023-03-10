@@ -207,7 +207,8 @@ export const DefaultPocketColors = [
 ];
 
 export enum ClientTaskType {
-    Volume = 0
+    Volume = 0,
+    SampleTaskCount = 1
 }
 
 export interface ClientTaskData {
