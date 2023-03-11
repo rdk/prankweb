@@ -81,20 +81,14 @@ class SampleTask:
                 f.seek(0)
                 f.write(json.dumps(fileData))
             
-            os.makedirs(os.path.join(directory, str(taskinfo.taskId)), exist_ok=True)
-            with open(os.path.join(directory, str(taskinfo.taskId), "input.json"), "w+") as f:
-                f.write(json.dumps(data))
-
+            _save_input(taskinfo, data)
             submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
             return self._response_file(directory, "info.json")
         
         #else we create a new info file
         taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
 
-        os.makedirs(os.path.join(directory, "0"), exist_ok=True)
-        with open(os.path.join(directory, "0", "input.json"), "w+") as f:
-            f.write(json.dumps(data))
-
+        _save_input(taskinfo, data)
         return _create_sample_task_file(taskinfo)
     
     def get_all_tasks(self, identifier: str):
@@ -131,6 +125,12 @@ class SampleTask:
         """Detect file mime type."""
         ext = file_name[file_name.rindex("."):]
         return extensions.get(ext, "text/plain")
+
+def _save_input(taskinfo: TaskInfo, data: dict):
+    """Save input data for given task."""
+    os.makedirs(os.path.join(taskinfo.directory, str(taskinfo.taskId)), exist_ok=True)
+    with open(os.path.join(taskinfo.directory, str(taskinfo.taskId), "input.json"), "w+") as f:
+        f.write(json.dumps(data))
 
 def _info_file(taskinfo: TaskInfo) -> str:
     return os.path.join(taskinfo.directory, "info.json")
