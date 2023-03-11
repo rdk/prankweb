@@ -7,6 +7,7 @@ import sys
 import datetime
 import enum
 import json
+import time
 
 class Status(enum.Enum):
     QUEUED = "queued"
@@ -26,6 +27,8 @@ def _save_status_file(path: str, status: any, taskId: int):
 
 def _save_json(path: str, content: any):
     path_swp = path + ".swp"
+    if(os.path.exists(path_swp)):
+        time.sleep(1)
     with open(path_swp, "w", encoding="utf-8") as stream:
         json.dump(content, stream, ensure_ascii=True)
     os.replace(path_swp, path)

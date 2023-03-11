@@ -81,11 +81,19 @@ class SampleTask:
                 f.seek(0)
                 f.write(json.dumps(fileData))
             
+            os.makedirs(os.path.join(directory, str(taskinfo.taskId)), exist_ok=True)
+            with open(os.path.join(directory, str(taskinfo.taskId), "input.json"), "w+") as f:
+                f.write(json.dumps(data))
+
             submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
             return self._response_file(directory, "info.json")
         
         #else we create a new info file
         taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
+
+        os.makedirs(os.path.join(directory, "0"), exist_ok=True)
+        with open(os.path.join(directory, "0", "input.json"), "w+") as f:
+            f.write(json.dumps(data))
 
         return _create_sample_task_file(taskinfo)
     

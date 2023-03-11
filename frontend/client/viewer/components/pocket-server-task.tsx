@@ -41,8 +41,8 @@ export default class PocketServerTask extends React.Component
                     //then look if the task already exists
                     //TODO: should we check this here or in the backend?
                     let json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/tasks`, {cache: "no-store"}).then(res => res.json())
-                        .catch(err => { console.log(err); return this.clickCompute(true)});
-                    if((json["tasks"].filter((e: any) => e["data"]["hash"] === this.state.hash)).length > 0) {
+                        .catch(err => { console.log(err); });
+                    if(json && (json["tasks"].filter((e: any) => e["data"]["hash"] === this.state.hash)).length > 0) {
                         this.clickCompute(false);
                         return;
                     }
@@ -64,7 +64,6 @@ export default class PocketServerTask extends React.Component
                 let json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/tasks`, {cache: "no-store"}).then(res => res.json()).catch(err => console.log(err));
                 //TODO: handle error in a better way
 
-                console.log(json);
                 if((json["tasks"].filter((e: any) => e["data"]["hash"] === this.state.hash)[0]["status"]) !== "successful") {
                     setTimeout(() => this.clickCompute(false), 1000);
                     return;
