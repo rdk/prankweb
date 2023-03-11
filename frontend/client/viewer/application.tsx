@@ -7,6 +7,7 @@ import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
 import { StructureInformation } from "./components/structure-information";
 import ToolsBox from "./components/tools-box";
 import PocketList from "./components/pocket-list";
+import TaskList from "./components/task-list";
 
 import { sendDataToPlugins } from './data-loader';
 import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState } from "../custom-types";
@@ -219,6 +220,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
+          />
+          <TaskList 
+            prediction={predictionInfo}
           />
           <PocketList 
             data={this.state.data}
