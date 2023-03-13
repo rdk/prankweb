@@ -1,5 +1,5 @@
 import React from "react";
-import { PocketData } from "../../custom-types";
+import { PocketData, ServerTaskData } from "../../custom-types";
 import DraggableDialog from './draggable-dialog'
 import PocketDetails from "./pocket-details";
 
@@ -16,7 +16,8 @@ export default class Pocket extends React.Component
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     plugin: PluginUIContext,
-    prediction: PredictionInfo
+    prediction: PredictionInfo,
+    serverTasks: ServerTaskData[]
   }, {
     visible: boolean,
     details: boolean,
@@ -143,12 +144,12 @@ export default class Pocket extends React.Component
               </div>
             </div>
           </div>
-          {this.state.visible && <PocketDetails pocket={pocket} inDialog={false} plugin={this.props.plugin} prediction={this.props.prediction}/>}
+          {this.state.visible && <PocketDetails pocket={pocket} inDialog={false} plugin={this.props.plugin} prediction={this.props.prediction} serverTasks={this.props.serverTasks}/>}
           {this.state.visible && <div className="card-footer" style={{"padding": "0.5rem",}}>
             <div className="container" style={{"padding": 0}}>
               <div className="row">
                 <div className="col-3">
-                  <DraggableDialog pocket={this.props.pocket} plugin={this.props.plugin} pocketTextColor={this.state.pocketTextColor} pocketHeaderColor={pocketColor} prediction={this.props.prediction}/>
+                  <DraggableDialog pocket={this.props.pocket} plugin={this.props.plugin} pocketTextColor={this.state.pocketTextColor} pocketHeaderColor={pocketColor} prediction={this.props.prediction} serverTasks={this.props.serverTasks}/>
                 </div>
                 <div className="col-3">
                   <button

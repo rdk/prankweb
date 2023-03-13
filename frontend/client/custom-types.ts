@@ -159,6 +159,7 @@ export interface ReactApplicationState {
     polymerColor: PolymerColorType,
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
+    serverTasks: ServerTaskData[]
 }
 
 /**
@@ -212,7 +213,7 @@ export enum ClientTaskType {
 }
 
 export interface ClientTaskData {
-    type: ClientTaskType;
+    type?: ClientTaskType;
     numericValue?: number;
 }
 
@@ -225,3 +226,12 @@ export interface Point3D {
 export enum ServerTaskType {
     Sample = 0
 }
+
+export interface ServerTaskData {
+    type?: ServerTaskType;
+    id: string;
+    created: string;
+    lastChange: string;
+    status: string;
+    data: any;
+}    

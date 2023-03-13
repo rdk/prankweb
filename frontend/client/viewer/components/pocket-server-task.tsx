@@ -1,7 +1,7 @@
 import React from "react";
 import { LoadingButton } from '@mui/lab';
 import { Modal, Box, Typography, TextField } from "@mui/material";
-import { PocketData, ServerTaskType } from '../../custom-types';
+import { PocketData, ServerTaskData, ServerTaskType } from '../../custom-types';
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 
@@ -12,7 +12,8 @@ export default class PocketServerTask extends React.Component
         pocket: PocketData,
         plugin: PluginUIContext,
         taskType: ServerTaskType,
-        prediction: PredictionInfo
+        prediction: PredictionInfo,
+        serverTasks: ServerTaskData[]
     }, {
         responseData: any, //this may be changed to any type (the best way is to define some interface)
         computed: boolean,
@@ -61,11 +62,16 @@ export default class PocketServerTask extends React.Component
                     }).then(res => res.json()).catch(err => console.log(err));
                 }
 
-                let json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/tasks`, {cache: "no-store"}).then(res => res.json()).catch(err => console.log(err));
-                //TODO: handle error in a better way
+                //check if the task is finished
+                let matchingTasks = (this.props.serverTasks.filter((e: any) => e["data"]["hash"] === this.state.hash));
 
-                if((json["tasks"].filter((e: any) => e["data"]["hash"] === this.state.hash)[0]["status"]) !== "successful") {
-                    setTimeout(() => this.clickCompute(false), 1000);
+                if(matchingTasks.length === 0) {
+                    setTimeout(() => this.clickCompute(false), 2000);
+                    return;
+                }
+
+                if(matchingTasks[0]["status"] !== "successful") {
+                    setTimeout(() => this.clickCompute(false), 2000);
                     return;
                 }
 
@@ -149,19 +155,6 @@ export default class PocketServerTask extends React.Component
                         </Box>
                         </Modal>
                     </div>
-
-                    /*
-                    <LoadingButton
-                        size="small"
-                        onClick={this.handleClick}
-                        loading={this.state.loading}
-                        variant="contained"
-                        style={{float: "right", marginLeft: "1rem"}}
-                    >
-                        {!this.state.computed && "Compute"}
-                        {this.state.computed && "Computed"}
-                    </LoadingButton>
-                */
                 }
                 {
                     this.state.computed &&
