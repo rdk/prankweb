@@ -5,6 +5,7 @@ import PocketClientTask from "./pocket-client-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import PocketServerTask from "./pocket-server-task";
 import { PredictionInfo } from "../../prankweb-api";
+import RunningTasks from "./pocket-running-tasks";
 
 export default class PocketDetails extends React.Component
     <{
@@ -13,11 +14,23 @@ export default class PocketDetails extends React.Component
         plugin: PluginUIContext,
         prediction: PredictionInfo
         serverTasks: ServerTaskData[]
-    }, {}> {
+    }, {
+        serverTasks: ServerTaskData[]
+        //updated: boolean
+    }> {
 
     constructor(props: any) {
         super(props);
+        this.state = {serverTasks: this.props.serverTasks};
         this.checkValidValue = this.checkValidValue.bind(this);
+    }
+
+    componentDidUpdate(prevProps: any){
+        if(prevProps.serverTasks !== this.props.serverTasks){
+            this.setState({
+                serverTasks: this.props.serverTasks
+            });
+        }
     }
 
     checkValidValue(data: number | undefined) {
@@ -40,6 +53,7 @@ export default class PocketDetails extends React.Component
                 {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Total atoms volume (Å^3)" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.Volume} prediction={this.props.prediction}/>}
                 {this.props.inDialog && <PocketServerTask inDialog={this.props.inDialog} title="Sample" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Sample} prediction={this.props.prediction} serverTasks={this.props.serverTasks}/>}
                 {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Total sample tasks" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.SampleTaskCount} prediction={this.props.prediction}/>}
+                {this.props.inDialog && <RunningTasks inDialog={this.props.inDialog} serverTasks={this.state.serverTasks} pocket={this.props.pocket}/>}
            </div>
         );
     }

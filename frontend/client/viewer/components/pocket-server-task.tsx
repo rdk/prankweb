@@ -41,9 +41,7 @@ export default class PocketServerTask extends React.Component
 
                     //then look if the task already exists
                     //TODO: should we check this here or in the backend?
-                    let json = await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/tasks`, {cache: "no-store"}).then(res => res.json())
-                        .catch(err => { console.log(err); });
-                    if(json && (json["tasks"].filter((e: any) => e["data"]["hash"] === this.state.hash)).length > 0) {
+                    if(this.props.serverTasks && (this.props.serverTasks.filter((e: any) => e["data"]["hash"] === this.state.hash && e["data"]["pocket"] === this.props.pocket.rank)).length > 0) {
                         this.clickCompute(false);
                         return;
                     }
@@ -59,19 +57,22 @@ export default class PocketServerTask extends React.Component
                             "hash": hash,
                             "pocket": this.props.pocket.rank,
                         }),
-                    }).then(res => res.json()).catch(err => console.log(err));
+                    }).then(res => res.json()).catch(err => {
+                        console.log(err);
+                        this.clickCompute(true); //repeat the request
+                    });
                 }
 
                 //check if the task is finished
-                let matchingTasks = (this.props.serverTasks.filter((e: any) => e["data"]["hash"] === this.state.hash));
+                let matchingTasks = (this.props.serverTasks.filter((e: any) => e["data"]["hash"] === this.state.hash && e["data"]["pocket"] === this.props.pocket.rank));
 
                 if(matchingTasks.length === 0) {
-                    setTimeout(() => this.clickCompute(false), 2000);
+                    setTimeout(() => this.clickCompute(false), 1000);
                     return;
                 }
 
                 if(matchingTasks[0]["status"] !== "successful") {
-                    setTimeout(() => this.clickCompute(false), 2000);
+                    setTimeout(() => this.clickCompute(false), 1000);
                     return;
                 }
 
@@ -85,11 +86,16 @@ export default class PocketServerTask extends React.Component
                         "hash": this.state.hash,
                     }
                 )}).then(res => res.json()).catch(err => console.log(err));
+                if(!data) {
+                    setTimeout(() => this.clickCompute(false), 3000);
+                    return;
+                }
                 //TODO: handle error in a better way
                 const dataWrapper = {
                     "type": ServerTaskType.Sample,
                     "pockets": data
                 }
+                matchingTasks[0]["responseData"] = dataWrapper;
                 this.setState({loading: false, computed: true, responseData: dataWrapper});
                 break;
             default:

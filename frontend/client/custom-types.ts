@@ -233,5 +233,6 @@ export interface ServerTaskData {
     created: string;
     lastChange: string;
     status: string;
-    data: any;
+    data: any; //initial data
+    responseData: any;
 }    
