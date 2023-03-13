@@ -1,7 +1,7 @@
 #
 # Build web-application.
 #
-FROM node:17.2-bullseye AS frontend
+FROM node:19.7-bullseye AS frontend
 
 ARG GOOGLE_ANALYTICS
 
