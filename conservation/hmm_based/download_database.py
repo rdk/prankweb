@@ -17,17 +17,20 @@ def main():
     prepare_database(directory)
 
 
-def prepare_database(directory: str):
-    print(f"Preparing database to '{directory}' ...")
-    os.makedirs(directory, exist_ok=True)
+def prepare_database(database_file: str):
+    print(f"Preparing database to '{database_file}' ...")
+    os.makedirs(database_file, exist_ok=True)
+    if os.path.exists(database_file):
+        print(f"Database file '{database_file}' already exists")
+        return
     print("This process may take a while.")
     tmp_file_name = "uniref50.fasta.zip"
     print("Downloading file ...")
-    execute_command(directory, f'wget "{URL}" -O {tmp_file_name}')
+    execute_command(database_file, f'wget "{URL}" -O {tmp_file_name}')
     print("Unpacking file ...")
-    unzip_file(os.path.join(directory, tmp_file_name), directory)
-    os.remove(os.path.join(directory, tmp_file_name))
-    print(f"Preparing database to '{directory}' ... done")
+    unzip_file(os.path.join(database_file, tmp_file_name), database_file)
+    os.remove(os.path.join(database_file, tmp_file_name))
+    print(f"Preparing database to '{database_file}' ... done")
 
 
 def execute_command(cwd: str, command: str):
@@ -39,9 +42,9 @@ def execute_command(cwd: str, command: str):
     result.check_returncode()
 
 
-def unzip_file(zip_file: str, destination: str):
+def unzip_file(zip_file: str, target_file: str):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        zip_ref.extractall(destination)
+        zip_ref.extractall(target_file)
 
 
 if __name__ == "__main__":
