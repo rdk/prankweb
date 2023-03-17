@@ -8,8 +8,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Paper, { PaperProps } from '@mui/material/Paper';
 import Draggable from 'react-draggable';
 import { PocketData } from "../../custom-types";
-import { MdOutlineInfo } from 'react-icons/md';
-import { IconContext } from "react-icons";
 import PocketDetails from "./pocket-details";
 
 function PaperComponent(props: PaperProps) {
@@ -45,12 +43,10 @@ export default class DraggableDialog extends React.Component<{
         <button
           type="button"
           title="Show details"
-          className="btn btn-outline-secondary"
+          className="btn btn-outline-secondary btnIcon"
           onClick={(e) => this.toggleDetailsVisibility(e, "btnClick")}
         >
-          <IconContext.Provider value={{ size: "1.25em" }}>
-            <MdOutlineInfo />
-          </IconContext.Provider>
+          <i className="bi bi-info-circle" style={{"width": "1em"}}></i>
         </button>
         <Draggable
           handle={'[class*="MuiDialog-root"]'}

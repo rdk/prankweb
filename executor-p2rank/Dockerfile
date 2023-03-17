@@ -107,7 +107,12 @@ RUN apt-get update \
  wget curl \
  python3 python3-pip \
  openjdk-17-jre-headless \
- libgomp1 vim
+ libgomp1 vim \
+ python3-venv
+
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN addgroup --gid ${GID} user \
  && useradd --uid ${UID} --gid ${GID} user

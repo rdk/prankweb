@@ -15,16 +15,26 @@
 }
 
 .pockets .pocket {
-    margin: 1em;
+    margin: 1em 0;
     border-width: 0.2em;
 }
 
-.pocket .card-header button:first-of-type {
-    margin-right: 1rem;
+.card-title {
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.pocket .card-header button {
-    line-height: 0.8rem;
+.pocket .card-header button:first-of-type {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
+}
+
+.pocket button {
+    line-height: 0.8em;
+    padding: 0.25rem 0.5rem;
+    margin: auto;
+    display: inherit;
 }
 
 .pocket .card-body {

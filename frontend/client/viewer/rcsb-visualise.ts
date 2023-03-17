@@ -3,6 +3,8 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, AlphaFoldColorsRcsb, AlphaFoldThresholdsRcsb, DefaultPocketColors } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
+let lastElement: number = -1;
+
 /**
  * Method which initializes the Rcsb viewer and adds the tracks to it.
  * @param data Prediction data
@@ -82,15 +84,21 @@ function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIC
  * @param trackData Data of the clicked track
  */
 function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, trackData: Array<RcsbFvTrackDataElementInterface>) {
-    if(trackData && trackData.length > 0) {
-        if(data) {
-            let element = data.structure.indices[trackData[0].begin - 1];
-            if(element) {
-                let id = Number(element.substring(element.indexOf('_') + 1));
-                highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
+    if(trackData.length === 0) return;
+    lastElement = trackData[0].begin;
+
+    //first attempt to debounce the function
+    setTimeout(() => {
+        if(trackData && trackData.length > 0 && lastElement === trackData[0].begin) {
+            if(data) {
+                let element = data.structure.indices[trackData[0].begin - 1];
+                if(element) {
+                    let id = Number(element.substring(element.indexOf('_') + 1));
+                    highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
+                }
             }
         }
-    }
+    }, 100);
 }
 
 /**
@@ -189,7 +197,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     }
 
     //then resolve the conservation, if available
-    if(data.structure.scores.conservation) {
+    if(data.structure.scores.conservation && !data.structure.scores.conservation.every((value) => value === 0)) {
         const conservationData = [];
     
         //we need to normalize the scores to fit in properly
@@ -216,7 +224,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     }
 
     //then resolve alphafold scores, if available
-    if(data.structure.scores.plddt) 
+    if(data.structure.scores.plddt && !data.structure.scores.plddt.every((value) => value === 0)) 
     {
         const alphafoldData = [];
     
@@ -261,7 +269,11 @@ function getLogBaseX(x : number, y : number) {
  */
 function pickColor(pocketId: number) {
     if(pocketId >= DefaultPocketColors.length) {
-        return Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
+        let result = Math.floor(Math.random()*16777215).toString(16); //picks a totally random color
+        if(result.length < 6) {
+            result = "0".repeat(6 - result.length) + result;
+        }
+        return result; 
     }
     return DefaultPocketColors[pocketId];
 }
