@@ -9,6 +9,7 @@ def prepare_output_p2rank(
         structure: Structure,
         conservation: typing.Dict[str, str],
         configuration: Execution) -> ExecutionResult:
+    os.makedirs(configuration.output_directory, exist_ok=True)
     for file in os.listdir(p2rank_output):
         source = os.path.join(p2rank_output, file)
         target = os.path.join(configuration.output_directory, file)

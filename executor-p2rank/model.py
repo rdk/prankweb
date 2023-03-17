@@ -1,6 +1,6 @@
 import typing
 import enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 class ConservationType(enum.Enum):
@@ -48,7 +48,7 @@ class Execution:
     # If true the input structure is used without change.
     structure_sealed: bool = False
     # Allow filtering of chains. Leave empty to use all.
-    chains: typing.List[str] = list
+    chains: typing.List[str] = field(default_factory=list)
     # Selected configuration pipeline.
     conservation: ConservationType = ConservationType.NONE
     # Optional, shell execution function.

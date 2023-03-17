@@ -13,16 +13,13 @@ def main():
         print("Can't create database as environment variable "
               "HMM_SEQUENCE_FILE is not set.")
         exit(1)
-    directory = os.path.dirname(HMM_SEQUENCE_FILE)
-    prepare_database(directory)
+    database_file = os.path.dirname(HMM_SEQUENCE_FILE)
+    prepare_database(database_file)
 
 
 def prepare_database(database_file: str):
     print(f"Preparing database to '{database_file}' ...")
     os.makedirs(database_file, exist_ok=True)
-    if os.path.exists(database_file):
-        print(f"Database file '{database_file}' already exists")
-        return
     print("This process may take a while.")
     tmp_file_name = "uniref50.fasta.zip"
     print("Downloading file ...")

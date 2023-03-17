@@ -186,16 +186,7 @@ RUN chmod a+x ./p2rank.sh \
  && chmod a+x ./run_p2rank_task.py
 
 #
-# entrypoint
-WORKDIR /opt/
-COPY --chown=user:user ./entrypoint.sh ./
-RUN chmod a+x ./entrypoint.sh
-
-#
 # environment
 WORKDIR /opt/executor-p2rank
 ENV PYTHONPATH="/opt/alignment-based-conservation:/opt/hmm-based-conservation"
-
 USER ${UID}:${GID}
-
-ENTRYPOINT ["/opt/entrypoint.sh"]
