@@ -92,7 +92,7 @@ COPY ./conservation/hmm_based /opt/hmm-based-conservation
 RUN chmod a+x /opt/hmm-based-conservation/conservation_hmm_based.py
 
 #
-# executor
+# executor-p2rank
 #
 
 FROM debian:bookworm-20211115
@@ -122,10 +122,9 @@ RUN mkdir /data \
  && mkdir /opt/hmm-based-conservation-dependencies && chown user:user /opt/hmm-based-conservation-dependencies \
  && mkdir /opt/p2rank && chown user:user /opt/p2rank \
  && mkdir /opt/java-tools && chown user:user /opt/java-tools \
- && mkdir /opt/executor && chown user:user /opt/executor \
+ && mkdir /opt/executor-p2rank && chown user:user /opt/executor-p2rank \
  && mkdir /tmp/pdb && chown user:user /tmp/pdb \
  && mkdir /tmp/pdb-cache && chown user:user /tmp/pdb-cache
-
 
 #
 # alignment-based-conservation
@@ -176,21 +175,27 @@ ENV JAVA_TOOLS_CMD="/opt/java-tools/bin/java-tools"
 
 #
 # prankweb executor
-WORKDIR /opt/executor
-COPY --chown=user:user ./executor/requirements.txt ./
+WORKDIR /opt/executor-p2rank
+COPY --chown=user:user ./executor-p2rank/requirements.txt ./
 
 RUN pip3 install -r requirements.txt
 
-COPY --chown=user:user ./executor/ ./
+COPY --chown=user:user ./executor-p2rank/ ./
 RUN chmod a+x ./p2rank.sh \
  && chmod a+x ./run_p2rank.py \
  && chmod a+x ./run_p2rank_task.py
 
 #
+# entrypoint
+WORKDIR /opt/
+COPY --chown=user:user ./entrypoint.sh ./
+RUN chmod a+x ./entrypoint.sh
+
+#
 # environment
+WORKDIR /opt/executor-p2rank
 ENV PYTHONPATH="/opt/alignment-based-conservation:/opt/hmm-based-conservation"
-WORKDIR /opt/executor
 
 USER ${UID}:${GID}
 
-CMD ["celery", "--app=celery_p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
+ENTRYPOINT ["/opt/entrypoint.sh"]

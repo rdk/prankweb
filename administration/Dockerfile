@@ -47,7 +47,7 @@ COPY --chown=user:user --from=java-tools /opt/java-tools/dist ./java-tools
 #
 # prankweb executor
 WORKDIR /opt/executor
-COPY --chown=user:user ./executor/ ./
+COPY --chown=user:user ./executor-p2rank/ ./
 
 #
 # prankweb synchronization

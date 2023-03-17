@@ -50,10 +50,10 @@ services:
       PRANKWEB_DATA: "/data/prankweb"
     volumes:
       - predictions:/data/prankweb
-  executor:
+  executor-p2rank:
     build:
       context: ./
-      dockerfile: ./executor/Dockerfile
+      dockerfile: ./executor-p2rank/Dockerfile
       args:
         UID: ${UID}
         GID: ${GID}
