@@ -110,10 +110,6 @@ RUN apt-get update \
  libgomp1 vim \
  python3-venv
 
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
 RUN addgroup --gid ${GID} user \
  && useradd --uid ${UID} --gid ${GID} user
 
@@ -180,6 +176,12 @@ ENV JAVA_TOOLS_CMD="/opt/java-tools/bin/java-tools"
 
 #
 # prankweb executor
+
+# https://github.com/python/cpython/issues/102134
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 WORKDIR /opt/executor-p2rank
 COPY --chown=user:user ./executor-p2rank/requirements.txt ./
 
