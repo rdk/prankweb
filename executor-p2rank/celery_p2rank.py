@@ -52,6 +52,7 @@ def execution_lock_file(task_directory: str):
     lock_file = None
     if "LOCK_DIRECTORY" in os.environ:
         lock_directory = os.environ["LOCK_DIRECTORY"]
+        os.makedirs(lock_directory, exist_ok=True)
         lock_file = os.path.join(
             lock_directory,
             task_directory.replace(os.sep, "_"))

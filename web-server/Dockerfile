@@ -22,6 +22,7 @@ COPY --chown=user:user ./web-server/src ./src/
 COPY --chown=user:user ./web-server/wsgi.py ./
 COPY --chown=user:user ./web-server/requirements.txt ./
 
+# https://github.com/python/cpython/issues/102134
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
