@@ -29,6 +29,11 @@ RUN apt-get update \
  python3 python3-pip \
  make g++ zlib1g-dev
 
+# https://github.com/python/cpython/issues/102134
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 WORKDIR /opt/alignment-based-conservation-dependencies
 
 RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz -q \
@@ -176,11 +181,6 @@ ENV JAVA_TOOLS_CMD="/opt/java-tools/bin/java-tools"
 
 #
 # prankweb executor
-
-# https://github.com/python/cpython/issues/102134
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /opt/executor-p2rank
 COPY --chown=user:user ./executor-p2rank/requirements.txt ./

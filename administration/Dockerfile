@@ -29,6 +29,11 @@ RUN apt-get update \
  openjdk-17-jre-headless \
  libgomp1 vim
 
+# https://github.com/python/cpython/issues/102134
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 RUN addgroup --gid ${GID} user \
  && useradd --uid ${UID} --gid ${GID} user
 
@@ -57,12 +62,6 @@ RUN pip3 install -r requirements.txt
 
 #
 # prankweb administration
-
-# https://github.com/python/cpython/issues/102134
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
 WORKDIR /opt/administration
 COPY --chown=user:user ./administration/requirements.txt ./
 RUN pip3 install -r requirements.txt

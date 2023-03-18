@@ -14,6 +14,11 @@ RUN apt-get update \
  python3 python3-pip vim \
  python3-venv
 
+# https://github.com/python/cpython/issues/102134
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 RUN addgroup --gid ${GID} user \
  && useradd --uid ${UID} --gid ${GID} user
 
@@ -21,11 +26,6 @@ WORKDIR /opt/web-server
 COPY --chown=user:user ./web-server/src ./src/
 COPY --chown=user:user ./web-server/wsgi.py ./
 COPY --chown=user:user ./web-server/requirements.txt ./
-
-# https://github.com/python/cpython/issues/102134
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN pip3 install -r requirements.txt
 
