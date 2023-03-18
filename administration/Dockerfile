@@ -45,8 +45,8 @@ WORKDIR /opt
 COPY --chown=user:user --from=java-tools /opt/java-tools/dist ./java-tools
 
 #
-# prankweb executor
-WORKDIR /opt/executor
+# prankweb executor-p2rank
+WORKDIR /opt/executor-p2rank
 COPY --chown=user:user ./executor-p2rank/ ./
 
 #
@@ -57,12 +57,16 @@ RUN pip3 install -r requirements.txt
 
 #
 # prankweb administration
+
+# https://github.com/python/cpython/issues/102134
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 WORKDIR /opt/administration
 COPY --chown=user:user ./administration/requirements.txt ./
 RUN pip3 install -r requirements.txt
 COPY --chown=user:user ./administration/ ./
 
 USER ${UID}:${GID}
-ENV PYTHONPATH=$PYTHONPATH:/opt/executor
-
-CMD ["bash"]
+ENV PYTHONPATH=$PYTHONPATH:/opt/executor-p2rank

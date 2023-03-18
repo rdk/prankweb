@@ -1,2 +1,2 @@
 # About
-Component with administration tools for data management.
+Component with administration tools.

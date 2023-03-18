@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+# Import externally computed predictions.
+#
 import abc
 import argparse
 import os

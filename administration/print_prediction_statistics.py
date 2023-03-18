@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+#
 # For given prediction directory {code[2:3]}/{code} load all predictions
 # and print statistics.
+#
 import argparse
 import os
 import typing

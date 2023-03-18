@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# Given directory with computed conservation  adds them to a conservation
+#
+# Given directory with computed conservation adds them to a conservation
 # cache directory.
+#
 import typing
 import logging
 import argparse
