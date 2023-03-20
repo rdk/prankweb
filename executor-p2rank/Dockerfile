@@ -57,7 +57,7 @@ RUN chmod -R a+r ./jense_shannon_divergence/matrix
 COPY ./conservation/alignment_based /opt/alignment-based-conservation
 
 RUN chmod a+x /opt/alignment-based-conservation/conservation_alignment_based.py \
-  && a+x /opt/alignment-based-conservation/download_database.py
+  && chmod a+x /opt/alignment-based-conservation/download_database.py
 
 #
 # hmm_based conservation
