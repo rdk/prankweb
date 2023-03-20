@@ -59,7 +59,7 @@ services:
       args:
         UID: ${UID}
         GID: ${GID}
-    command: ["celery", "--app=celery_p2rank", "--queues=p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
+    command: ["celery", "--app=celery_p2rank", "worker", "--queues=p2rank", "--concurrency=4", "--hostname=executor-p2rank"]
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
       LOCK_DIRECTORY: "/data/prankweb/lock"
