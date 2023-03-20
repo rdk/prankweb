@@ -73,6 +73,9 @@ class TaskListContent extends React.Component<{
                     else if(task["status"] === "running") {
                         return <li key={index} className="list-group-item">{`${task["id"]} ${task["data"]["hash"]} ${task["lastChange"]} running`}</li>
                     }
+                    else if(task["status"] === "queued") {
+                        return <li key={index} className="list-group-item">{`${task["id"]} ${task["data"]["hash"]} ${task["lastChange"]} queued`}</li>
+                    }
                 })}
             </ul>
         )

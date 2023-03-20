@@ -22,7 +22,7 @@ export default class RunningTasks extends React.Component
                             e.responseData.pockets.find((p: any) => p.rank === this.props.pocket.rank)?.count
                         }/>
                     }
-                    else if(e.status === "running" || e.status === "queued") {
+                    else if(e.data.pocket === this.props.pocket.rank && (e.status === "running" || e.status === "queued")) {
                         return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.hash} data={"running"}/>
                     }
                 })}
