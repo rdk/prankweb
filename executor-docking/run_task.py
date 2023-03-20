@@ -39,8 +39,12 @@ def get_prediction_path(docking_directory: str):
 
 def execute_directory_task(directory: str, taskId: int):
     #print(os.listdir(os.path.join(directory, "..", "..", "..", "..")))
-    if not os.path.exists(directory) or not os.path.isdir(directory):
+
+    final_file = os.path.join(directory, str(taskId), "public", "result.json")
+
+    if not os.path.exists(directory) or not os.path.isdir(directory) or os.path.exists(final_file):
         return
+    
     #first update the status file
     status_file = os.path.join(directory, "info.json")
     status = _load_json(status_file)

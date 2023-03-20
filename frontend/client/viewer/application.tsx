@@ -192,7 +192,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
   async getTaskList() {
     let json = await fetch(`./api/v2/sample/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"}).then(res => res.json()).catch(err => console.log(err));
-    //let json = {"tasks": [{"id": 0, "created": "2023-03-10T18:04:23", "lastChange": "2023-03-10T18:04:23", "status": "successful", "data": {"hash": "SOME_HASH", "pocket": "1"}}], "identifier": "2SRC"};
     //TODO: handle error in a better way, but we do not really care if the poll fails sometimes
     if(json) {
       //append the new tasks to the existing ones
