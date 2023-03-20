@@ -56,7 +56,8 @@ RUN chmod -R a+r ./jense_shannon_divergence/matrix
 
 COPY ./conservation/alignment_based /opt/alignment-based-conservation
 
-RUN chmod a+x /opt/alignment-based-conservation/conservation_alignment_based.py
+RUN chmod a+x /opt/alignment-based-conservation/conservation_alignment_based.py \
+  && a+x /opt/alignment-based-conservation/download_database.py
 
 #
 # hmm_based conservation
@@ -88,7 +89,8 @@ RUN wget http://eddylab.org/software/hmmer/hmmer-3.3.2.tar.gz -q \
 
 COPY ./conservation/hmm_based /opt/hmm-based-conservation
 
-RUN chmod a+x /opt/hmm-based-conservation/conservation_hmm_based.py
+RUN chmod a+x /opt/hmm-based-conservation/conservation_hmm_based.py \
+  && chmod a+x /opt/hmm-based-conservation/download_database.py
 
 #
 # executor-p2rank
