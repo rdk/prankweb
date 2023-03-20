@@ -52,15 +52,17 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-  executor:
+  executor-p2rank:
     build:
       context: ./
-      dockerfile: ./executor/Dockerfile
+      dockerfile: ./executor-p2rank/Dockerfile
       args:
         UID: ${UID}
         GID: ${GID}
+    command: ["celery", "--app=celery_p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      LOCK_DIRECTORY: "/data/prankweb/lock"
     restart: unless-stopped
     volumes:
       - conservation:/data/conservation

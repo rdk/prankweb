@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Remove directories with running predictions, use this
-# only if executor is not running!
+# only if executor-p2rank is not running!
 #
 import json
 import typing
@@ -28,13 +28,18 @@ def _read_arguments() -> typing.Dict[str, str]:
     parser.add_argument(
         "--failed", action="store_true",
         help="If set failed tasks are removed.")
+    parser.add_argument(
+        "--user-upload", action="store_true",
+        help="If set is used for flat directories like user-upload.")
+
     return vars(parser.parse_args())
 
 
 def main(arguments):
     _init_logging()
     logger.info("Scanning jobs ...")
-    predictions = list_prankweb_predictions(arguments["database"])
+    predictions = list_prankweb_predictions(
+        arguments["database"], arguments["user_upload"])
     removed_counter = 0
     for (code, directory) in predictions:
         info_path = os.path.join(directory, "info.json")
@@ -65,8 +70,18 @@ def _init_logging():
     logger.addHandler(handler)
 
 
-def list_prankweb_predictions(predictions_directory: str) \
+def list_prankweb_predictions(
+        predictions_directory: str, user_predictions: bool) \
         -> typing.List[typing.Tuple[str, str]]:
+    if user_predictions:
+        return [
+            (
+                code.lower(),
+                os.path.join(predictions_directory, code)
+            )
+            for code in os.listdir(predictions_directory)
+        ]
+
     return [
         (
             code.lower(),

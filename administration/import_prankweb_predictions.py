@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+# Import older predictions into current version of prankweb.
+#
 import argparse
 import os
 import typing

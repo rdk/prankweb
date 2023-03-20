@@ -231,7 +231,7 @@ def _prepare_conservation_for_chain(
             fasta_file, working_directory, output_file,
             configuration.execute_command)
     else:
-        raise Exception("Unknown conservation type!")
+        raise Exception(f"Unknown conservation type '{conservation_type}' !")
 
 
 def _read_fasta(path):
