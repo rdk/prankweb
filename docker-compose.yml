@@ -59,7 +59,7 @@ services:
       args:
         UID: ${UID:-5988}
         GID: ${GID:-5988}
-    command: ["celery", "--app=celery_p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
+    command: ["celery", "--app=celery_p2rank", "--queues=p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
     depends_on:
       rabbitmq:
         condition: service_healthy
