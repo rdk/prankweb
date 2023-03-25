@@ -207,6 +207,9 @@ export const DefaultPocketColors = [
     "DA74AD"
 ];
 
+/**
+ * These enums/interfaces are used to represent various client/server tasks and their data.
+ */
 export enum ClientTaskType {
     Volume = 0,
     SampleTaskCount = 1
@@ -226,13 +229,12 @@ export interface Point3D {
 export enum ServerTaskType {
     Sample = 0
 }
-
 export interface ServerTaskData {
     type?: ServerTaskType;
     id: string;
     created: string;
     lastChange: string;
     status: string;
-    data: any; //initial data
-    responseData: any;
+    data: any;          //initial data
+    responseData: any;  //response data
 }    

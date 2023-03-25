@@ -1,9 +1,16 @@
+/**
+ * An enum containing the possible task statuses.
+ * Corresponds to values in the JSON files from the backend.
+ */
 export enum TaskStatus {
   queued = "queued",
   successful = "successful",
   failed = "failed",
 }
 
+/**
+ * Information about a prediction, as returned by the API.
+ */
 export interface PredictionInfo {
   id: string;
   database: string;
@@ -17,18 +24,27 @@ export interface PredictionInfo {
   }
 }
 
+/**
+ * A wrapper around the response from the API containing the status code and the content.
+ */
 export interface HttpWrap<T> {
   statusCode: number;
   content: T | null;
 }
 
+/**
+ * A method to fetch the prediction info from the API.
+ * @param database The database to fetch the prediction from.
+ * @param id The ID of the prediction.
+ * @returns A promise that resolves to the prediction info.
+ */
 export async function fetchPrediction(
   database: string, id: string
 ): Promise<HttpWrap<PredictionInfo>> {
   // We need to navigate to the root, and then we can request the data.
   const url = getApiEndpoint(database, id);
   const response = await fetch(url);
-  let result;
+  var result;
   try {
     result = await response.json();
   } catch {
@@ -43,10 +59,22 @@ export async function fetchPrediction(
   };
 }
 
-export function getApiEndpoint(database: string, code: string) {
-  return `./api/v2/prediction/${database}/${code.toUpperCase()}`;
+/**
+ * A method to get the API endpoint for a prediction.
+ * @param database The database to fetch the prediction from.
+ * @param id The ID of the prediction.
+ * @returns An URL to the API endpoint for the prediction.
+ */
+export function getApiEndpoint(database: string, id: string) {
+  return `./api/v2/prediction/${database}/${id.toUpperCase()}`;
 }
 
+/**
+ * A method to fetch the prediction log from the API.
+ * @param database The database to fetch the prediction from.
+ * @param id The ID of the prediction.
+ * @returns A promise that resolves to the prediction log.
+ */
 export async function fetchPredictionLog(
   database: string, id: string
 ): Promise<string> {
@@ -58,6 +86,12 @@ export async function fetchPredictionLog(
   return response.text();
 }
 
+/**
+ * A method to fetch the whole prediction ZIP file from the API.
+ * @param database The database to fetch the prediction from.
+ * @param id The ID of the prediction.
+ * @returns An URL to the ZIP file.
+ */
 export function getApiDownloadUrl({database, id}: PredictionInfo) {
   return `./api/v2/prediction/${database}/${id}/public/prankweb.zip`;
 }
