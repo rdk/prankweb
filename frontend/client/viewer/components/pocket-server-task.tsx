@@ -39,13 +39,6 @@ export default class PocketServerTask extends React.Component
                     const hash = this.state.formData;
                     this.setState({hash: hash});
 
-                    //then look if the task already exists
-                    //TODO: should we check this here or in the backend?
-                    if(this.props.serverTasks && (this.props.serverTasks.filter((e: any) => e["data"]["hash"] === this.state.hash && e["data"]["pocket"] === this.props.pocket.rank)).length > 0) {
-                        this.clickCompute(false);
-                        return;
-                    }
-
                     //if not, create a new task
                     await fetch(`./api/v2/sample/${this.props.prediction.database}/${this.props.prediction.id}/post`, {
                         method: 'POST',

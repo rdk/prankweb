@@ -57,7 +57,12 @@ def execute_directory_task(directory: str, taskId: int):
     """
     Method to execute a task for a given directory and a given taskId.
     """
-    if not os.path.exists(directory) or not os.path.isdir(directory):
+   
+    result_file = os.path.join(directory, str(taskId), "public", "result.json")
+
+    #check if the directory exists - if not, we did not ask for this task
+    #check if the result file exists - if it does, we already calculated it
+    if not os.path.exists(directory) or not os.path.isdir(directory) or os.path.exists(result_file):
         return
     
     #first update the status file
@@ -82,7 +87,6 @@ def execute_directory_task(directory: str, taskId: int):
 
     #save the result file
     os.makedirs(os.path.join(directory, str(taskId), "public"), exist_ok=True)
-    result_file = os.path.join(directory, str(taskId), "public", "result.json")
 
     with open(result_file, "w", encoding="utf-8") as stream:
         try:

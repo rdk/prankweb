@@ -92,6 +92,11 @@ class SampleTask:
 
             with open(_info_file(taskinfo), "r+") as f:
                 fileData = json.load(f)
+                #we check if the task already exists
+                for task in fileData["tasks"]:
+                    if task["data"] == data:
+                        return self._response_file(directory, "info.json")
+
                 taskinfo.taskId = len(fileData["tasks"])
                 fileData["tasks"].append(_create_info(taskinfo))
                 f.seek(0)
