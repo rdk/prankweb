@@ -12,19 +12,16 @@ prankweb.conf.update({
 
 if "CELERY_BROKER_URL" in os.environ:
     prankweb.conf.update({
-        "broker_url":
-            os.environ["CELERY_BROKER_URL"]
+        "broker_url": os.environ["CELERY_BROKER_URL"]
     })
 elif "CELERY_BROKER_PATH" in os.environ:
+    folder = os.environ["CELERY_BROKER_PATH"]
     prankweb.conf.update({
         "broker_url": "filesystem://",
         "broker_transport_options": {
-            "data_folder_in":
-                os.environ["CELERY_BROKER_PATH"] + "/queue/",
-            "data_folder_out":
-                os.environ["CELERY_BROKER_PATH"] + "/queue/",
-            "data_folder_processed":
-                os.environ["CELERY_BROKER_PATH"] + "/processed/"
+            "data_folder_in": folder + "/queue/",
+            "data_folder_out": folder + "/queue/",
+            "data_folder_processed": folder + "/processed/"
         },
     })
 

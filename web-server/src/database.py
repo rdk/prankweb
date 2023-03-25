@@ -4,12 +4,7 @@ import re
 import flask
 import werkzeug.utils
 import abc
-
-extensions = {
-    ".json": "application/json",
-    ".csv": "text/csv",
-    ".zip": "application/zip",
-}
+from .commons import extensions
 
 
 class Database(metaclass=abc.ABCMeta):

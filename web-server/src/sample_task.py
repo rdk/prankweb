@@ -8,13 +8,8 @@ import typing
 import re
 import werkzeug.utils
 
+from .commons import extensions
 from .celery_client import submit_directory_for_sample_task
-
-extensions = {
-    ".json": "application/json",
-    ".csv": "text/csv",
-    ".zip": "application/zip",
-}
 
 @dataclasses.dataclass
 class TaskInfo:
@@ -24,27 +19,40 @@ class TaskInfo:
     identifier: str
     # Data for given task.
     data: typing.Optional[dict] = None
-    # Task numeric identifier.
+    # Task numeric identifier - decided by the server.
     taskId: typing.Optional[int] = None
 
 class SampleTask:
-    
-    def __init__(self, database_name: str):
-        self.name = database_name
-        self.root = os.path.join(self._get_sample_task_directory(), self.name)
+    """
+    Class for handling sample tasks. Prepares directories and files for given task to get executed by Celery.
+    """
+    # Database name.
+    database_name: str
+    # Root directory for all tasks.
+    root_path: str
 
-    def get_file_with_post_param(self, identifier: str, file_name: str, param: str):
-        directory = self._get_directory(identifier)
+    def __init__(self, database_name: str):
+        """
+        Constructor for SampleTask class, initializes the root path.
+        """
+        self.database_name = database_name
+        self.root_path = os.path.join(self._get_sample_task_directory(), self.database_name)
+
+    def get_file_with_post_param(self, prediction_id: str, file_name: str, data_hash: str):
+        """
+        Gets a file from a task with a given identifier and a given file name.
+        """
+        directory = self._get_directory(prediction_id)
         if directory is None or not os.path.isdir(directory):
             return "", 404
     
         try:
             #we have to find the task id in the info file
-            with open(os.path.join(directory, "info.json"), "r") as f:
+            with open(_info_file_str(directory), "r") as f:
                 found = False
                 fileData = json.load(f)
                 for task in fileData["tasks"]:
-                    if task["data"]["hash"] == param:
+                    if task["data"]["hash"] == data_hash:
                         directory = os.path.join(directory, str(task["id"]))
                         found = True
                         break
@@ -53,6 +61,8 @@ class SampleTask:
         
         except OSError:
             return "", 404
+        
+        #if we successfully found the task directory, we can return the file, if it exists
 
         public_directory = os.path.join(directory, "public")
         file_name = self._secure_filename(file_name)
@@ -63,18 +73,24 @@ class SampleTask:
     
     @staticmethod
     def _secure_filename(file_name: str) -> str:
-        """Sanitize given file name."""
+        """
+        Sanitizes the given file name.
+        """
         return werkzeug.utils.secure_filename(file_name)
 
-    def post_task(self, identifier: str, data: dict):
-        directory = self._get_directory(identifier)
+    def post_task(self, prediction_id: str, data: dict):
+        """
+        Posts a task with a given identifier and given data.
+        Updates/creates the info file, saves the input data and submits the task to Celery.
+        """
+        directory = self._get_directory(prediction_id)
         if directory is None:
             return "", 404
         if os.path.exists(directory):
             #if the info file exists, we have to append the new info to the existing file
-            taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
+            taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
 
-            with open(os.path.join(directory, "info.json"), "r+") as f:
+            with open(_info_file(taskinfo), "r+") as f:
                 fileData = json.load(f)
                 taskinfo.taskId = len(fileData["tasks"])
                 fileData["tasks"].append(_create_info(taskinfo))
@@ -83,16 +99,19 @@ class SampleTask:
             
             _save_input(taskinfo, data)
             submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
-            return self._response_file(directory, "info.json")
+            return self._response_file(taskinfo.directory, "info.json")
         
         #else we create a new info file
-        taskinfo = TaskInfo(directory=directory, identifier=identifier, data=data)
+        taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
 
         _save_input(taskinfo, data)
         return _create_sample_task_file(taskinfo)
     
-    def get_all_tasks(self, identifier: str):
-        directory = self._get_directory(identifier)
+    def get_all_tasks(self, prediction_id: str):
+        """
+        Returns the info file for a given prediction.
+        """
+        directory = self._get_directory(prediction_id)
         if directory is None:
             return "", 404
         if os.path.exists(directory):
@@ -100,19 +119,27 @@ class SampleTask:
         
         return "", 404
     
-    def _get_directory(self, identifier: str) -> typing.Optional[str]:
-        """Return directory for task with given identifier."""
-        if not re.match("[_,\w]+", identifier):
+    def _get_directory(self, prediction_id: str) -> typing.Optional[str]:
+        """
+        Returns a directory for a task with given prediction ID.
+        """
+        if not re.match("[_,\w]+", prediction_id):
             return None
-        directory = identifier[1:3]
-        return os.path.join(self.root, directory, identifier)
+        directory = prediction_id[1:3]
+        return os.path.join(self.root_path, directory, prediction_id)
     
     def _response_file(self, directory: str, file_name: str, mimetype=None):
+        """
+        Returns a file from a given directory.
+        """
         if mimetype is None:
             mimetype = self._mime_type(file_name)
         return flask.send_from_directory(directory, file_name, mimetype=mimetype)
 
     def _get_sample_task_directory(self) -> str:
+        """
+        Returns the root directory for all tasks.
+        """
         dc = os.environ.get(
             "PRANKWEB_DATA_DOCKING",
             # For local development.
@@ -122,32 +149,54 @@ class SampleTask:
     
     @staticmethod
     def _mime_type(file_name: str) -> str:
-        """Detect file mime type."""
+        """
+        Detect file mime type.
+        """
         ext = file_name[file_name.rindex("."):]
         return extensions.get(ext, "text/plain")
 
 def _save_input(taskinfo: TaskInfo, data: dict):
-    """Save input data for given task."""
+    """
+    Save input data for given task.
+    """
     os.makedirs(os.path.join(taskinfo.directory, str(taskinfo.taskId)), exist_ok=True)
     with open(os.path.join(taskinfo.directory, str(taskinfo.taskId), "input.json"), "w+") as f:
         f.write(json.dumps(data))
 
 def _info_file(taskinfo: TaskInfo) -> str:
+    """
+    Returns a path to info file for given task.
+    """
     return os.path.join(taskinfo.directory, "info.json")
 
+def _info_file_str(directory: str) -> str:
+    """
+    Returns a path to info file for given task.
+    """
+    return os.path.join(directory, "info.json")
+
 def _prepare_prediction_directory(taskinfo: TaskInfo):
-    """Initialize content of a directory for given task."""
+    """
+    Initialize contents of a directory for given task.
+    This only happens once per prediction for one type of a task.
+    """
     taskinfo.taskId = 0
     info = _create_info(taskinfo)
     json_info_skeleton = {"tasks": [info], "identifier": taskinfo.identifier}
     _save_json(_info_file(taskinfo), json_info_skeleton)
     return info
 
-def _save_json(path: str, content):
+def _save_json(path: str, content: any):
+    """
+    Saves content as a JSON file.
+    """
     with open(path, "w", encoding="utf-8") as stream:
         json.dump(content, stream, ensure_ascii=True)
 
 def _create_info(taskinfo: TaskInfo):
+    """
+    Returns a JSON object with info about one task.
+    """
     now = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
     return {
         "id": taskinfo.taskId,
@@ -158,6 +207,9 @@ def _create_info(taskinfo: TaskInfo):
     }
 
 def _create_sample_task_file(taskinfo: TaskInfo, force=False):
+    """
+    Creates a directory for a task and initializes it.
+    """
     try:
         os.makedirs(taskinfo.directory, exist_ok=True)
     except OSError:
@@ -168,6 +220,9 @@ def _create_sample_task_file(taskinfo: TaskInfo, force=False):
     return flask.make_response(flask.jsonify(info), 201)
 
 def _prediction_can_not_be_created(taskinfo: TaskInfo):
+    """
+    Handles a situation when a prediction can not be created.
+    """
     # Not the best, but it is possible that someone else created
     # the task before us, so we wait some time, so they can finish the
     # initialization.
