@@ -2,7 +2,7 @@ import { fetchPrediction, fetchPredictionLog, PredictionInfo, TaskStatus } from 
 
 import "./analyze.css";
 import "../bootstrap.scss";
-import 'bootstrap';
+import "bootstrap";
 
 enum UserInterface {
   progress = "progress",

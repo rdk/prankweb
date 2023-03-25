@@ -1,7 +1,7 @@
 import { renderProteinView } from "./application";
 
 import "../bootstrap.scss";
-import 'bootstrap';
+import "bootstrap";
 
 import { fetchPrediction } from "../prankweb-api";
 

@@ -1,7 +1,7 @@
 import "../bootstrap.scss";
 import "../background.css";
 import "./index.css";
-import 'bootstrap';
+import "bootstrap";
 
 class View {
 
