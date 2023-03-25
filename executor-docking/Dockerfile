@@ -1,5 +1,5 @@
 #
-# executor
+# executor-docking
 #
 
 FROM debian:bookworm-20230208
@@ -44,5 +44,3 @@ RUN chmod a+x ./run_task.py
 WORKDIR /opt/executor-docking
 
 USER ${UID}:${GID}
-
-CMD ["celery", "--app=celery_docking", "worker", "--queues=docking", "--concurrency=4", "--hostname=executor-docking-p2rank"]
