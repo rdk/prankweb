@@ -1,7 +1,6 @@
 import React from "react";
 import { LoadingButton } from '@mui/lab';
-import { computePocketVolume } from '../../tasks/client-atoms-volume';
-import { getSampleTaskCount } from "../../tasks/client-get-sample-tasks";
+
 import { ClientTaskData, ClientTaskType, PocketData } from '../../custom-types';
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
@@ -13,7 +12,9 @@ export default class PocketClientTask extends React.Component
         pocket: PocketData,
         plugin: PluginUIContext,
         taskType: ClientTaskType,
-        prediction: PredictionInfo
+        prediction: PredictionInfo,
+        compute: () => Promise<ClientTaskData>,
+        renderOnComplete: (data: ClientTaskData) => JSX.Element
     }, {
         data: ClientTaskData | undefined, //this may be changed to any type (the best way is to define some interface)
         computed: boolean,
@@ -27,21 +28,10 @@ export default class PocketClientTask extends React.Component
         this.state = {loading: false, computed: false, data: undefined};
     }
 
+
     async clickCompute() {
-        let json: ClientTaskData | null = null;
-        switch(this.props.taskType) {
-            case ClientTaskType.Volume:
-                json = await computePocketVolume(this.props.plugin, this.props.pocket);
-                this.setState({loading: false, computed: true, data: json});
-                break;
-            case ClientTaskType.SampleTaskCount:
-                json = await getSampleTaskCount(this.props.prediction);
-                this.setState({loading: false, computed: true, data: json});
-                break;
-            default:
-                //will not happen
-                break;
-        }
+        const json = await this.props.compute();
+        this.setState({loading: false, computed: true, data: json});
     }
 
     async handleClick() {
@@ -70,16 +60,7 @@ export default class PocketClientTask extends React.Component
                     </LoadingButton>
                 }
                 {
-                    this.state.computed &&
-                    this.state.data!.type === ClientTaskType.Volume &&
-                    <span style={{float: "right", marginLeft: "1rem"}}>{this.state.data!.numericValue}</span>
-                    // here the data should be properly formatted based on the returned type
-                    // i.e for number arrays we could potentially add a diagram instead of just showing a number
-                }
-                {
-                    this.state.computed &&
-                    this.state.data!.type === ClientTaskType.SampleTaskCount &&
-                    <span style={{float: "right", marginLeft: "1rem"}}>{this.state.data!.numericValue}</span>
+                    this.state.computed && this.props.renderOnComplete(this.state.data!)
                 }
             </div>
         );

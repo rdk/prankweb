@@ -217,7 +217,7 @@ export enum ClientTaskType {
 
 export interface ClientTaskData {
     type?: ClientTaskType;
-    numericValue?: number;
+    data: any;
 }
 
 export interface Point3D {
@@ -229,12 +229,17 @@ export interface Point3D {
 export enum ServerTaskType {
     Sample = 0
 }
+
 export interface ServerTaskData {
-    type?: ServerTaskType;
+    type: ServerTaskType;
+    data: ServerTaskDataContents;
+}
+
+export interface ServerTaskDataContents {
     id: string;
     created: string;
     lastChange: string;
     status: string;
-    data: any;          //initial data
+    initialData: any;   //initial data
     responseData: any;  //response data
-}    
+}

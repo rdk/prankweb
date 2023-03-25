@@ -52,7 +52,7 @@ class SampleTask:
                 found = False
                 fileData = json.load(f)
                 for task in fileData["tasks"]:
-                    if task["data"]["hash"] == data_hash:
+                    if task["initialData"]["hash"] == data_hash:
                         directory = os.path.join(directory, str(task["id"]))
                         found = True
                         break
@@ -94,7 +94,7 @@ class SampleTask:
                 fileData = json.load(f)
                 #we check if the task already exists
                 for task in fileData["tasks"]:
-                    if task["data"] == data:
+                    if task["initialData"] == data:
                         return self._response_file(directory, "info.json")
 
                 taskinfo.taskId = len(fileData["tasks"])
@@ -208,7 +208,7 @@ def _create_info(taskinfo: TaskInfo):
         "created": now,
         "lastChange": now,
         "status": "queued",
-        "data": taskinfo.data
+        "initialData": taskinfo.data
     }
 
 def _create_sample_task_file(taskinfo: TaskInfo, force=False):

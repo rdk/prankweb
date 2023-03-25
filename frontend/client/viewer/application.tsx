@@ -10,7 +10,7 @@ import PocketList from "./components/pocket-list";
 import TaskList from "./components/task-list";
 
 import { sendDataToPlugins } from './data-loader';
-import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData } from "../custom-types";
+import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData, ServerTaskType } from "../custom-types";
 
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
@@ -205,15 +205,22 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
    * Polls the server for the status of the tasks.
    */
   async getTaskList() {
+    //this applies to the sample task only, may fetch multiple backend tasks in the future
     let json = await fetch(`./api/v2/sample/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
       .then(res => res.json())
-      .catch(); //we could handle the error in a better way, but we do not care if the poll fails sometimes
+      .catch(err => {
+        setTimeout(() => this.getTaskList(), 7000);
+        return;
+      }); //we could handle the error in a better way, but we do not care if the poll fails sometimes
     if(json) {
       //append the new tasks to the existing ones
       let newTasks: ServerTaskData[] = this.state.serverTasks;
       json["tasks"].forEach((task: any) => {
-        if(!newTasks.find((t: any) => t.id === task.id)) {
-          newTasks.push(task);
+        if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
+          newTasks.push({
+            "type": ServerTaskType.Sample,
+            "data": task
+          });
         }
       });
       this.setState({serverTasks: newTasks});

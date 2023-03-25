@@ -66,15 +66,15 @@ class TaskListContent extends React.Component<{
     render() {
         return (
             <ul className="list-group list-group-flush">
-                {this.props.tasks.map((task: any, index: any) => {
-                    if(task["status"] === "successful") {
-                        return <li key={index} className="list-group-item">{`${task["id"]} ${task["data"]["hash"]} ${task["lastChange"]}`}</li>
+                {this.props.tasks.map((task: ServerTaskData, index: number) => {
+                    if(task.data["status"] === "successful") {
+                        return <li key={index} className="list-group-item">{`${task.data["id"]} ${task.data.initialData["hash"]} ${task.data.lastChange}`}</li>
                     }
-                    else if(task["status"] === "running") {
-                        return <li key={index} className="list-group-item">{`${task["id"]} ${task["data"]["hash"]} ${task["lastChange"]} running`}</li>
+                    else if(task.data["status"] === "running") {
+                        return <li key={index} className="list-group-item">{`${task.data["id"]} ${task.data.initialData["hash"]} ${task.data.lastChange} running`}</li>
                     }
-                    else if(task["status"] === "queued") {
-                        return <li key={index} className="list-group-item">{`${task["id"]} ${task["data"]["hash"]} ${task["lastChange"]} queued`}</li>
+                    else if(task.data["status"] === "queued") {
+                      return <li key={index} className="list-group-item">{`${task.data["id"]} ${task.data.initialData["hash"]} ${task.data.lastChange} queued`}</li>
                     }
                 })}
             </ul>

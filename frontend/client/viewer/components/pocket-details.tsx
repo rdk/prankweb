@@ -1,11 +1,9 @@
 import React from "react";
-import { ClientTaskType, PocketData, ServerTaskData, ServerTaskType } from "../../custom-types";
+import { PocketData, ServerTaskData } from "../../custom-types";
 import PocketProperty from "./pocket-property";
-import PocketClientTask from "./pocket-client-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import PocketServerTask from "./pocket-server-task";
 import { PredictionInfo } from "../../prankweb-api";
-import RunningTasks from "./pocket-running-tasks";
+import PocketDialogDetails from "./pocket-dialog-details";
 
 export default class PocketDetails extends React.Component
     <{
@@ -14,23 +12,11 @@ export default class PocketDetails extends React.Component
         plugin: PluginUIContext,
         prediction: PredictionInfo
         serverTasks: ServerTaskData[]
-    }, {
-        serverTasks: ServerTaskData[]
-        //updated: boolean
-    }> {
+    }, {}> {
 
     constructor(props: any) {
         super(props);
-        this.state = {serverTasks: this.props.serverTasks};
         this.checkValidValue = this.checkValidValue.bind(this);
-    }
-
-    componentDidUpdate(prevProps: any){
-        if(prevProps.serverTasks !== this.props.serverTasks){
-            this.setState({
-                serverTasks: this.props.serverTasks
-            });
-        }
     }
 
     checkValidValue(data: number | undefined) {
@@ -49,11 +35,7 @@ export default class PocketDetails extends React.Component
                 <PocketProperty inDialog={this.props.inDialog} title="AA count" data={pocket.residues.length}/>
                 {this.checkValidValue(pocket.avgConservation) && <PocketProperty inDialog={this.props.inDialog} title="Conservation" data={pocket.avgConservation!}/>}
                 {this.checkValidValue(pocket.avgAlphaFold) && <PocketProperty inDialog={this.props.inDialog} title="AlphaFold avg" data={pocket.avgAlphaFold!}/>}
-                {this.props.inDialog && <PocketProperty inDialog={this.props.inDialog} title="Residues" data={pocket.residues.join(", ")}/>}
-                {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Total atoms volume (Å^3)" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.Volume} prediction={this.props.prediction}/>}
-                {this.props.inDialog && <PocketServerTask inDialog={this.props.inDialog} title="Sample" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Sample} prediction={this.props.prediction} serverTasks={this.props.serverTasks}/>}
-                {this.props.inDialog && <PocketClientTask inDialog={this.props.inDialog} title="Total sample tasks" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.SampleTaskCount} prediction={this.props.prediction}/>}
-                {this.props.inDialog && <RunningTasks inDialog={this.props.inDialog} serverTasks={this.state.serverTasks} pocket={this.props.pocket}/>}
+                {this.props.inDialog && <PocketDialogDetails pocket={pocket} inDialog={this.props.inDialog} plugin={this.props.plugin} prediction={this.props.prediction} serverTasks={this.props.serverTasks}/>}
            </div>
         );
     }

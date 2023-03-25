@@ -1,3 +1,5 @@
+import React from "react";
+
 import { ClientTaskData, ClientTaskType } from "../custom-types";
 import { PredictionInfo } from "../prankweb-api";
 
@@ -18,13 +20,19 @@ export async function getSampleTaskCount(prediction: PredictionInfo): Promise<Cl
     if(json) {
         const numOfTasks = json["tasks"].length;
         return {
-            "numericValue": numOfTasks,
+            "data": numOfTasks,
             "type": ClientTaskType.SampleTaskCount
         };
     }
     
     return {
-        "numericValue": 0,
+        "data": 0,
         "type": ClientTaskType.SampleTaskCount
     }
+}
+
+export function renderOnTaskSampleTasksCountCompleted(data: ClientTaskData) {
+    return (
+        <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
+    );
 }

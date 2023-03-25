@@ -17,13 +17,13 @@ export default class RunningTasks extends React.Component
         return (
             <div style={{"display": "inline"}}>
                 {this.props.inDialog && this.props.serverTasks.map((e: ServerTaskData, index) => {
-                    if(e.responseData && e.data.pocket === this.props.pocket.rank) {
-                        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.hash} data={
-                            e.responseData.pockets.find((p: any) => p.rank === this.props.pocket.rank)?.count
+                    if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank) {
+                        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.initialData.hash} data={
+                            e.data.responseData.find((p: any) => p.rank === this.props.pocket.rank)?.count
                         }/>
                     }
-                    else if(e.data.pocket === this.props.pocket.rank && (e.status === "running" || e.status === "queued")) {
-                        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.hash} data={"running"}/>
+                    else if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank && (e.data.status === "running" || e.data.status === "queued")) {
+                        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.initialData.hash} data={"running"}/>
                     }
                 })}
            </div>

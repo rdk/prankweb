@@ -1,3 +1,5 @@
+import React from "react";
+
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PocketData, ClientTaskData, ClientTaskType, Point3D } from "../custom-types";
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
@@ -35,7 +37,7 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
 
     if(pocketVolumes.has(pocket.name)) {
         return {
-            "numericValue": pocketVolumes.get(pocket.name),
+            "data": pocketVolumes.get(pocket.name),
             "type": ClientTaskType.Volume
         };
     }
@@ -58,9 +60,15 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
     pocketVolumes.set(pocket.name, finalVolume);
 
     const data: ClientTaskData = {
-        "numericValue": finalVolume,
+        "data": finalVolume,
         "type": ClientTaskType.Volume
     };
 
     return data;
+}
+
+export function renderOnTaskVolumeCompleted(data: ClientTaskData) {
+    return (
+        <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
+    );
 }
