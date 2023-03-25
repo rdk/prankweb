@@ -3,6 +3,7 @@ import { PocketData, ClientTaskData, ClientTaskType, Point3D } from "../custom-t
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import qh from 'quickhull3d';
 
+// Cache for pocket volumes
 const pocketVolumes = new Map<string, number>();
 
 /**
@@ -41,16 +42,12 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
 
     const coords = getPocketAtomCoordinates(plugin, pocket.surface);
 
-    /*for(const coord of coords) {
-        console.log(`${coord.x} ${coord.y} ${coord.z}`);
-    }*/
-
     const points: Array<Array<number>> = [];
     coords.forEach(coord => points.push([coord.x, coord.y, coord.z]));
 
     const hull = qh(points); //compute the convex hull
 
-    const volumes = [];
+    const volumes: number[] = [];
     
     for(const face of hull) {
         volumes.push(computeTriangleVolume(coords[face[0]], coords[face[1]], coords[face[2]]));
