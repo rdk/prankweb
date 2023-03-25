@@ -18,6 +18,10 @@ import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
 import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView, showPocketInCurrentRepresentation } from './molstar-visualise';
 
+/**
+ * A function to render the actual PrankWeb viewer.
+ * @param predictionInfo Information about the prediction to be visualised.
+ */
 export async function renderProteinView(predictionInfo: PredictionInfo) {
   const wrapper = document.getElementById('application-molstar')!;
   const MolstarPlugin = await createPluginUI(wrapper, {
@@ -48,6 +52,9 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
     pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
 }
 
+/**
+ * A React component containing all of the components other than the Mol* and RCSB plugins.
+ */
 export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
 {
   state = {
@@ -59,7 +66,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "polymerColor": this.props.polymerColor,
     "isShowOnlyPredicted": false,
     "pluginRcsb": {} as RcsbFv,
-    "serverTasks": []
+    "serverTasks": [] // contains the list of server tasks requested by the user in this session
   };
 
   constructor(props: ReactApplicationProps) {
@@ -76,11 +83,14 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   }
 
   componentDidMount() {
-    console.log("Application::componentDidMount");
+    //console.log("Application::componentDidMount");
     this.loadData();
     this.getTaskList();
   }
 
+  /**
+   * Loads the data from the server and sends them to the plugins.
+   */
   async loadData() {
     this.setState({
       "isLoading": true,
@@ -108,6 +118,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     });
   }
 
+  // The following functions are called by the child components to change the visualisation via the child components.
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
     updatePolymerView(value, this.props.molstarPlugin, this.state.isShowOnlyPredicted);
@@ -190,9 +201,13 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     //currently the residues are not de-selected on mouse out, could be potentially changed in the future
   }
 
+  /**
+   * Polls the server for the status of the tasks.
+   */
   async getTaskList() {
-    let json = await fetch(`./api/v2/sample/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"}).then(res => res.json()).catch(err => console.log(err));
-    //TODO: handle error in a better way, but we do not really care if the poll fails sometimes
+    let json = await fetch(`./api/v2/sample/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
+      .then(res => res.json())
+      .catch(); //we could handle the error in a better way, but we do not care if the poll fails sometimes
     if(json) {
       //append the new tasks to the existing ones
       let newTasks: ServerTaskData[] = this.state.serverTasks;
@@ -203,11 +218,12 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       });
       this.setState({serverTasks: newTasks});
     }
+    //poll again after 7 seconds
     setTimeout(() => this.getTaskList(), 7000);
   }
 
   render() {
-    console.log("Application::render");
+    //console.log("Application::render");
     if (this.state.isLoading) {
       return (
         <div>

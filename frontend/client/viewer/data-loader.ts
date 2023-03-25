@@ -46,6 +46,12 @@ export async function sendDataToPlugins(molstarPlugin: PluginUIContext, database
     return [prediction, rcsbPlugin];
 }
 
+/**
+ * Finds the indices of the residues in the structure.
+ * @param toBeFound Residues to be found
+ * @param allResidues All residues in the structure
+ * @returns Indices of the residues in the structure
+ */
 function getResidueIndices(toBeFound: string[], allResidues: string[]) {
     let final : number[] = [];
     toBeFound.forEach(residue => {
@@ -91,6 +97,11 @@ function computePocketConservationAndAFAverage(data: PredictionData) {
     return data;
   }
 
+/**
+ * Attempts to download a JSON file from a given URL.
+ * @param url URL
+ * @returns JSON file, if successful
+ */
 async function downloadJsonFromUrl(url: string) {
     try {
         const response = await fetch(url, {

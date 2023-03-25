@@ -3,6 +3,7 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, AlphaFoldColorsRcsb, AlphaFoldThresholdsRcsb, DefaultPocketColors } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
+//contains the last highlighted element
 let lastElement: number = -1;
 
 /**
@@ -66,13 +67,11 @@ function calculateViewerWidth() {
  * @param event Mouse event
  */
 function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIContext, trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) {
-    if(trackData) {
-        if(predictionData) {
-            let element = predictionData.structure.indices[trackData.begin - 1];
-            if(element) {
-                let id = Number(element.substring(element.indexOf('_') + 1));
-                highlightInViewerAuthId(molstarPlugin, element[0], [id]);
-            }
+    if(trackData && predictionData) {
+        let element = predictionData.structure.indices[trackData.begin - 1];
+        if(element) {
+            let id = Number(element.substring(element.indexOf('_') + 1));
+            highlightInViewerAuthId(molstarPlugin, element[0], [id]);
         }
     }
 }
@@ -87,15 +86,13 @@ function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, track
     if(trackData.length === 0) return;
     lastElement = trackData[0].begin;
 
-    //first attempt to debounce the function
+    //100ms debounce
     setTimeout(() => {
-        if(trackData && trackData.length > 0 && lastElement === trackData[0].begin) {
-            if(data) {
-                let element = data.structure.indices[trackData[0].begin - 1];
-                if(element) {
-                    let id = Number(element.substring(element.indexOf('_') + 1));
-                    highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
-                }
+        if(data && trackData && trackData.length > 0 && lastElement === trackData[0].begin) {
+            let element = data.structure.indices[trackData[0].begin - 1];
+            if(element) {
+                let id = Number(element.substring(element.indexOf('_') + 1));
+                highlightInViewerLabelIdWithoutFocus(molstarPlugin, element[0], [id]);
             }
         }
     }, 100);
@@ -113,7 +110,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         trackHeight: 20,
         trackColor: "#F9F9F9",
         displayType: RcsbFvDisplayTypes.SEQUENCE,
-        nonEmptyDisplay: true, //???
+        nonEmptyDisplay: true,
         rowTitle: "SEQUENCE",
         trackData: [{
             begin: 1,
@@ -126,7 +123,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         const bindingData : RcsbFvTrackData = [];
 
         //create the blocks
-        //seems complicated but we need to create the "holes" as well
+        //we need to create the "holes" as well
         for(let i = 0; i < data.structure.binding.length; i++) {
             let firstElement = data.structure.binding[i];
             if(i < data.structure.binding.length - 1) {
@@ -159,6 +156,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         for(let y = 0; y < data.pockets.length; y++) {
             //first we need to assign a color to a pocket
             data.pockets[y].color = pickColor(y);
+            
             //create the blocks with the same principle... 
             for(let i = 0; i < data.pockets[y].residues.length; i++) {
                 let firstElement = data.pockets[y].residues[i];

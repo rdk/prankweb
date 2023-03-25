@@ -141,6 +141,7 @@ export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContex
         }
     }
 
+    //lastly, show only the selected representation
     for(const element of polymerRepresentations) {
         if(element.type === value) {
             setSubtreeVisibility(plugin.state.data, element.representation.ref, false);
@@ -384,6 +385,11 @@ async function overPaintPocketsWithAlphaFold(plugin: PluginUIContext, prediction
     }
 }
 
+/**
+ * Computes the normalized conservation scores and saves them in the global conservationNormalized variable.
+ * @param prediction Prediction data
+ * @returns void
+ */
 function computeNormalizedConservation(prediction: PredictionData) {
     if(!prediction.structure.scores.conservation) return;
     //by the definition of conservation scoring the maximum is log_2(20)
@@ -580,6 +586,10 @@ async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: S
     const wholeResiduesSelection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: wholeResiduesExpression});
     const atomsSelection = group2.apply(StateTransforms.Model.StructureSelectionFromExpression, {expression: atomsExpression});
     const color = Number("0x" + pocket.color);
+
+    //NOTE: the following piece of code could be transformed into a function,
+    //for better readability & clarity it is not done here
+    //moreover, the function would potentially depend on internal Mol* implementation
 
     //the first one selects the whole residues and does not color them -> for overpaints
     const repr_surface : StateObjectSelector = wholeResiduesSelection.apply(StateTransforms.Representation.StructureRepresentation3D, createStructureRepresentationParams(plugin, structure.data, {
