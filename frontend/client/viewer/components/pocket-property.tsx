@@ -1,5 +1,8 @@
 import React from "react";
 
+/**
+ * This component displays a single property of a pocket.
+ */
 export default class PocketProperty extends React.Component
     <{
         title: string,

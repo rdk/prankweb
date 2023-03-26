@@ -5,6 +5,12 @@ import { ClientTaskData, ClientTaskType, PocketData } from '../../custom-types';
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 
+/**
+ * This component represents a task that is computed on the client side.
+ * We do not expect any parameters to be passed to the task.
+ * On completion, the task returns a promise with a JSON object
+ * that is rendered by the renderOnComplete function.
+ */
 export default class PocketClientTask extends React.Component
     <{
         title: string,
@@ -13,10 +19,10 @@ export default class PocketClientTask extends React.Component
         plugin: PluginUIContext,
         taskType: ClientTaskType,
         prediction: PredictionInfo,
-        compute: () => Promise<ClientTaskData>,
-        renderOnComplete: (data: ClientTaskData) => JSX.Element
+        compute: () => Promise<ClientTaskData>,                 //the computation that returns a promise with the data to be rendered
+        renderOnComplete: (data: ClientTaskData) => JSX.Element //called when the computation is complete
     }, {
-        data: ClientTaskData | undefined, //this may be changed to any type (the best way is to define some interface)
+        data: ClientTaskData | undefined,
         computed: boolean,
         loading: boolean
     }> {

@@ -216,7 +216,7 @@ export enum ClientTaskType {
 }
 
 export interface ClientTaskData {
-    type?: ClientTaskType;
+    type: ClientTaskType;
     data: any;
 }
 

@@ -17,6 +17,11 @@ function PaperComponent(props: PaperProps) {
   );
 }
 
+/**
+ * This component is a draggable dialog that shows the details of a pocket.
+ * Is intended to work on desktops.
+ * User may interact with the elements around the dialog.
+ */
 export default class DraggableDialog extends React.Component<{
   pocket: PocketData,
   plugin: PluginUIContext,
@@ -42,6 +47,7 @@ export default class DraggableDialog extends React.Component<{
     this.setState({ "visible": !this.state.visible });
   }
 
+  //code inspired by
   //https://stackoverflow.com/questions/61335587/how-can-material-uis-dialog-allow-interaction-behind-the-dialog/65925039#65925039
 
   render() {
@@ -61,12 +67,12 @@ export default class DraggableDialog extends React.Component<{
           <Dialog
             open={this.state.visible}
             disableEnforceFocus // Allows other things to take focus
-            hideBackdrop  // Hides the shaded backdrop
+            hideBackdrop        // Hides the shaded backdrop
             onClose={this.toggleDetailsVisibility}
             PaperComponent={PaperComponent}
             componentsProps={{ backdrop: { style: { backgroundColor: "transparent" } } }}
             style={{
-              top: '30%', // Position however you like
+              top: '30%',
               left: '30%',
               height: 'fit-content',  // Ensures that the dialog is 
               width: 'fit-content',   // exactly the same size as its contents

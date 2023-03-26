@@ -6,6 +6,10 @@ import "./pocket-list.css";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 
+/**
+ * This component displays the list of pockets.
+ * For each pocket, it displays a card with the pocket details.
+ */
 export default class PocketList extends React.Component
   <{
     data: PredictionData,

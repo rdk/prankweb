@@ -4,7 +4,7 @@ import { ClientTaskData, ClientTaskType } from "../custom-types";
 import { PredictionInfo } from "../prankweb-api";
 
 /**
- * This method fetches the number of tasks associated with this prediction.
+ * Fetches the number of tasks associated with this prediction.
  * @param prediction Prediction info
  * @returns Data with a number of tasks
 */
@@ -31,6 +31,11 @@ export async function getSampleTaskCount(prediction: PredictionInfo): Promise<Cl
     }
 }
 
+/**
+ * Renders the final data of this task as a JSX element.
+ * @param data Data to render
+ * @returns JSX element
+ */
 export function renderOnTaskSampleTasksCountCompleted(data: ClientTaskData) {
     return (
         <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>

@@ -9,7 +9,7 @@ import qh from 'quickhull3d';
 const pocketVolumes = new Map<string, number>();
 
 /**
- * This method computes the volume of a triangle in 3D space.
+ * Computes the volume of a triangle in 3D space.
  * https://stackoverflow.com/questions/1406029/
  * @param p1 First point of the triangle
  * @param p2 Second point of the triangle
@@ -28,7 +28,7 @@ function computeTriangleVolume(p1: Point3D, p2: Point3D, p3: Point3D) {
 }
 
 /**
- * This method computes the volume of a pocket.
+ * Computes the volume of a pocket.
  * @param plugin Mol* plugin
  * @param pocket Pocket data
  * @returns Computed pocket volume
@@ -67,6 +67,11 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
     return data;
 }
 
+/**
+ * Renders the final data of this task as a JSX element.
+ * @param data Data to render
+ * @returns JSX element
+ */
 export function renderOnTaskVolumeCompleted(data: ClientTaskData) {
     return (
         <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
