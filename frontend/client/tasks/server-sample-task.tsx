@@ -1,42 +1,49 @@
 import React from "react";
 
 import { PredictionInfo } from "../prankweb-api";
-import { PocketData } from "../custom-types";
+import { PocketData, ServerTaskType } from "../custom-types";
 import { ServerTaskData } from "../custom-types";
 
-export async function computeSampleTaskOnBackend(firstFetch: boolean, prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTaskData[]) {
-    if(firstFetch) {
-        await fetch(`./api/v2/sample/${prediction.database}/${prediction.id}/post`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "hash": hash,
-                "pocket": pocket.rank,
-            }),
-        }).then((res) => {
-            //wait 3 seconds before checking if the task is finished
-            setTimeout(() => {}, 3000);
-            return res.json();
-        }
-        ).catch(err => {
-            console.log(err);
-            setTimeout(() => computeSampleTaskOnBackend(true, prediction, pocket, hash, serverTasks), 1000); //repeat the request
-        });
+import PocketProperty from "../viewer/components/pocket-property";
+
+/**
+ * Sends requests to the backend to compute the sample task and periodically checks if the task is finished.
+ * @param firstFetch True if this is the first request (including fails), false otherwise
+ * @param prediction Prediction info
+ * @param pocket Pocket data
+ * @param hash Task identifier (hash)
+ * @param serverTasks A list of all server tasks
+ * @returns Completed task data
+ */
+export async function computeSampleTaskOnBackend(firstFetch: boolean, prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTaskData[]): Promise<any>{
+    if(hash === "") {
+        return;
     }
+    await fetch(`./api/v2/sample/${prediction.database}/${prediction.id}/post`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "hash": hash,
+            "pocket": pocket.rank,
+        }),
+    }).then((res) => {
+        setTimeout(() => {}, 500); //wait for the backend to process the request
+    }
+    ).catch(err => {
+        console.log(err);
+    });
 
     //check if the task is finished
-    let matchingTasks = (serverTasks.filter((e: ServerTaskData) => e.data.initialData.hash === hash && e.data.initialData.pocket === pocket.rank));
+    let matchingTasks = (serverTasks.filter((e: ServerTaskData) => e.type === ServerTaskType.Sample && e.data.initialData.hash === hash && e.data.initialData.pocket === pocket.rank));
 
     if(matchingTasks.length === 0) {
-        setTimeout(() => computeSampleTaskOnBackend(false, prediction, pocket, hash, serverTasks), 1000); //repeat the request
         return;
     }
 
     if(matchingTasks[0].data.status !== "successful") {
-        setTimeout(() => computeSampleTaskOnBackend(false, prediction, pocket, hash, serverTasks), 1000); //repeat the request
         return;
     }
 
@@ -51,7 +58,6 @@ export async function computeSampleTaskOnBackend(firstFetch: boolean, prediction
         }
     )}).then(res => res.json()).catch(err => console.log(err));
     if(!data) {
-        setTimeout(() => computeSampleTaskOnBackend(false, prediction, pocket, hash, serverTasks), 3000); //repeat the request
         return;
     }
 
@@ -59,10 +65,22 @@ export async function computeSampleTaskOnBackend(firstFetch: boolean, prediction
     return data;
 }
 
-export function renderOnServerSampleTaskCompleted(responseData: any, pocket: PocketData) {
+/**
+ * Returns a JSX element that renders the final data of this task.
+ * @param responseData Response data received from the backend (i.e. the result of the task)
+ * @param pocket Pocket data
+ * @returns JSX element
+ */
+export function renderOnServerSampleTaskCompleted(responseData: any, pocket: PocketData, hash: string) {
     return (
-        <span style={{float: "right", marginLeft: "1rem"}}>
-            {responseData.filter((e: any) => e["rank"] == pocket.rank)[0]["count"]}
-        </span>
+        <PocketProperty inDialog={true} title={"Sample task (" + hash + ")"} data={
+            responseData.find((p: any) => p.rank === pocket.rank)?.count
+        }/>
+    );
+}
+
+export function renderOnServerSampleTaskRunning(pocket: PocketData, hash: string) {
+    return (
+        <PocketProperty inDialog={true} title={"Sample task (" + hash + ")"} data={"running"}/>
     );
 }

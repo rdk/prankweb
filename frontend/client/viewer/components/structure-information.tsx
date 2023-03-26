@@ -6,6 +6,12 @@ type Metadata = {
   predictedStructure?: boolean;
 };
 
+/**
+ * This component displays very simple information about the structure
+ * such as the structure identifier.
+ * @param props 
+ * @returns 
+ */
 export function StructureInformation(
   props: { metadata: Metadata, database: string }
 ) {

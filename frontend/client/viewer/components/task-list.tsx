@@ -4,6 +4,10 @@ import { PredictionInfo } from "../../prankweb-api";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { ServerTaskData } from "../../custom-types";
 
+/**
+ * This component lists the tasks associated with a prediction.
+ * Currently represented in the Bootstrap style.
+ */
 export default class TaskList extends React.Component<
     {
         prediction: PredictionInfo
@@ -54,6 +58,9 @@ export default class TaskList extends React.Component<
       }
 }
 
+/**
+ * This component provides the content of the task list.
+ */
 class TaskListContent extends React.Component<{
     prediction: PredictionInfo
     tasks: ServerTaskData[]
@@ -68,13 +75,13 @@ class TaskListContent extends React.Component<{
             <ul className="list-group list-group-flush">
                 {this.props.tasks.map((task: ServerTaskData, index: number) => {
                     if(task.data["status"] === "successful") {
-                        return <li key={index} className="list-group-item">{`${task.data["id"]} ${task.data.initialData["hash"]} ${task.data.lastChange}`}</li>
+                        return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange}`}</li>
                     }
                     else if(task.data["status"] === "running") {
-                        return <li key={index} className="list-group-item">{`${task.data["id"]} ${task.data.initialData["hash"]} ${task.data.lastChange} running`}</li>
+                        return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} running`}</li>
                     }
                     else if(task.data["status"] === "queued") {
-                      return <li key={index} className="list-group-item">{`${task.data["id"]} ${task.data.initialData["hash"]} ${task.data.lastChange} queued`}</li>
+                      return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} queued`}</li>
                     }
                 })}
             </ul>

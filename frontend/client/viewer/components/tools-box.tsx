@@ -3,6 +3,12 @@ import React from "react";
 import "./tools-box.css";
 import { PocketsViewType, PolymerViewType, PolymerColorType, PredictionData } from "../../custom-types";
 
+/**
+ * This component displays the tools for the viewer.
+ * The tools allow the user to change the view of the polymer and pockets.
+ * Also allows the user to download the prediction and change the visualization colors.
+ * Currently represented in the Bootstrap style.
+ */
 export default class ToolsBox extends React.Component<{
   predictionData: PredictionData,
   downloadUrl: string,
@@ -17,14 +23,11 @@ export default class ToolsBox extends React.Component<{
   isShowOnlyPredicted: boolean,
   onShowConfidentChange: () => void,
 }, {
-  /**
-   * True for expanded component, false for minimized component.
-   */
-  visible: boolean
+  expanded: boolean
 }> {
 
   state = {
-    "visible": true,
+    "expanded": true,
     "showConfident": false,
   };
 
@@ -34,7 +37,7 @@ export default class ToolsBox extends React.Component<{
   }
 
   toggleVisible() {
-    this.setState({"visible": !this.state.visible});
+    this.setState({"expanded": !this.state.expanded});
   }
 
   render() {
@@ -49,7 +52,7 @@ export default class ToolsBox extends React.Component<{
               title="Show/Hide tools."
               onClick={this.toggleVisible}
             >
-            {this.state.visible ? 
+            {this.state.expanded ? 
             <i className="bi bi-caret-up" style={{"width": "1em"}}></i>
             :
             <i className="bi bi-caret-down" style={{"width": "1em"}}></i>
@@ -57,7 +60,7 @@ export default class ToolsBox extends React.Component<{
             </button>
           </h3>
         </div>
-        {this.state.visible && <div className="card-body">
+        {this.state.expanded && <div className="card-body">
           <ControlBoxContent
             predictionData={this.props.predictionData}
             downloadUrl={this.props.downloadUrl}
@@ -79,6 +82,9 @@ export default class ToolsBox extends React.Component<{
   }
 }
 
+/**
+ * This component provides the content of the tools box.
+ */
 class ControlBoxContent extends React.Component<{
     predictionData: PredictionData,
     downloadUrl: string,

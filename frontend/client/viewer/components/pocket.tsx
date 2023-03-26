@@ -7,6 +7,11 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 
+/**
+ * This component displays information about a pocket.
+ * Currently represented as a Bootstrap card.
+ * Includes interactions with the Mol* and RCSB plugins.
+ */
 export default class Pocket extends React.Component
   <{
     pocket: PocketData,
@@ -81,6 +86,10 @@ export default class Pocket extends React.Component
     this.setState({ "details": true });
   }
 
+  /**
+   * Computes the color of the text in the pocket card header (for better readability).
+   * @returns Color of the text in the pocket card header.
+   */
   computePocketTextColor() {
     if (!this.props.pocket.isVisible) {
       return "white";
@@ -101,6 +110,12 @@ export default class Pocket extends React.Component
     this.setState({ "pocketTextColor": this.computePocketTextColor() });
   }
 
+  /**
+   * Calculates the color of the pocket with the given alpha value.
+   * @param alpha Alpha value of the color
+   * @param bgColor Color in the format #RRGGBB
+   * @returns Calculated color in the format rgba(R,G,B,alpha)
+   */
   calculatePocketColorWithAlpha(alpha: number, bgColor: string) {
     const color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
     const r = parseInt(color.substring(0, 2), 16); // hexToR

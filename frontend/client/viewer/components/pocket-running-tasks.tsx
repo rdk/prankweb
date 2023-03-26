@@ -1,7 +1,11 @@
 import React from "react";
-import { PocketData, ServerTaskData } from "../../custom-types";
+import { PocketData, ServerTaskData, ServerTaskType } from "../../custom-types";
 import PocketProperty from "./pocket-property";
+import { renderOnServerSampleTaskCompleted, renderOnServerSampleTaskRunning } from "../../tasks/server-sample-task";
 
+/**
+ * This component displays the list of finished or incomplete tasks for a pocket.
+ */
 export default class RunningTasks extends React.Component
     <{
         pocket: PocketData,
@@ -17,14 +21,26 @@ export default class RunningTasks extends React.Component
         return (
             <div style={{"display": "inline"}}>
                 {this.props.inDialog && this.props.serverTasks.map((e: ServerTaskData, index) => {
-                    if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank) {
-                        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.initialData.hash} data={
-                            e.data.responseData.find((p: any) => p.rank === this.props.pocket.rank)?.count
-                        }/>
+                    //finished task in this session
+                    if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank && e.data.status === "successful") {
+                        switch(e.type) {
+                            case ServerTaskType.Sample:
+                                return renderOnServerSampleTaskCompleted(e.data.responseData, this.props.pocket, e.data.initialData.hash);
+                            default:
+                                return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Backend task (" + e.type + ")" + e.data.initialData.hash} data={"completed"}/>
+                        }
                     }
-                    else if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank && (e.data.status === "running" || e.data.status === "queued")) {
-                        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Sample " + e.data.initialData.hash} data={"running"}/>
+                    //queued, running, incomplete task
+                    else if (e.data.initialData.pocket === this.props.pocket.rank && e.data.status !== "successful") {
+                        switch(e.type) {
+                            case ServerTaskType.Sample:
+                                return renderOnServerSampleTaskRunning(this.props.pocket, e.data.initialData.hash);
+                            default:
+                                return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Backend task (" + e.type + ")" + e.data.initialData.hash} data={"in progress"}/>
+                        }
                     }
+                    //NOT rendering tasks that are not related to this pocket
+                    //and tasks not completed in this session
                 })}
            </div>
         );
