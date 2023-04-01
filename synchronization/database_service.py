@@ -20,8 +20,6 @@ class EntryStatus(enum.Enum):
     FUNPDBE_FAILED = "funpdbe-failed"
     # We have the file to submit to funPDBe.
     CONVERTED = "converted"
-    # File was uploaded to funPDBe.
-    SUBMITTED = "submitted"
 
 
 def load_database(directory: str):
