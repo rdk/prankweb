@@ -555,9 +555,9 @@ async function overPaintPocketsWithConservation(plugin: PluginUIContext, predict
 export async function createPocketsGroupFromJson(plugin: PluginUIContext, structure: StateObjectSelector, groupName: string, prediction: PredictionData) {
     const builder = plugin.state.data.build();
     const group = builder.to(structure).apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName});
-    for(let i = 0; i < prediction.pockets.length; i++) {
-        createPocketFromJsonByAtoms(plugin, structure, prediction.pockets[i], `Pocket ${i+1}`, group);
-    }
+    prediction.pockets.map((pocket, i) => {
+        createPocketFromJson(plugin, structure, pocket, `Pocket ${i+1}`, group);
+    });
     await builder.commit();
 }
 
@@ -571,7 +571,7 @@ export async function createPocketsGroupFromJson(plugin: PluginUIContext, struct
  * @param group Group to which the pocket will be assigned (from createPocketsGroupFromJson())
  * @returns void
  */
-async function createPocketFromJsonByAtoms(plugin: PluginUIContext, structure: StateObjectSelector, pocket: PocketData, groupName: string, group: any) { //group should not be any but i cannot figure out the right type
+async function createPocketFromJson(plugin: PluginUIContext, structure: StateObjectSelector, pocket: PocketData, groupName: string, group: any) { //group should not be any but i cannot figure out the right type
     const group2 = group.apply(StateTransforms.Misc.CreateGroup, {label: groupName}, {ref: groupName}, {selectionTags: groupName});
 
     const atomsExpression = MS.struct.generator.atomGroups({

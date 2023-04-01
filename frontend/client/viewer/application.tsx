@@ -209,9 +209,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     let json = await fetch(`./api/v2/sample/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
       .then(res => res.json())
       .catch(err => {
-        setTimeout(() => this.getTaskList(), 7000);
         return;
-      }); //we could handle the error in a better way, but we do not care if the poll fails sometimes
+      }); //we could handle the error, but we do not care if the poll fails sometimes
     if(json) {
       //append the new tasks to the existing ones
       let newTasks: ServerTaskData[] = this.state.serverTasks;
