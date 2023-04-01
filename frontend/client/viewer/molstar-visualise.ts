@@ -13,6 +13,7 @@ import { Loci } from "molstar/lib/mol-model/loci";
 import { Bundle } from "molstar/lib/mol-model/structure/structure/element/bundle";
 import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
 import { StateObjectSelector } from 'molstar/lib/mol-state';
+import { Expression } from 'molstar/lib/mol-script/language/expression';
 
 //the representations are updated by the React component states
 let polymerRepresentations: PolymerRepresentation[] = [];
@@ -183,7 +184,7 @@ export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUI
  */
 async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) {
     const chains : ChainData[] = [];
-    const params = [];
+    const params : any = [];
 
     for (let i = 0; i < prediction.structure.indices.length; i++) {
         let splitIndice = prediction.structure.indices[i].split("_");
@@ -227,7 +228,7 @@ async function overPaintPocketsClear(plugin: PluginUIContext, prediction: Predic
     for(const pocket of prediction.pockets) {
         const builder = plugin.state.data.build();
         const chains : ChainData[] = [];
-        const params = [];
+        const params : any = [];
 
         for(const residue of pocket.residues) {
             let splitResidue = residue.split("_");
@@ -269,7 +270,7 @@ async function overPaintPocketsClear(plugin: PluginUIContext, prediction: Predic
 async function overPaintStructureWithAlphaFold(plugin: PluginUIContext, prediction: PredictionData) { //paints the structure with the alpha fold prediction
     if(!prediction.structure.scores.plddt) return;
 
-    const params = [];
+    const params : any = [];
     const selections : ChainData[] = [];
 
     //create the selections for the pockets
@@ -337,7 +338,7 @@ async function overPaintPocketsWithAlphaFold(plugin: PluginUIContext, prediction
 
     for(const pocket of prediction.pockets) {
         const builder = plugin.state.data.build();
-        const params = [];
+        const params : any = [];
         const selections : ChainData[] = [];
     
         for(const residue of pocket.residues) {
@@ -412,7 +413,7 @@ async function overPaintStructureWithConservation(plugin: PluginUIContext, predi
     //if the normalized conservation is not computed yet
     if(conservationNormalized === undefined) computeNormalizedConservation(prediction);
 
-    const params = [];
+    const params : any = [];
     const thresholds = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0];
     const colors : Color[] = [];
 
@@ -495,7 +496,7 @@ async function overPaintPocketsWithConservation(plugin: PluginUIContext, predict
 
     for(const pocket of prediction.pockets) {
         const builder = plugin.state.data.build();
-        const params = [];
+        const params : any = [];
         const selections : ChainData[] = [];
         
         for(const residue of pocket.residues) {
@@ -749,7 +750,7 @@ export function highlightInViewerLabelIdWithoutFocus(plugin: PluginUIContext, ch
  * @param plugin Mol* plugin
  * @param ids Surface atoms ids
  * @param focus Focus on the surface atoms (if false, it will only highlight them)
- * @returns 
+ * @returns void
  */
 export function highlightSurfaceAtomsInViewerLabelId(plugin: PluginUIContext, ids: string[], focus: boolean) {
     const data = plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
@@ -796,6 +797,7 @@ function getSelectionFromChainAuthId(plugin: PluginUIContext, chainId: string, p
  * @param plugin Mol* plugin
  * @param prediction Prediction data
  * @param structure Mol* structure (returned from the first call of loadStructureIntoMolstar())
+ * @returns void
  */
 export async function addPredictedPolymerRepresentation(plugin: PluginUIContext, prediction: PredictionData, structure: StateObjectSelector) {
     const builder = plugin.state.data.build();
@@ -849,14 +851,14 @@ export async function addPredictedPolymerRepresentation(plugin: PluginUIContext,
  * @returns Expression with the selection of the confident residues
  */
 export function getConfidentResiduesFromPrediction(prediction: PredictionData) { 
-    const queries = [];
+    const queries : Expression[] = [];
     //for each chain create a query for the residues
     let totalIndex = 0;
 
     for(let i = 0; i < prediction.structure.regions.length; i++) {
         const chain = prediction.structure.regions[i].name;
         const positions = prediction.structure.indices.slice(totalIndex, prediction.structure.regions[i].end + 1);
-        const newPositions = [];
+        const newPositions : number[] = [];
 
         for(let y = 0; y < positions.length; y++) {
             if(prediction.structure.scores.plddt![totalIndex + y] > 70) {
