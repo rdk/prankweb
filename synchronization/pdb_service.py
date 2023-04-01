@@ -46,7 +46,7 @@ def _create_pdb_solr_count_query(date: typing.Optional[str]) -> str:
            "group=true&" \
            "group.ngroups=true&" \
            "group.field=pdb_id&" \
-           "fl=pdb_id,release_date&" \ 
+           "fl=pdb_id,release_date&" \
            f"{query}&rows=0&wjt=json"
 
 
