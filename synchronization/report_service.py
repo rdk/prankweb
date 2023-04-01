@@ -64,12 +64,12 @@ def _load_json(path: str):
         return json.load(stream)
 
 
-def _load_today_or_create(report: typing.List):
+def _load_today_or_create(reports: typing.List):
     key = datetime.datetime.now().strftime("%Y-%m-%d")
-    last = report[-1]
-    if last["date"] == key:
-        return last
-    return _create_report(key)
+    if len(reports) > 1 and reports[-1]["date"] == key:
+        return reports[-1]
+    else:
+        return _create_report(key)
 
 
 def _create_report(date: str):
