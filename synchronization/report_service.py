@@ -7,16 +7,17 @@ import datetime
 from database_service import EntryStatus
 
 _state = {
+    # New codes.
     "new": [],
-    "prediction": {
-        "finished": [],
-        "failed": [],
-    },
-    "funpdbe": {
-        "finished": [],
-        "empty": [],
-        "failed": [],
-    },
+    # Result of p2rank prediction.
+    # Values are removed from predicted once processed by funPDBe.
+    "predicted": [],
+    "prankweb-failed": [],
+    # Results of funPDBe processing.
+    "converted": [],
+    "empty": [],
+    "funpdbe-failed": [],
+    # Statistics.
     "statistics": {}
 }
 
@@ -26,23 +27,26 @@ def on_new_pdb_records(pdb_codes: typing.List[str]) -> None:
 
 
 def on_prediction_finished(pdb_code: str) -> None:
-    _state["prediction"]["finished"].append(pdb_code)
+    _state["predicted"].append(pdb_code)
 
 
 def on_prediction_failed(pdb_code: str) -> None:
-    _state["prediction"]["failed"].append(pdb_code)
+    _state["prankweb-failed"].append(pdb_code)
 
 
 def on_funpdbe_conversion_finished(pdb_code: str) -> None:
-    _state["funpdbe"]["failed"].append(pdb_code)
+    _state["predicted"].remove(pdb_code)
+    _state["converted"].append(pdb_code)
 
 
 def on_funpdbe_conversion_empty(pdb_code: str) -> None:
-    _state["funpdbe"]["empty"].append(pdb_code)
+    _state["predicted"].remove(pdb_code)
+    _state["empty"].append(pdb_code)
 
 
 def on_funpdbe_conversion_failed(pdb_code: str) -> None:
-    _state["funpdbe"]["failed"].append(pdb_code)
+    _state["predicted"].remove(pdb_code)
+    _state["funpdbe-failed"].append(pdb_code)
 
 
 def on_counts(counts: typing.Dict[EntryStatus, int]) -> None:
@@ -78,14 +82,12 @@ def _load_or_create_today_report(reports: typing.List):
 def _create_report(date: str):
     return {
         "new": [],
-        "prediction": {
-            "finished": [],
-            "failed": [],
-        },
-        "funpdbe": {
-            "finished": [],
+        "report": {
+            "predicted": [],
+            "converted": [],
             "empty": [],
-            "failed": [],
+            "funpdbe-failed": [],
+            "prankweb-failed": [],
         },
         "statistics": {},
         "date": date,
@@ -95,16 +97,11 @@ def _create_report(date: str):
 
 def _add_state_to_report(report):
     _add_uniq(report["new"], _state["new"])
-    _add_uniq(report["prediction"]["finished"],
-              _state["prediction"]["finished"])
-    _add_uniq(report["prediction"]["failed"],
-              _state["prediction"]["failed"])
-    _add_uniq(report["funpdbe"]["finished"],
-              _state["funpdbe"]["finished"])
-    _add_uniq(report["funpdbe"]["empty"],
-              _state["funpdbe"]["empty"])
-    _add_uniq(report["funpdbe"]["failed"],
-              _state["funpdbe"]["failed"])
+    _add_uniq(report["report"]["predicted"], _state["predicted"])
+    _add_uniq(report["report"]["converted"], _state["converted"])
+    _add_uniq(report["report"]["empty"], _state["empty"])
+    _add_uniq(report["report"]["funpdbe-failed"], _state["funpdbe-failed"])
+    _add_uniq(report["report"]["prankweb-failed"], _state["prankweb-failed"])
     report["statistics"] = _state["statistics"]
     report["updated"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
