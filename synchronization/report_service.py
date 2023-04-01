@@ -66,7 +66,7 @@ def _load_json(path: str):
 
 def _load_or_create_today_report(reports: typing.List):
     key = datetime.datetime.now().strftime("%Y-%m-%d")
-    if len(reports) > 1 and reports[-1]["date"] == key:
+    if len(reports) > 0 and reports[-1]["date"] == key:
         return reports[-1]
     else:
         new_report = _create_report(key)
