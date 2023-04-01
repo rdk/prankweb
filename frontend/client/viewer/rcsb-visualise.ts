@@ -38,7 +38,7 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 }
 
 /**
- * Method to calculate the width of the viewer
+ * Method to calculate the width of the viewer.
  * @returns The width
  */
 function calculateViewerWidth() {
@@ -65,6 +65,7 @@ function calculateViewerWidth() {
  * @param molstarPlugin Mol* plugin
  * @param trackData Data of the clicked track
  * @param event Mouse event
+ * @returns void
  */
 function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIContext, trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) {
     if(trackData && predictionData) {
@@ -81,6 +82,8 @@ function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIC
  * @param data Prediction data
  * @param molstarPlugin Mol* plugin
  * @param trackData Data of the clicked track
+ * @param event Mouse event
+ * @returns void
  */
 function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, trackData: Array<RcsbFvTrackDataElementInterface>) {
     if(trackData.length === 0) return;
@@ -196,7 +199,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
 
     //then resolve the conservation, if available
     if(data.structure.scores.conservation && !data.structure.scores.conservation.every((value) => value === 0)) {
-        const conservationData = [];
+        const conservationData: RcsbFvTrackData = [];
     
         //we need to normalize the scores to fit in properly
         //by the definition of conservation scoring the maximum is log_2(20)
@@ -224,7 +227,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
     //then resolve alphafold scores, if available
     if(data.structure.scores.plddt && !data.structure.scores.plddt.every((value) => value === 0)) 
     {
-        const alphafoldData = [];
+        const alphafoldData: RcsbFvTrackData = [];
     
         //we need to normalize the scores to fit in properly
         //by the definition of alphafold scores the maximum should be possibly 100
@@ -255,7 +258,11 @@ function createRowConfigDataRcsb(data: PredictionData) {
     return rowConfigData;
 }
 
-/** Method that returns log_x(y) */
+/** Method that returns log_x(y).
+ * @param x Base
+ * @param y Number
+ * @returns log_x(y)
+*/
 function getLogBaseX(x : number, y : number) { 
     return Math.log(y) / Math.log(x);
 }

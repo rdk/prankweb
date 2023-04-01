@@ -937,6 +937,7 @@ function getStructureElementLoci(loci: Loci): StructureElement.Loci | undefined 
  * @param plugin Mol* plugin
  * @param predictionData Prediction data
  * @param rcsbPlugin Rcsb plugin
+ * @returns void
  */
 export function linkMolstarToRcsb(plugin: PluginUIContext, predictionData: PredictionData, rcsbPlugin: RcsbFv) {
     //cc: https://github.com/scheuerv/molart/
