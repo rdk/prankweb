@@ -54,7 +54,7 @@ def synchronize_report(path: str) -> None:
     else:
         # Create new report object.
         report = {"metadata": {"version": 1}, "data": []}
-    today = _load_today_or_create(report["data"])
+    today = _load_or_create_today_report(report["data"])
     _add_state_to_report(today)
     _save_json(path, report)
 
@@ -64,12 +64,14 @@ def _load_json(path: str):
         return json.load(stream)
 
 
-def _load_today_or_create(reports: typing.List):
+def _load_or_create_today_report(reports: typing.List):
     key = datetime.datetime.now().strftime("%Y-%m-%d")
     if len(reports) > 1 and reports[-1]["date"] == key:
         return reports[-1]
     else:
-        return _create_report(key)
+        new_report = _create_report(key)
+        reports.append(new_report)
+        return new_report
 
 
 def _create_report(date: str):
