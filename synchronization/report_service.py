@@ -2,8 +2,9 @@
 import json
 import os
 import typing
-import shutil
 import datetime
+
+from database_service import EntryStatus
 
 _state = {
     "new": [],
@@ -20,32 +21,33 @@ _state = {
 }
 
 
-def on_new_pdb_records(pdb: typing.List[str]) -> None:
-    _state["new"].extend(pdb)
+def on_new_pdb_records(pdb_codes: typing.List[str]) -> None:
+    _state["new"].extend(pdb_codes)
 
 
-def on_prediction_finished(pdb: str) -> None:
-    _state["prediction"]["finished"].extend(pdb)
+def on_prediction_finished(pdb_code: str) -> None:
+    _state["prediction"]["finished"].append(pdb_code)
 
 
-def on_prediction_failed(pdb: str) -> None:
-    _state["prediction"]["failed"].extend(pdb)
+def on_prediction_failed(pdb_code: str) -> None:
+    _state["prediction"]["failed"].append(pdb_code)
 
 
-def on_funpdbe_conversion_finished(pdb: str) -> None:
-    _state["funpdbe"]["failed"].extend(pdb)
+def on_funpdbe_conversion_finished(pdb_code: str) -> None:
+    _state["funpdbe"]["failed"].append(pdb_code)
 
 
-def on_funpdbe_conversion_empty(pdb: str) -> None:
-    _state["funpdbe"]["empty"].extend(pdb)
+def on_funpdbe_conversion_empty(pdb_code: str) -> None:
+    _state["funpdbe"]["empty"].append(pdb_code)
 
 
-def on_funpdbe_conversion_failed(pdb: str) -> None:
-    _state["funpdbe"]["failed"].extend(pdb)
+def on_funpdbe_conversion_failed(pdb_code: str) -> None:
+    _state["funpdbe"]["failed"].append(pdb_code)
 
 
-def on_counts(counts: typing.Dict[str, int]) -> None:
-    _state["statistics"] = counts
+def on_counts(counts: typing.Dict[EntryStatus, int]) -> None:
+    for key, value in counts.items():
+        _state["statistics"][key] = value
 
 
 def synchronize_report(path: str) -> None:
