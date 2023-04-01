@@ -46,8 +46,7 @@ def on_funpdbe_conversion_failed(pdb_code: str) -> None:
 
 
 def on_counts(counts: typing.Dict[EntryStatus, int]) -> None:
-    for key, value in counts.items():
-        _state["statistics"][key] = value
+    _state["statistics"] = counts
 
 
 def synchronize_report(path: str) -> None:
@@ -106,6 +105,7 @@ def _add_state_to_report(report):
               _state["funpdbe"]["empty"])
     _add_uniq(report["funpdbe"]["failed"],
               _state["funpdbe"]["failed"])
+    report["statistics"] = _state["statistics"]
     report["updated"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 
