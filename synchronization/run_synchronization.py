@@ -13,6 +13,7 @@ from database_service import EntryStatus
 import pdb_service
 import prankweb_service
 import p2rank_to_funpdbe
+import report_service as report
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -59,6 +60,9 @@ def _read_arguments() -> typing.Dict[str, str]:
              "managed by the synchronization.",
         type=int,
         default=4)
+    parser.add_argument(
+        "--json-report-file",
+        help="Path to JSON report file.")
     return vars(parser.parse_args())
 
 
@@ -96,6 +100,8 @@ def main(args):
         logger.info("Can't prepare functional PDBe files.")
     database_service.save_database(data_directory, database)
     log_status_count(database)
+    if args["json_report_file"]:
+        report.synchronize_report(args["json_report_file"])
     logger.info("All done")
 
 
@@ -116,6 +122,7 @@ def add_pdb_to_database(
         database, new_records: typing.List[pdb_service.PdbRecord]):
     """Add given records to database as new records."""
     from_date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
+    added_records = []
     for record in new_records:
         if record.code in database["data"]:
             continue
@@ -124,9 +131,12 @@ def add_pdb_to_database(
             "createDate": from_date,
             "pdbReleaseDate": record.release,
         }
+        added_records.append(record.code)
+    report.on_new_pdb_records(added_records)
 
 
 def change_prankweb_failed_to_new(database):
+    """Prepare failed predictions for re-run."""
     result = 0
     for code, record in database["data"].items():
         if record["status"] == EntryStatus.PRANKWEB_FAILED.value:
@@ -135,6 +145,7 @@ def change_prankweb_failed_to_new(database):
 
 
 def change_funpdbe_failed_to_predicted(database):
+    """Prepare failed funPDBe conversions for re-run."""
     result = 0
     for code, record in database["data"].items():
         if record["status"] == EntryStatus.FUNPDBE_FAILED.value:
@@ -181,8 +192,10 @@ def request_computation_from_prankweb_for_code(code: str, record):
     record["prankwebCheckDate"] = response.body["lastChange"] + "Z"
     if response.body["status"] == "successful":
         record["status"] = EntryStatus.PREDICTED.value
+        report.on_prediction_finished(code)
     elif response.body["status"] == "failed":
         record["status"] = EntryStatus.PRANKWEB_FAILED.value
+        report.on_prediction_failed(code)
     elif response.body["status"] == "queued" or \
             response.body["status"] == "running":
         # For both we see it as queued for completion.
@@ -208,6 +221,7 @@ def prepare_funpdbe_file(
         ftp_directory: str, data_directory: str,
         configuration: p2rank_to_funpdbe.Configuration,
         code: str, record):
+    """Convert predicted structure into funPDBe record."""
     if not record["status"] == EntryStatus.PREDICTED.value:
         return
     working_directory = os.path.join(data_directory, "working", code)
@@ -218,6 +232,7 @@ def prepare_funpdbe_file(
         logger.error(f"Can't obtain prediction files for {code}, "
                      f"record ignored.")
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        report.on_funpdbe_conversion_failed(code)
         return
     working_output = os.path.join(working_directory, f"{code.lower()}.json")
     error_log_file = os.path.join(working_directory, "error.log")
@@ -229,6 +244,7 @@ def prepare_funpdbe_file(
             stream.write(
                 f"Missing files '{predictions_file}', '{residues_file}")
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        report.on_funpdbe_conversion_failed(code)
         return
     # Try conversion.
     try:
@@ -239,18 +255,21 @@ def prepare_funpdbe_file(
     except p2rank_to_funpdbe.EmptyPrediction:
         logger.error(f"Empty prediction for {code}, record ignored.")
         record["status"] = EntryStatus.EMPTY.value
+        report.on_funpdbe_conversion_empty(code)
         return
     except Exception as ex:
         logger.exception(f"Can't convert {code} to FunPDBe record.")
         with open(error_log_file, "w") as stream:
             stream.write(str(ex))
         record["status"] = EntryStatus.FUNPDBE_FAILED.value
+        report.on_funpdbe_conversion_failed(code)
         return
     target_directory = os.path.join(ftp_directory, code.lower()[1:3])
     os.makedirs(target_directory, exist_ok=True)
     target_output = os.path.join(target_directory, f"{code.lower()}.json")
     shutil.move(working_output, target_output)
     shutil.rmtree(working_directory)
+    report.on_funpdbe_conversion_finished(code)
     logger.debug(f"Done processing '{code}'.")
 
 
@@ -327,6 +346,7 @@ def log_status_count(database):
         count_by_status[record["status"]] += 1
     message = "\n".join(
         [f"    {name}: {value}" for name, value in count_by_status.items()])
+    report.on_counts(count_by_status)
     logger.info("Server synchronization summary: \n" + message)
 
 
