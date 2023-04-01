@@ -43,11 +43,12 @@ def _create_pdb_solr_count_query(date: typing.Optional[str]) -> str:
     query = "q=*:*"
     if date is not None:
         query = f"q=release_date:[{date} TO *]"
+    #  Use fl=..,revision_date to add revision date
     return "https://www.ebi.ac.uk/pdbe/search/pdb/select?" \
            "group=true&" \
            "group.ngroups=true&" \
            "group.field=pdb_id&" \
-           "fl=pdb_id,release_date&" \
+           "fl=pdb_id,release_date&" \ 
            f"{query}&rows=0&wjt=json"
 
 
