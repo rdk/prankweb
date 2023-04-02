@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Synchronization report</title>
+  <meta charset="UTF-8">
+  <style>
+      .overview > div {
+          display: grid;
+          justify-self: center;
+          justify-content: space-between;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      }
+
+      .overview .measure {
+          text-align: center;
+          margin: 0 2rem;
+      }
+
+      .overview .measure div {
+          display: grid;
+          row-gap: 1rem;
+          font-size: 1.3em;
+      }
+  </style>
+</head>
+
+<body>
+<header>
+
+</header>
+
+<main>
+  <section class="overview">
+    <h1>Overview</h1>
+    <div>
+      <div class="measure">
+        <h2>Queued</h2>
+        <div id="general-new"></div>
+      </div>
+      <div class="measure">
+        <h2>Ready for funPDBe</h2>
+        <div id="general-converted"></div>
+      </div>
+      <div class="measure">
+        <h2>No binding site</h2>
+        <div id="general-empty"></div>
+      </div>
+      <div class="measure">
+        <h2>Prediction failed</h2>
+        <div id="general-prankweb-failed"></div>
+      </div>
+      <div class="measure">
+        <h2>Conversion failed</h2>
+        <div id="general-funpdbe-failed"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+
+</footer>
+
+<script>
+  const fetchData = () => fetch("./synchronization-report.json")
+    .then(response => response.json());
+</script>
+
+<script>
+
+  (async function initialize() {
+    const {metadata, data} = await fetchData();
+    const report = getLastReport(data);
+    setToday(report);
+  })();
+
+  function getLastReport(data) {
+    return data[data.length - 1];
+  }
+
+  function setToday(todayReport) {
+    const {report, statistics} = todayReport;
+    setStatistics(
+      "general-new",
+      statistics["new"],
+      todayReport["new"].length);
+    setStatistics(
+      "general-converted",
+      statistics["converted"],
+      report["converted"].length);
+    setStatistics(
+      "general-empty",
+      statistics["empty"],
+      report["empty"].length);
+    setStatistics(
+      "general-prankweb-failed",
+      statistics["funpdbe-failed"],
+      report["funpdbe-failed"].length);
+    setStatistics(
+      "general-funpdbe-failed",
+      statistics["prankweb-failed"],
+      report["prankweb-failed"].length);
+  }
+
+  function setStatistics(id, currentValue, todayChange) {
+    const element = document.getElementById(id);
+    const before = currentValue - todayChange;
+    element.innerHTML = `
+      <span class="value">${before}</span>
+      <span class="change">+${todayChange}</span>`;
+    console.log(element);
+  }
+
+</script>
+
+</body>
+</html>
