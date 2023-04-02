@@ -107,11 +107,12 @@
     const element = document.getElementById(id);
     if (todayChange == null) {
       element.innerHTML = `<span class="value">${currentValue}</span>`;
+      return;
     }
     const before = currentValue - todayChange;
     element.innerHTML = `
       <span class="value">${before}</span>
-      <span class="change">+${todayChange}</span>`;
+      <span class="change">+ ${todayChange}</span>`;
   }
 
 </script>
