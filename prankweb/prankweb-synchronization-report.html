@@ -84,7 +84,7 @@
     setStatistics(
       "general-new",
       statistics["new"],
-      todayReport["new"].length);
+      null);
     setStatistics(
       "general-converted",
       statistics["converted"],
@@ -105,11 +105,13 @@
 
   function setStatistics(id, currentValue, todayChange) {
     const element = document.getElementById(id);
+    if (todayChange == null) {
+      element.innerHTML = `<span class="value">${currentValue}</span>`;
+    }
     const before = currentValue - todayChange;
     element.innerHTML = `
       <span class="value">${before}</span>
       <span class="change">+${todayChange}</span>`;
-    console.log(element);
   }
 
 </script>
