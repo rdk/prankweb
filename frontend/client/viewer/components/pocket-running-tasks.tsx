@@ -15,6 +15,11 @@ export default class RunningTasks extends React.Component
 
     constructor(props: any) {
         super(props);
+        this.defaultImplementation = this.defaultImplementation.bind(this);
+    }
+
+    defaultImplementation(serverTask: ServerTaskData, index: number) {
+        return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Backend task (" + serverTask.type + ")"} data={"completed"}/>
     }
 
     render() {
@@ -25,9 +30,9 @@ export default class RunningTasks extends React.Component
                     if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank && e.data.status === "successful") {
                         switch(e.type) {
                             case ServerTaskType.Sample:
-                                return renderOnServerSampleTaskCompleted(e.data.responseData, this.props.pocket, e.data.initialData.hash);
+                                return renderOnServerSampleTaskCompleted(e, this.props.pocket, e.data.initialData.hash);
                             default:
-                                return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Backend task (" + e.type + ")" + e.data.initialData.hash} data={"completed"}/>
+                                return this.defaultImplementation(e, index);
                         }
                     }
                     //queued, running, incomplete task
@@ -36,7 +41,7 @@ export default class RunningTasks extends React.Component
                             case ServerTaskType.Sample:
                                 return renderOnServerSampleTaskRunning(this.props.pocket, e.data.initialData.hash);
                             default:
-                                return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Backend task (" + e.type + ")" + e.data.initialData.hash} data={"in progress"}/>
+                                return this.defaultImplementation(e, index);
                         }
                     }
                     //NOT rendering tasks that are not related to this pocket

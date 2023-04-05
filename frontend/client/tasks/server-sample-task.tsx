@@ -62,7 +62,10 @@ export async function computeSampleTaskOnBackend(firstFetch: boolean, prediction
     }
 
     matchingTasks[0].data.responseData = data;
-    return data;
+    return {
+        "data": matchingTasks[0].data,
+        "type": ServerTaskType.Sample
+    };
 }
 
 /**
@@ -71,10 +74,10 @@ export async function computeSampleTaskOnBackend(firstFetch: boolean, prediction
  * @param pocket Pocket data
  * @returns JSX element
  */
-export function renderOnServerSampleTaskCompleted(responseData: any, pocket: PocketData, hash: string) {
+export function renderOnServerSampleTaskCompleted(taskData: ServerTaskData, pocket: PocketData, hash: string) {
     return (
         <PocketProperty inDialog={true} title={"Sample task (" + hash + ")"} data={
-            responseData.find((p: any) => p.rank === pocket.rank)?.count
+            taskData.data.responseData.find((p: any) => p.rank === pocket.rank)?.count
         }/>
     );
 }

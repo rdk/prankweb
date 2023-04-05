@@ -22,7 +22,7 @@ export default class PocketClientTask extends React.Component
         compute: () => Promise<ClientTaskData>,                 //the computation that returns a promise with the data to be rendered
         renderOnComplete: (data: ClientTaskData) => JSX.Element //called when the computation is complete
     }, {
-        data: ClientTaskData | undefined,
+        taskData: ClientTaskData | undefined,
         computed: boolean,
         loading: boolean
     }> {
@@ -31,13 +31,13 @@ export default class PocketClientTask extends React.Component
         super(props);
         this.handleClick = this.handleClick.bind(this);
         this.clickCompute = this.clickCompute.bind(this);
-        this.state = {loading: false, computed: false, data: undefined};
+        this.state = {loading: false, computed: false, taskData: undefined};
     }
 
 
     async clickCompute() {
         const json = await this.props.compute();
-        this.setState({loading: false, computed: true, data: json});
+        this.setState({loading: false, computed: true, taskData: json});
     }
 
     async handleClick() {
@@ -66,7 +66,7 @@ export default class PocketClientTask extends React.Component
                     </LoadingButton>
                 }
                 {
-                    this.state.computed && this.props.renderOnComplete(this.state.data!)
+                    this.state.computed && this.props.renderOnComplete(this.state.taskData!)
                 }
             </div>
         );

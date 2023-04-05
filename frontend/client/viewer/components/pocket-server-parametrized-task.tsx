@@ -23,9 +23,9 @@ export default class PocketServerParametrizedTask extends React.Component
         serverTasks: ServerTaskData[],
         modalDescription: string,
         compute: (hash: string) => Promise<any>
-        renderOnComplete: (responseData: any, pocket: PocketData, hash: string) => JSX.Element
+        renderOnComplete: (responseData: ServerTaskData, pocket: PocketData, hash: string) => JSX.Element
     }, {
-        responseData: any,
+        taskData: ServerTaskData | undefined,
         computed: boolean,
         loading: boolean,
         modalOpen: boolean,
@@ -38,7 +38,7 @@ export default class PocketServerParametrizedTask extends React.Component
         this.handleFormClick = this.handleFormClick.bind(this);
         this.clickCompute = this.clickCompute.bind(this);
         this.handleModalClick = this.handleModalClick.bind(this);
-        this.state = {loading: false, computed: false, responseData: undefined, modalOpen: false, formData: "", hash: ""};
+        this.state = {loading: false, computed: false, taskData: undefined, modalOpen: false, formData: "", hash: ""};
     }
 
     async clickCompute() {
@@ -52,7 +52,7 @@ export default class PocketServerParametrizedTask extends React.Component
             setTimeout(() => this.clickCompute(), 1000);
         }
         if(data) {
-            this.setState({loading: false, computed: true, responseData: data});
+            this.setState({loading: false, computed: true, taskData: data});
         }
     }
 
@@ -121,7 +121,7 @@ export default class PocketServerParametrizedTask extends React.Component
                 }
                 {
                     this.state.computed &&
-                    this.props.renderOnComplete(this.state.responseData!, this.props.pocket, this.state.hash)
+                    this.props.renderOnComplete(this.state.taskData!, this.props.pocket, this.state.hash)
                 }
             </div>
         );

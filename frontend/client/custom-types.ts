@@ -240,6 +240,9 @@ export interface ServerTaskDataContents {
     created: string;
     lastChange: string;
     status: string;
-    initialData: any;   //initial data
+    initialData: {
+        pocket: string;     //pocket id
+        [key: string]: any; //other data
+    };   //initial data
     responseData: any;  //response data
 }
