@@ -50,7 +50,7 @@ def _retrieve_info_url(pdb_code: str) -> PrankWebResponse:
 
 def _retrieve_info_directory(pdb_code: str) -> PrankWebResponse:
     path = os.path.join(
-        _server_directory, pdb_code[1:3].upper(), pdb_code.upper(),
+        str(_server_directory), pdb_code[1:3].upper(), pdb_code.upper(),
         "info.json")
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as stream:
@@ -82,7 +82,7 @@ def _retrieve_archive_url(pdb_code: str, destination: str):
 
 def _retrieve_archive_directory(pdb_code: str, destination: str):
     path = os.path.join(
-        _server_directory, pdb_code[1:3].upper(), pdb_code.upper(),
+        str(_server_directory), pdb_code[1:3].upper(), pdb_code.upper(),
         "public", "prankweb.zip")
     if not os.path.exists(path):
         raise RuntimeError(f"Missing file: '{path}'")
@@ -90,4 +90,4 @@ def _retrieve_archive_directory(pdb_code: str, destination: str):
 
 
 def prediction_url_template() -> str:
-    return f"{_server_url}/analyze/?database={database()}&code=" + "{}"
+    return f"{_server_url}/analyze?database={database()}&code=" + "{}"
