@@ -6,7 +6,7 @@ import { renderOnServerSampleTaskCompleted, renderOnServerSampleTaskRunning } fr
 /**
  * This component displays the list of finished or incomplete tasks for a pocket.
  */
-export default class RunningTasks extends React.Component
+export default class PocketRunningTasks extends React.Component
     <{
         pocket: PocketData,
         inDialog: boolean,

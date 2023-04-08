@@ -3,7 +3,7 @@ import React from "react";
 import PocketProperty from "./pocket-property";
 import PocketClientTask from "./pocket-client-task";
 import PocketServerParametrizedTask from "./pocket-server-parametrized-task";
-import RunningTasks from "./pocket-running-tasks";
+import PocketRunningTasks from "./pocket-running-tasks";
 
 import { computePocketVolume, renderOnTaskVolumeCompleted } from "../../tasks/client-atoms-volume";
 import { getSampleTaskCount, renderOnTaskSampleTasksCountCompleted } from "../../tasks/client-get-sample-tasks";
@@ -57,7 +57,7 @@ export default class PocketDialogDetails extends React.Component
                 <PocketServerParametrizedTask inDialog={this.props.inDialog} title="Sample task" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Sample} prediction={this.props.prediction} serverTasks={this.props.serverTasks}
                     modalDescription={"Enter the molecule for docking in pocket " + this.props.pocket.rank + " (SMILES or PDB)"} compute={(hash) => computeSampleTaskOnBackend(true, this.props.prediction, this.props.pocket, hash, this.props.serverTasks)} 
                     renderOnComplete={(data, hash) => renderOnServerSampleTaskCompleted(data, this.props.pocket, hash)} />
-                <RunningTasks inDialog={this.props.inDialog} serverTasks={this.state.serverTasks} pocket={this.props.pocket}/>
+                <PocketRunningTasks inDialog={this.props.inDialog} serverTasks={this.state.serverTasks} pocket={this.props.pocket}/>
             </div>
         );
     }
