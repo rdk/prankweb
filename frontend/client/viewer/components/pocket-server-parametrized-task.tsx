@@ -23,7 +23,7 @@ export default class PocketServerParametrizedTask extends React.Component
         serverTasks: ServerTaskData[],
         modalDescription: string,
         compute: (hash: string) => Promise<any>
-        renderOnComplete: (responseData: ServerTaskData, pocket: PocketData, hash: string) => JSX.Element
+        renderOnComplete: (responseData: ServerTaskData, hash: string) => JSX.Element
     }, {
         taskData: ServerTaskData | undefined,
         computed: boolean,
@@ -121,7 +121,7 @@ export default class PocketServerParametrizedTask extends React.Component
                 }
                 {
                     this.state.computed &&
-                    this.props.renderOnComplete(this.state.taskData!, this.props.pocket, this.state.hash)
+                    this.props.renderOnComplete(this.state.taskData!, this.state.hash)
                 }
             </div>
         );

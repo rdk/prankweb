@@ -56,7 +56,7 @@ export default class PocketDialogDetails extends React.Component
                 <PocketClientTask inDialog={this.props.inDialog} title="Total sample tasks" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.SampleTaskCount} prediction={this.props.prediction} compute={() => getSampleTaskCount(this.props.prediction)} renderOnComplete={renderOnTaskSampleTasksCountCompleted}/>
                 <PocketServerParametrizedTask inDialog={this.props.inDialog} title="Sample task" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Sample} prediction={this.props.prediction} serverTasks={this.props.serverTasks}
                     modalDescription={"Enter the molecule for docking in pocket " + this.props.pocket.rank + " (SMILES or PDB)"} compute={(hash) => computeSampleTaskOnBackend(true, this.props.prediction, this.props.pocket, hash, this.props.serverTasks)} 
-                    renderOnComplete={(data, pocket, hash) => renderOnServerSampleTaskCompleted(data, pocket, hash)} />
+                    renderOnComplete={(data, hash) => renderOnServerSampleTaskCompleted(data, this.props.pocket, hash)} />
                 <RunningTasks inDialog={this.props.inDialog} serverTasks={this.state.serverTasks} pocket={this.props.pocket}/>
             </div>
         );
