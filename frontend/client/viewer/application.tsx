@@ -5,7 +5,7 @@ import "./application.css";
 import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
 
 import { StructureInformation } from "./components/structure-information";
-import ToolsBox from "./components/tools-box";
+import ToolBox from "./components/tool-box";
 import PocketList from "./components/pocket-list";
 import TaskList from "./components/task-list";
 
@@ -243,7 +243,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
-          <ToolsBox
+          <ToolBox
             predictionData={this.state.data}
             downloadUrl={getApiDownloadUrl(predictionInfo)}
             downloadAs={downloadAs}

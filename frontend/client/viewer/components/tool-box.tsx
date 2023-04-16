@@ -1,6 +1,6 @@
 import React from "react";
 
-import "./tools-box.css";
+import "./tool-box.css";
 import { PocketsViewType, PolymerViewType, PolymerColorType, PredictionData } from "../../custom-types";
 
 /**
@@ -9,7 +9,7 @@ import { PocketsViewType, PolymerViewType, PolymerColorType, PredictionData } fr
  * Also allows the user to download the prediction and change the visualization colors.
  * Currently represented in the Bootstrap style.
  */
-export default class ToolsBox extends React.Component<{
+export default class ToolBox extends React.Component<{
   predictionData: PredictionData,
   downloadUrl: string,
   downloadAs: string,
