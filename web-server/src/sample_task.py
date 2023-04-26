@@ -108,12 +108,14 @@ class SampleTask:
 
             except:
                 #else we create a new info file
+                taskinfo.taskId = 0
                 _save_input(taskinfo, data)
                 return _create_sample_task_file(taskinfo)
         
         #else we create a new info file
         taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
-
+        taskinfo.taskId = 0
+        
         _save_input(taskinfo, data)
         return _create_sample_task_file(taskinfo)
     
