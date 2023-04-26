@@ -89,22 +89,27 @@ class SampleTask:
         if os.path.exists(directory):
             #if the info file exists, we have to append the new info to the existing file
             taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
+            try:
+                with open(_info_file(taskinfo), "r+") as f:
+                    fileData = json.load(f)
+                    #we check if the task already exists
+                    for task in fileData["tasks"]:
+                        if task["initialData"] == data:
+                            return self._response_file(directory, "info.json")
 
-            with open(_info_file(taskinfo), "r+") as f:
-                fileData = json.load(f)
-                #we check if the task already exists
-                for task in fileData["tasks"]:
-                    if task["initialData"] == data:
-                        return self._response_file(directory, "info.json")
+                    taskinfo.taskId = len(fileData["tasks"])
+                    fileData["tasks"].append(_create_info(taskinfo))
+                    f.seek(0)
+                    f.write(json.dumps(fileData))
+                
+                _save_input(taskinfo, data)
+                submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
+                return self._response_file(taskinfo.directory, "info.json")
 
-                taskinfo.taskId = len(fileData["tasks"])
-                fileData["tasks"].append(_create_info(taskinfo))
-                f.seek(0)
-                f.write(json.dumps(fileData))
-            
-            _save_input(taskinfo, data)
-            submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
-            return self._response_file(taskinfo.directory, "info.json")
+            except:
+                #else we create a new info file
+                _save_input(taskinfo, data)
+                return _create_sample_task_file(taskinfo)
         
         #else we create a new info file
         taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
