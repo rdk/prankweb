@@ -20,7 +20,7 @@ elif "CELERY_BROKER_PATH" in os.environ:
         },
     })
 
-
+"""
 @celery.signals.setup_logging.connect
 def setup_celery_logging(**kwargs):
     # We do nothing here to disable logging.
@@ -29,9 +29,10 @@ def setup_celery_logging(**kwargs):
 
 # https://github.com/celery/celery/issues/2509
 prankweb.log.setup()
+"""
 
-@prankweb.task(name="sample_task")
-def celery_run_sample_task(directory: str, taskId):
+@prankweb.task(name="docking")
+def celery_run_docking(directory: str, taskId):
     if os.path.isdir(directory):
         run_task.execute_directory_task(directory, taskId)
     else:

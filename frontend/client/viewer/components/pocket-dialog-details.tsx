@@ -6,12 +6,12 @@ import PocketServerParametrizedTask from "./pocket-server-parametrized-task";
 import PocketRunningTasks from "./pocket-running-tasks";
 
 import { computePocketVolume, renderOnTaskVolumeCompleted } from "../../tasks/client-atoms-volume";
-import { getSampleTaskCount, renderOnTaskSampleTasksCountCompleted } from "../../tasks/client-get-sample-tasks";
+import { getDockingTaskCount, renderOnTaskDockingTasksCountCompleted } from "../../tasks/client-get-docking-tasks";
 
 import { PocketData, ServerTaskData, ClientTaskType, ServerTaskType } from "../../custom-types";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
-import { computeSampleTaskOnBackend, renderOnServerSampleTaskCompleted } from "../../tasks/server-sample-task";
+import { computeDockingTaskOnBackend, renderOnServerDockingTaskCompleted } from "../../tasks/server-docking-task";
 
 /**
  * This component displays further details of a pocket
@@ -53,10 +53,10 @@ export default class PocketDialogDetails extends React.Component
             <div>
                 <PocketProperty inDialog={this.props.inDialog} title="Residues" data={this.props.pocket.residues.join(", ")}/>
                 <PocketClientTask inDialog={this.props.inDialog} title="Total atoms volume (Å^3)" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.Volume} prediction={this.props.prediction} compute={() => computePocketVolume(this.props.plugin, this.props.pocket)} renderOnComplete={renderOnTaskVolumeCompleted} />
-                <PocketClientTask inDialog={this.props.inDialog} title="Total sample tasks" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.SampleTaskCount} prediction={this.props.prediction} compute={() => getSampleTaskCount(this.props.prediction)} renderOnComplete={renderOnTaskSampleTasksCountCompleted}/>
-                <PocketServerParametrizedTask inDialog={this.props.inDialog} title="Sample task" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Sample} prediction={this.props.prediction} serverTasks={this.props.serverTasks}
-                    modalDescription={"Enter the molecule for docking in pocket " + this.props.pocket.rank + " (SMILES or PDB)"} compute={(hash) => computeSampleTaskOnBackend(true, this.props.prediction, this.props.pocket, hash, this.props.serverTasks)} 
-                    renderOnComplete={(data, hash) => renderOnServerSampleTaskCompleted(data, this.props.pocket, hash)} />
+                <PocketClientTask inDialog={this.props.inDialog} title="Total docking tasks" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ClientTaskType.DockingTaskCount} prediction={this.props.prediction} compute={() => getDockingTaskCount(this.props.prediction)} renderOnComplete={renderOnTaskDockingTasksCountCompleted}/>
+                <PocketServerParametrizedTask inDialog={this.props.inDialog} title="Docking task" pocket={this.props.pocket} plugin={this.props.plugin} taskType={ServerTaskType.Docking} prediction={this.props.prediction} serverTasks={this.props.serverTasks}
+                    modalDescription={"Enter the molecule for docking in pocket " + this.props.pocket.rank + " (SMILES or PDB)"} compute={(hash) => computeDockingTaskOnBackend(true, this.props.prediction, this.props.pocket, hash, this.props.serverTasks, this.props.plugin)} 
+                    renderOnComplete={(data, hash) => renderOnServerDockingTaskCompleted(data, this.props.pocket, hash)} />
                 <PocketRunningTasks inDialog={this.props.inDialog} serverTasks={this.state.serverTasks} pocket={this.props.pocket}/>
             </div>
         );

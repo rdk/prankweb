@@ -205,8 +205,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
    * Polls the server for the status of the tasks.
    */
   async getTaskList() {
-    //this applies to the sample task only, may fetch multiple backend tasks in the future
-    let json = await fetch(`./api/v2/sample/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
+    //this applies to the docking task only, may fetch multiple backend tasks in the future
+    let json = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
       .then(res => res.json())
       .catch(err => {
         return;
@@ -217,7 +217,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       json["tasks"].forEach((task: any) => {
         if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
           newTasks.push({
-            "type": ServerTaskType.Sample,
+            "type": ServerTaskType.Docking,
             "data": task
           });
         }

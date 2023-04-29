@@ -4,7 +4,7 @@ from .database_v1 import register_database_v1
 from .database_v2 import register_database_v2
 from .database_v3 import register_database_v3
 
-from .sample_task import SampleTask
+from .docking_task import DockingTask
 
 api_v2 = Blueprint("api_v2", __name__)
 
@@ -63,30 +63,30 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
 
 
 @api_v2.route(
-    "/sample/<database_name>/<prediction_name>/post",
+    "/docking/<database_name>/<prediction_name>/post",
     methods=["POST"]
 )
-def route_post_sample_file(database_name: str, prediction_name: str):
+def route_post_docking_file(database_name: str, prediction_name: str):
     data = request.get_json(force=True) or {}
-    st = SampleTask(database_name=database_name)
-    return st.post_task(prediction_name.upper(), data)
+    dt = DockingTask(database_name=database_name)
+    return dt.post_task(prediction_name.upper(), data)
 
 @api_v2.route(
-    "/sample/<database_name>/<prediction_name>/public/<file_name>",
+    "/docking/<database_name>/<prediction_name>/public/<file_name>",
     methods=["POST"]
 )
-def route_get_sample_file(database_name: str, prediction_name: str, file_name: str):
+def route_get_docking_file_with_param(database_name: str, prediction_name: str, file_name: str):
     data = request.get_json(force=True)
     param = data.get("hash", None)
     if data is None or param is None:
         return "", 404
-    st = SampleTask(database_name=database_name)
-    return st.get_file_with_post_param(prediction_name.upper(), file_name, param)
+    dt = DockingTask(database_name=database_name)
+    return dt.get_file_with_post_param(prediction_name.upper(), file_name, param)
 
 @api_v2.route(
-    "/sample/<database_name>/<prediction_name>/tasks",
+    "/docking/<database_name>/<prediction_name>/tasks",
     methods=["GET"]
 )
-def route_get_all_sample_tasks(database_name: str, prediction_name: str):
-    st = SampleTask(database_name=database_name)
-    return st.get_all_tasks(prediction_name.upper())
+def route_get_all_docking_tasks(database_name: str, prediction_name: str):
+    dt = DockingTask(database_name=database_name)
+    return dt.get_all_tasks(prediction_name.upper())

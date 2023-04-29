@@ -5,8 +5,9 @@ prankweb = celery.Celery("prankweb")
 
 prankweb.conf.update({
     "task_routes": {
+        # the key is the name of the task, the value is the name of the queue
         'prediction': 'p2rank',
-        'sample_task': 'docking',
+        'docking': 'docking',
     }
 })
 
@@ -29,5 +30,5 @@ elif "CELERY_BROKER_PATH" in os.environ:
 def submit_directory_for_execution(directory):
     prankweb.send_task("prediction", args=[directory])
 
-def submit_directory_for_sample_task(directory, taskId):
-    prankweb.send_task("sample_task", args=[directory, taskId])
+def submit_directory_for_docking(directory, taskId):
+    prankweb.send_task("docking", args=[directory, taskId])

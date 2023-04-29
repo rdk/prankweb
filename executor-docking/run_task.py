@@ -57,7 +57,7 @@ def execute_directory_task(directory: str, taskId: int):
     """
     Method to execute a task for a given directory and a given taskId.
     """
-   
+
     result_file = os.path.join(directory, str(taskId), "public", "result.json")
 
     #check if the directory exists - if not, we did not ask for this task
@@ -71,6 +71,11 @@ def execute_directory_task(directory: str, taskId: int):
 
     status["tasks"][taskId]["status"] = Status.RUNNING.value
     _save_status_file(status_file, status, taskId)
+
+    #load the input file
+    with open(os.path.join(directory, str(taskId), "input.json"), encoding="utf-8") as f:
+        cfg = json.load(f)
+        print(cfg["bounding_box"])
 
     #then load the prediction file
     prediction = _load_json(get_prediction_path(directory))

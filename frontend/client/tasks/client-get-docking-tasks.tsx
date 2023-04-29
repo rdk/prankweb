@@ -8,26 +8,26 @@ import { PredictionInfo } from "../prankweb-api";
  * @param prediction Prediction info
  * @returns Data with a number of tasks
 */
-export async function getSampleTaskCount(prediction: PredictionInfo): Promise<ClientTaskData> {
+export async function getDockingTaskCount(prediction: PredictionInfo): Promise<ClientTaskData> {
 
-    const json = await fetch(`./api/v2/sample/${prediction.database}/${prediction.id}/tasks`)
+    const json = await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/tasks`)
         .then(res => res.json())
         .catch(err => { 
             console.log(err);
-            setTimeout(() => getSampleTaskCount(prediction), 1000);
+            setTimeout(() => getDockingTaskCount(prediction), 1000);
         });
 
     if(json) {
         const numOfTasks = json["tasks"].length;
         return {
             "data": numOfTasks,
-            "type": ClientTaskType.SampleTaskCount
+            "type": ClientTaskType.DockingTaskCount
         };
     }
     
     return {
         "data": 0,
-        "type": ClientTaskType.SampleTaskCount
+        "type": ClientTaskType.DockingTaskCount
     }
 }
 
@@ -36,7 +36,7 @@ export async function getSampleTaskCount(prediction: PredictionInfo): Promise<Cl
  * @param data Data to render
  * @returns JSX element
  */
-export function renderOnTaskSampleTasksCountCompleted(data: ClientTaskData) {
+export function renderOnTaskDockingTasksCountCompleted(data: ClientTaskData) {
     return (
         <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
     );

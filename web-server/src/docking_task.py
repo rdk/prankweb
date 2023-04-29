@@ -9,7 +9,7 @@ import re
 import werkzeug.utils
 
 from .commons import extensions
-from .celery_client import submit_directory_for_sample_task
+from .celery_client import submit_directory_for_docking
 
 @dataclasses.dataclass
 class TaskInfo:
@@ -22,9 +22,9 @@ class TaskInfo:
     # Task numeric identifier - decided by the server.
     taskId: typing.Optional[int] = None
 
-class SampleTask:
+class DockingTask:
     """
-    Class for handling sample tasks. Prepares directories and files for given task to get executed by Celery.
+    Class for handling docking tasks. Prepares directories and files for given task to get executed by Celery.
     """
     # Database name.
     database_name: str
@@ -33,10 +33,10 @@ class SampleTask:
 
     def __init__(self, database_name: str):
         """
-        Constructor for SampleTask class, initializes the root path.
+        Constructor for DockingTask class, initializes the root path.
         """
         self.database_name = database_name
-        self.root_path = os.path.join(self._get_sample_task_directory(), self.database_name)
+        self.root_path = os.path.join(self._get_docking_task_directory(), self.database_name)
 
     def get_file_with_post_param(self, prediction_id: str, file_name: str, data_hash: str):
         """
@@ -60,7 +60,7 @@ class SampleTask:
                     return "", 404
         
         except OSError:
-            return "", 404
+            return "", 500
         
         #if we successfully found the task directory, we can return the file, if it exists
 
@@ -86,38 +86,46 @@ class SampleTask:
         directory = self._get_directory(prediction_id)
         if directory is None:
             return "", 404
+        if data is None: #user did not provide any data with the post request
+            return "", 400
         if os.path.exists(directory):
             #if the info file exists, we have to append the new info to the existing file
             taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
-            try:
-                with open(_info_file(taskinfo), "r+") as f:
-                    fileData = json.load(f)
-                    #we check if the task already exists
-                    for task in fileData["tasks"]:
-                        if task["initialData"] == data:
-                            return self._response_file(directory, "info.json")
+            if(os.path.exists(_info_file(taskinfo))):
+                try:
+                    with open(_info_file(taskinfo), "r+") as f:
+                        fileData = json.load(f)
+                        #we check if the task already exists
+                        for task in fileData["tasks"]:
+                            if task["initialData"] == {
+                                "hash": data["hash"],
+                                "pocket": data["pocket"],
+                            }:
+                                return self._response_file(directory, "info.json")
 
-                    taskinfo.taskId = len(fileData["tasks"])
-                    fileData["tasks"].append(_create_info(taskinfo))
-                    f.seek(0)
-                    f.write(json.dumps(fileData))
-                
-                _save_input(taskinfo, data)
-                submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
-                return self._response_file(taskinfo.directory, "info.json")
-
-            except:
+                        taskinfo.taskId = len(fileData["tasks"])
+                        fileData["tasks"].append(_create_info(taskinfo))
+                        f.seek(0)
+                        f.write(json.dumps(fileData))
+                    
+                    _save_input(taskinfo, data)
+                    submit_directory_for_docking(taskinfo.directory, taskinfo.taskId)
+                    return self._response_file(taskinfo.directory, "info.json")
+                except:
+                    #something went wrong on our side
+                    return "", 500
+            else:
                 #else we create a new info file
                 taskinfo.taskId = 0
                 _save_input(taskinfo, data)
-                return _create_sample_task_file(taskinfo)
+                return _create_docking_task_file(taskinfo)
         
         #else we create a new info file
         taskinfo = TaskInfo(directory=directory, identifier=prediction_id, data=data)
         taskinfo.taskId = 0
         
         _save_input(taskinfo, data)
-        return _create_sample_task_file(taskinfo)
+        return _create_docking_task_file(taskinfo)
     
     def get_all_tasks(self, prediction_id: str):
         """
@@ -148,7 +156,7 @@ class SampleTask:
             mimetype = self._mime_type(file_name)
         return flask.send_from_directory(directory, file_name, mimetype=mimetype)
 
-    def _get_sample_task_directory(self) -> str:
+    def _get_docking_task_directory(self) -> str:
         """
         Returns the root directory for all tasks.
         """
@@ -215,10 +223,13 @@ def _create_info(taskinfo: TaskInfo):
         "created": now,
         "lastChange": now,
         "status": "queued",
-        "initialData": taskinfo.data
+        "initialData": {
+            "hash": taskinfo.data["hash"],
+            "pocket": taskinfo.data["pocket"]
+        }
     }
 
-def _create_sample_task_file(taskinfo: TaskInfo, force=False):
+def _create_docking_task_file(taskinfo: TaskInfo, force=False):
     """
     Creates a directory for a task and initializes it.
     """
@@ -228,7 +239,7 @@ def _create_sample_task_file(taskinfo: TaskInfo, force=False):
         if not force:
             return _prediction_can_not_be_created(taskinfo)
     info = _prepare_prediction_directory(taskinfo)
-    submit_directory_for_sample_task(taskinfo.directory, taskinfo.taskId)
+    submit_directory_for_docking(taskinfo.directory, taskinfo.taskId)
     return flask.make_response(flask.jsonify(info), 201)
 
 def _prediction_can_not_be_created(taskinfo: TaskInfo):

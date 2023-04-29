@@ -1,7 +1,7 @@
 import React from "react";
 import { PocketData, ServerTaskData, ServerTaskType } from "../../custom-types";
 import PocketProperty from "./pocket-property";
-import { renderOnServerSampleTaskCompleted, renderOnServerSampleTaskRunning } from "../../tasks/server-sample-task";
+import { renderOnServerDockingTaskCompleted, renderOnServerDockingTaskRunning } from "../../tasks/server-docking-task";
 
 /**
  * This component displays the list of finished or incomplete tasks for a pocket.
@@ -29,8 +29,8 @@ export default class PocketRunningTasks extends React.Component
                     //finished task in this session
                     if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank && e.data.status === "successful") {
                         switch(e.type) {
-                            case ServerTaskType.Sample:
-                                return renderOnServerSampleTaskCompleted(e, this.props.pocket, e.data.initialData.hash);
+                            case ServerTaskType.Docking:
+                                return renderOnServerDockingTaskCompleted(e, this.props.pocket, e.data.initialData.hash);
                             default:
                                 return this.defaultImplementation(e, index);
                         }
@@ -38,8 +38,8 @@ export default class PocketRunningTasks extends React.Component
                     //queued, running, incomplete task
                     else if (e.data.initialData.pocket === this.props.pocket.rank && e.data.status !== "successful") {
                         switch(e.type) {
-                            case ServerTaskType.Sample:
-                                return renderOnServerSampleTaskRunning(this.props.pocket, e.data.initialData.hash);
+                            case ServerTaskType.Docking:
+                                return renderOnServerDockingTaskRunning(this.props.pocket, e.data.initialData.hash);
                             default:
                                 return this.defaultImplementation(e, index);
                         }

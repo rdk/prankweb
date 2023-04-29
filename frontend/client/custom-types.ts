@@ -212,7 +212,7 @@ export const DefaultPocketColors = [
  */
 export enum ClientTaskType {
     Volume = 0,
-    SampleTaskCount = 1
+    DockingTaskCount = 1
 }
 
 export interface ClientTaskData {
@@ -227,7 +227,7 @@ export interface Point3D {
 }
 
 export enum ServerTaskType {
-    Sample = 0
+    Docking = 0
 }
 
 export interface ServerTaskData {
@@ -241,6 +241,7 @@ export interface ServerTaskDataContents {
     lastChange: string;
     status: string;
     initialData: {
+        hash: string;       //hash of the data
         pocket: string;     //pocket id
         [key: string]: any; //other data
     };   //initial data
