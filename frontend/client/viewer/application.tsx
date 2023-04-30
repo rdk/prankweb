@@ -10,7 +10,7 @@ import PocketList from "./components/pocket-list";
 import TaskList from "./components/task-list";
 
 import { sendDataToPlugins } from './data-loader';
-import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData, ServerTaskType } from "../custom-types";
+import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData, ServerTaskDataContents, ServerTaskType } from "../custom-types";
 
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
@@ -213,13 +213,19 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       }); //we could handle the error, but we do not care if the poll fails sometimes
     if(json) {
       //append the new tasks to the existing ones
+      console.log(this.state.serverTasks);
       let newTasks: ServerTaskData[] = this.state.serverTasks;
-      json["tasks"].forEach((task: any) => {
+      json["tasks"].forEach((task: ServerTaskDataContents) => {
         if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
           newTasks.push({
             "type": ServerTaskType.Docking,
             "data": task
           });
+        }
+        else if (newTasks.find((t: ServerTaskData) => t.data.status !== task.status)) {
+          //update the status
+          const index = newTasks.findIndex((t: ServerTaskData) => t.data.id === task.id);
+          newTasks[index].data = task;
         }
       });
       this.setState({serverTasks: newTasks});

@@ -29,7 +29,6 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
     //compute max distance from the center
     let maxDistance = 0;
     coords.forEach(coord => {
-        console.log(coord);
         const distance = twoPointsDistance(coord, center);
         if(distance > maxDistance) {
             maxDistance = distance;
@@ -67,6 +66,34 @@ export async function computeDockingTaskOnBackend(firstFetch: boolean, predictio
         return;
     }
 
+    let matchingTasks = (serverTasks.filter((e: ServerTaskData) => e.type === ServerTaskType.Docking && e.data.initialData.hash === hash && e.data.initialData.pocket === pocket.rank));
+
+    //check if the task is finished
+    if(matchingTasks.length !== 0) {
+        if(matchingTasks[0].data.status === "successful") {
+            const data = await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/public/result.json`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "hash": hash,
+                }
+            )}).then(res => res.json()).catch(err => console.log(err));
+            if(!data) {
+                return;
+            }
+        
+            matchingTasks[0].data.responseData = data;
+            return {
+                "data": matchingTasks[0].data,
+                "type": ServerTaskType.Docking
+            };
+        }
+        return;
+    }
+
     const box = computeBoundingBox(plugin, pocket);
 
     await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/post`, {
@@ -81,42 +108,12 @@ export async function computeDockingTaskOnBackend(firstFetch: boolean, predictio
             "bounding_box": box
         }),
     }).then((res) => {
-        setTimeout(() => {}, 500); //wait for the backend to process the request
+        //let the next call handle the response
     }
     ).catch(err => {
         console.log(err);
     });
-
-    //check if the task is finished
-    let matchingTasks = (serverTasks.filter((e: ServerTaskData) => e.type === ServerTaskType.Docking && e.data.initialData.hash === hash && e.data.initialData.pocket === pocket.rank));
-
-    if(matchingTasks.length === 0) {
-        return;
-    }
-
-    if(matchingTasks[0].data.status !== "successful") {
-        return;
-    }
-
-    const data = await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/public/result.json`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            "hash": hash,
-        }
-    )}).then(res => res.json()).catch(err => console.log(err));
-    if(!data) {
-        return;
-    }
-
-    matchingTasks[0].data.responseData = data;
-    return {
-        "data": matchingTasks[0].data,
-        "type": ServerTaskType.Docking
-    };
+    return;
 }
 
 /**
