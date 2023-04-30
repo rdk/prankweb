@@ -24,6 +24,7 @@ export default class PocketServerParametrizedTask extends React.Component
         modalDescription: string,
         compute: (hash: string) => Promise<any>
         renderOnComplete: (responseData: ServerTaskData, hash: string) => JSX.Element
+        hashMethod: (prediction: PredictionInfo, pocket: PocketData, formData: string) => string
     }, {
         taskData: ServerTaskData | undefined,
         computed: boolean,
@@ -43,7 +44,7 @@ export default class PocketServerParametrizedTask extends React.Component
 
     async clickCompute() {
         if(this.state.hash === "") {
-            const hash = this.state.formData;
+            const hash = this.props.hashMethod(this.props.prediction, this.props.pocket, this.state.formData);
             this.setState({hash: hash});
         }
 
@@ -70,13 +71,17 @@ export default class PocketServerParametrizedTask extends React.Component
 
     // currently after clicking the compute button, a modal is shown for the user to input the task parameters
     render() {
+        let shortHash = this.state.hash;
+        if(this.state.hash.length > 15) {
+            shortHash = this.state.hash.substring(0, 15) + "...";
+        }
         return (
             <div>
                 {
                     !this.state.computed &&
                     <div style={{margin: "0.5rem"}}>
                         <strong>{
-                            this.props.title + ((this.state.hash === "") ? "" : " (" + this.state.hash + ")")
+                            this.props.title + ((this.state.hash === "") ? "" : " (" + shortHash + ")")
                         }:</strong>
                         <div style={{display: 'inline'}}>
                             <LoadingButton

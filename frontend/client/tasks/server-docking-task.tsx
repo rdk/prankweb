@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from '@mui/material';
 
 import { PredictionInfo } from "../prankweb-api";
 import { PocketData, ServerTaskType, Point3D } from "../custom-types";
@@ -123,21 +124,73 @@ export async function computeDockingTaskOnBackend(firstFetch: boolean, predictio
  * @returns JSX element
  */
 export function renderOnServerDockingTaskCompleted(taskData: ServerTaskData, pocket: PocketData, hash: string) {
+    let shorterHash = hash;
+    if(hash.length > 15) {
+        shorterHash = hash.substring(0, 15) + "...";
+    }
     return (
-        <PocketProperty inDialog={true} title={"Docking task (" + hash + ")"} data={
-            taskData.data.responseData.find((p: any) => p.rank === pocket.rank)?.count
+        <PocketProperty inDialog={true} title={"Docking task (" + shorterHash + ")"} data={
+            //there should be only one result
+            taskData.data.responseData.map((e: any) =>
+                <Button variant="contained" color="success" onClick={() => downloadResult(hash, e.url)}>
+                    Result
+                </Button>
+            )
         }/>
     );
 }
 
 export function renderOnServerDockingTaskRunning(pocket: PocketData, hash: string) {
+    let shorterHash = hash;
+    if(hash.length > 15) {
+        shorterHash = hash.substring(0, 15) + "...";
+    }
     return (
-        <PocketProperty inDialog={true} title={"Docking task (" + hash + ")"} data={"running"}/>
+        <PocketProperty inDialog={true} title={"Docking task (" + shorterHash + ")"} data={"running"}/>
     );
 }
 
 export function renderOnServerDockingTaskFailed(pocket: PocketData, hash: string) {
+    let shorterHash = hash;
+    if(hash.length > 15) {
+        shorterHash = hash.substring(0, 15) + "...";
+    }
     return (
-        <PocketProperty inDialog={true} title={"Docking task (" + hash + ")"} data={"failed"}/>
+        <PocketProperty inDialog={true} title={"Docking task (" + shorterHash + ")"} data={"failed"}/>
     );
+}
+
+export function dockingHash(prediction: PredictionInfo, pocket: PocketData, formData: string) {
+    return formData;
+}
+
+function downloadResult(hash: string, fileURL: string) {
+    // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
+    fetch(fileURL, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "hash": hash,
+        })
+      })
+      .then((response) => response.blob())
+      .then((blob) => {
+        // Create blob link to download
+        const url = window.URL.createObjectURL(
+          new Blob([blob]),
+        );
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute(
+          'download',
+          `result.pdbqt`,
+        );
+    
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode!.removeChild(link);
+      });
 }

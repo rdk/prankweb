@@ -145,8 +145,10 @@ class DockingTask:
         """
         if not re.match("[_,\w]+", prediction_id):
             return None
+        if "user-upload" in self.database_name:
+            return os.path.join(self.root_path, prediction_id)
         directory = prediction_id[1:3]
-        return os.path.join(self.root_path, directory, prediction_id)
+        return os.path.join(self.root_path, directory, prediction_id)        
     
     def _response_file(self, directory: str, file_name: str, mimetype=None):
         """

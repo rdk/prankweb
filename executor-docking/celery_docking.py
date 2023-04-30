@@ -20,6 +20,8 @@ elif "CELERY_BROKER_PATH" in os.environ:
         },
     })
 
+# TODO: uncomment this later
+# when uncommented, this will disable logging for Celery (including prints to stdout)
 """
 @celery.signals.setup_logging.connect
 def setup_celery_logging(**kwargs):

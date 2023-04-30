@@ -52,11 +52,15 @@ export default class PocketRunningTasks extends React.Component
                     }
                     //failed task
                     else if (e.data.initialData.pocket === this.props.pocket.rank && e.data.status === "failed") {
-                        return failedMethods[e.type](e);
+                        const date = Date.parse(e.data.lastChange);
+                        const now = Date.now();
+                        //if the task failed in the last 60 minutes, we display it, otherwise we ignore it
+                        if(now - date < 60 * 60 * 1000) {
+                            return failedMethods[e.type](e);
+                        }
                     }
                     //NOT rendering tasks that are not related to this pocket
-                    //and tasks not completed in this session
-                    return this.defaultImplementation(e, index);
+                    //and tasks not completed in this session (apart from failed/running tasks)
                 })}
            </div>
         );
