@@ -80,6 +80,9 @@ class TaskListContent extends React.Component<{
                     else if(task.data["status"] === "running") {
                         return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} running`}</li>
                     }
+                    else if(task.data["status"] === "failed") {
+                      return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} failed`}</li>
+                    }
                     else if(task.data["status"] === "queued") {
                       return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} queued`}</li>
                     }

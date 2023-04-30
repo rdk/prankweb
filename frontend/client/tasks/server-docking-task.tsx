@@ -135,3 +135,9 @@ export function renderOnServerDockingTaskRunning(pocket: PocketData, hash: strin
         <PocketProperty inDialog={true} title={"Docking task (" + hash + ")"} data={"running"}/>
     );
 }
+
+export function renderOnServerDockingTaskFailed(pocket: PocketData, hash: string) {
+    return (
+        <PocketProperty inDialog={true} title={"Docking task (" + hash + ")"} data={"failed"}/>
+    );
+}
