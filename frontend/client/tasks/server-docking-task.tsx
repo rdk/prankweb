@@ -9,18 +9,24 @@ import PocketProperty from "../viewer/components/pocket-property";
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
+/**
+ * Computes distance of 2 points in 3D space.
+ * @param point1 First point
+ * @param point2 Second point
+ * @returns Distance between the points
+*/
 function twoPointsDistance(point1: Point3D, point2: Point3D) {
     return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2) + Math.pow(point1.z - point2.z, 2));
 }
 
+/**
+ * Computes a bounding box for the given pocket.
+ * @param plugin Mol* plugin
+ * @param pocket Pocket data
+ * @returns Bounding box
+*/
 function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
-    const coords = getPocketAtomCoordinates(plugin, pocket.surface);
-
-    /*const points: Array<Array<number>> = [];
-    coords.forEach(coord => {
-        console.log(coord);
-        points.push([coord.x, coord.y, coord.z]);
-    });*/
+    const coords: Point3D[] = getPocketAtomCoordinates(plugin, pocket.surface);
 
     const center: Point3D = {
         x: Number(pocket.center[0]),
@@ -140,6 +146,12 @@ export function renderOnServerDockingTaskCompleted(taskData: ServerTaskData, poc
     );
 }
 
+/**
+ * Returns a JSX element that renders the visuals when the task is running.
+ * @param pocket Pocket data
+ * @param hash Task identifier (hash)
+ * @returns JSX element
+ */
 export function renderOnServerDockingTaskRunning(pocket: PocketData, hash: string) {
     let shorterHash = hash;
     if(hash.length > 15) {
@@ -150,6 +162,12 @@ export function renderOnServerDockingTaskRunning(pocket: PocketData, hash: strin
     );
 }
 
+/**
+ * Returns a JSX element that renders the visuals when the task failed.
+ * @param pocket Pocket data
+ * @param hash Task identifier (hash)
+ * @returns JSX element
+*/
 export function renderOnServerDockingTaskFailed(pocket: PocketData, hash: string) {
     let shorterHash = hash;
     if(hash.length > 15) {
@@ -160,10 +178,23 @@ export function renderOnServerDockingTaskFailed(pocket: PocketData, hash: string
     );
 }
 
+/**
+ * Returns a hash that identifies this task, in this case directly the user input.
+ * @param prediction Prediction info
+ * @param pocket Pocket data
+ * @param formData Form data (user input)
+ * @returns Computed hash
+*/
 export function dockingHash(prediction: PredictionInfo, pocket: PocketData, formData: string) {
     return formData;
 }
 
+/**
+ * Downloads the result of the task.
+ * @param hash Task identifier (hash)
+ * @param fileURL URL to download the result from
+ * @returns void
+*/
 function downloadResult(hash: string, fileURL: string) {
     // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     fetch(fileURL, {

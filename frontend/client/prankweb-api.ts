@@ -44,7 +44,7 @@ export async function fetchPrediction(
   // We need to navigate to the root, and then we can request the data.
   const url = getApiEndpoint(database, id);
   const response = await fetch(url);
-  var result;
+  let result;
   try {
     result = await response.json();
   } catch {
