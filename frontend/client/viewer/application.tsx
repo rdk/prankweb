@@ -225,6 +225,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         else if (newTasks.find((t: ServerTaskData) => t.data.status !== task.status)) {
           //update the status
           const index = newTasks.findIndex((t: ServerTaskData) => t.data.id === task.id);
+          let formerResponseData = newTasks[index].data.responseData;
+          task.responseData = formerResponseData;
           newTasks[index].data = task;
         }
       });
