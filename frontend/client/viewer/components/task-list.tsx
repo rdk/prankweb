@@ -74,18 +74,7 @@ class TaskListContent extends React.Component<{
         return (
             <ul className="list-group list-group-flush">
                 {this.props.tasks.map((task: ServerTaskData, index: number) => {
-                    if(task.data["status"] === "successful") {
-                        return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange}`}</li>
-                    }
-                    else if(task.data["status"] === "running") {
-                        return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} running`}</li>
-                    }
-                    else if(task.data["status"] === "failed") {
-                      return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} failed`}</li>
-                    }
-                    else if(task.data["status"] === "queued") {
-                      return <li key={index} className="list-group-item">{`${task.type} ${task.data.id} ${task.data.initialData["hash"]} ${task.data.lastChange} queued`}</li>
-                    }
+                    return <li key={index} className="list-group-item">{`Task ${task.data.id} (hash ${task.data.initialData["hash"]}, pocket ${task.data.initialData.pocket}, last updated ${task.data.lastChange})`}</li>
                 })}
             </ul>
         )

@@ -138,7 +138,7 @@ export function renderOnServerDockingTaskCompleted(taskData: ServerTaskData, poc
         <PocketProperty inDialog={true} title={"Docking task (" + shorterHash + ")"} data={
             //there should be only one result
             taskData.data.responseData.map((e: any) =>
-                <Button variant="contained" color="success" onClick={() => downloadResult(hash, e.url)}>
+                <Button variant="contained" color="success" size="small" onClick={() => downloadResult(hash, e.url)}>
                     Result
                 </Button>
             )
