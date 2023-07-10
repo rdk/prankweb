@@ -107,7 +107,7 @@ RUN apt-get update \
   && apt-get -y --no-install-recommends install \
   wget curl \
   python3 python3-pip python3-venv \
-  openjdk-17-jre-headless \
+  default-jre \
   libgomp1 vim
 
 # https://github.com/python/cpython/issues/102134
