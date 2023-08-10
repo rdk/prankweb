@@ -1,0 +1,12 @@
+.visualization-toolbox-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.visualization-toolbox-option-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+}

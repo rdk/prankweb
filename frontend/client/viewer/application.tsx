@@ -17,6 +17,7 @@ import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
 import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView, showPocketInCurrentRepresentation } from './molstar-visualise';
+import { VisualizationToolBox } from "./components/visualization-tool-box";
 
 /**
  * A function to render the actual PrankWeb viewer.
@@ -46,10 +47,15 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
   });
 
   // Render pocket list on the right side (or bottom for smartphones) using React.
-  const container = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
-  const root = createRoot(container!);
-  root.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
+  const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
+  const pocketListRoot = createRoot(pocketListContainer!);
+  pocketListRoot.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
     pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
+
+  // Render the tool box on the bottom of the visualization using React.
+  const toolBoxContainer = document.getElementById('visualization-toolbox');
+  const toolBoxRoot = createRoot(toolBoxContainer!);
+  toolBoxRoot.render(<VisualizationToolBox/>);
 }
 
 /**

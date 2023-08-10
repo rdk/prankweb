@@ -12,9 +12,16 @@
 }
 
 #application-molstar {
-    position: absolute;
-    bottom: 0;
-    height: 70vh;
+    position: relative;
+    height: 55vh;
+    width: 100%;
+}
+
+#visualization-toolbox {
+    position: relative;
+    height: 15vh;
+    width: 100%;
+    background-color: lightgray;
 }
 
 #application-rcsb {
@@ -22,6 +29,7 @@
     overflow-x: auto;
     overflow-y: auto;
     height: calc(30vh - 68px);
+    margin-bottom: 10px;
 }
 
 #application-rcsb::-webkit-scrollbar {
@@ -42,8 +50,9 @@
     background: #555; 
 }
 
-#pocket-list-aside {
+#information {
     height: 100%;
+    overflow-y: auto;
 }
 
 @media (max-width: 767px) {
@@ -60,13 +69,6 @@
     #application-molstar {
         position: relative;
         bottom: auto;
-    }
-}
-
-/* Set for Bootstrap md breakpoint. */
-@media (min-width: 768px) {
-    #pocket-list-aside {
-        overflow-y: scroll;
     }
 }
 

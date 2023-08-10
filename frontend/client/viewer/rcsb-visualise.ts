@@ -44,6 +44,7 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 function calculateViewerWidth() {
     const width = window.innerWidth;
 
+
     const xs = 768;
     const lg = 1200;
 
@@ -51,6 +52,9 @@ function calculateViewerWidth() {
     //230 is a needed padding... could be maybe a little less, but on the other way smaller numbers can cause unnecessary overflow 
 
     if(width <= xs) return width;
+
+    //TODO: temp solution, needs to be changed
+    return Math.floor(width * (5/12)) - 250;
 
     if(width <= lg) {
         return Math.floor(width * (8/12)) - 230;
