@@ -197,7 +197,6 @@ export const AlphaFoldColorsMolStar = [
  * Colorblind edited scheme 'Wong' from https://davidmathlogic.com/colorblind/ 
  */
 export const DefaultPocketColors = [
-    "000000",
     "CE0000",
     "F0E442",
     "E69F00",
