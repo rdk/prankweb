@@ -46,16 +46,12 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
       }
   });
 
+
   // Render pocket list on the right side (or bottom for smartphones) using React.
   const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
   const pocketListRoot = createRoot(pocketListContainer!);
   pocketListRoot.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
     pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
-
-  // Render the tool box on the bottom of the visualization using React.
-  const toolBoxContainer = document.getElementById('visualization-toolbox');
-  const toolBoxRoot = createRoot(toolBoxContainer!);
-  toolBoxRoot.render(<VisualizationToolBox/>);
 }
 
 /**
@@ -89,13 +85,13 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   }
 
   componentDidMount() {
-    //console.log("Application::componentDidMount");
     this.loadData();
     this.getTaskList();
   }
 
   /**
    * Loads the data from the server and sends them to the plugins.
+   * Also renders the tool box on the bottom of the visualization using React.
    */
   async loadData() {
     this.setState({
@@ -103,6 +99,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       "error": undefined,
     });
     const {molstarPlugin, predictionInfo} = this.props;
+
+    let loadedData: [PredictionData, RcsbFv] | null = null;
 
     //at first we need the plugins to download the needed data and visualise them
     await sendDataToPlugins(
@@ -112,6 +110,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       predictionInfo.metadata.structureName,
       predictionInfo.metadata.predictedStructure ? true : false
     ).then((data) => {
+      loadedData = data;
       this.setState({
       "isLoading": false,
       "data": data[0],
@@ -122,8 +121,33 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       })
       console.log(error);
     });
+
+    if(!loadedData) return;
+
+    // Render the tool box on the bottom of the visualization using React.
+    const toolBoxContainer = document.getElementById('visualization-toolbox');
+    const toolBoxRoot = createRoot(toolBoxContainer!);
+    const downloadAs = `prankweb-${this.props.predictionInfo.metadata.predictionName}.zip`;
+    const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
+    
+    toolBoxRoot.render(<VisualizationToolBox 
+      downloadUrl={getApiDownloadUrl(this.props.predictionInfo)}
+      downloadAs={downloadAs}
+      molstarPlugin={this.props.molstarPlugin}
+      predictionData={loadedData[0]}
+      pluginRcsb={loadedData[1]}
+      isPredicted={isPredicted}
+      polymerView={this.state.polymerView}
+      pocketsView={this.state.pocketsView}
+      polymerColor={this.state.polymerColor}
+      onShowConfidentChange={this.onShowConfidentChange}
+      onPolymerViewChange={this.onPolymerViewChange}
+      onPocketsViewChange={this.onPocketsViewChange}
+      onPolymerColorChange={this.onPolymerColorChange}
+      />);
   }
 
+  // TODO: remove some of these as they are duplicated in visualization-tool-box.tsx
   // The following functions are called by the child components to change the visualisation via the child components.
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
@@ -257,6 +281,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
+          {/*
           <ToolBox
             predictionData={this.state.data}
             downloadUrl={getApiDownloadUrl(predictionInfo)}
@@ -271,13 +296,10 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             isShowOnlyPredicted={this.state.isShowOnlyPredicted}
             onShowConfidentChange={this.onShowConfidentChange}
           />
+      */}
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
-          />
-          <TaskList 
-            prediction={predictionInfo}
-            tasks={this.state.serverTasks}
           />
           <PocketList 
             data={this.state.data}

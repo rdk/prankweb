@@ -1,12 +1,19 @@
 .visualization-toolbox-container {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-around;
     align-items: center;
     padding-top: 10px;
+    flex-wrap: wrap;
+    row-gap: 10px;
 }
 
-.visualization-toolbox-option-title {
+.visualization-toolbox-option-name {
     font-size: 1.2em;
     font-weight: bold;
     text-align: center;
+}
+
+.visualization-toolbox-option-link {
+    text-decoration: none;
+    color: white;
 }
