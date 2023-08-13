@@ -1,4 +1,4 @@
-.visualization-toolbox-container {
+.visualization-toolbox-row {
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -15,5 +15,5 @@
 
 .visualization-toolbox-option-link {
     text-decoration: none;
-    color: white;
+    color: inherit;
 }

@@ -91,97 +91,101 @@ export class VisualizationToolBox extends React.Component<{
     render() {
         return (
         <div className="visualization-toolbox-container">
-            <div className="visualization-toolbox-option">
-                <div className="visualization-toolbox-option-description">
-                    <Button variant="contained" color="primary" className="visualization-toolbox-button" onClick={this.toggle1DViewer}>
-                        Toggle
-                    </Button>
-                </div>
-            </div>
-
-            <div className="visualization-toolbox-option">
-                <div className="visualization-toolbox-option-description">
-                    <Button variant="contained" color="primary" className="visualization-toolbox-button">
-                    <a href={this.props.downloadUrl} download={this.props.downloadAs} className="visualization-toolbox-option-link">
-                        Download
-                    </a>
-                    </Button>
-                </div>
-            </div>
-
-            {this.props.isPredicted && (
+            <div className="visualization-toolbox-row">
                 <div className="visualization-toolbox-option">
                     <div className="visualization-toolbox-option-description">
-                        <Button variant="contained" color="primary" className="visualization-toolbox-button" onClick={this.changeShowConfident}>
-                            {this.state.isShowOnlyPredicted ? "Show all regions" : "Show confident regions"}
+                        <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.toggle1DViewer}>
+                            Toggle
                         </Button>
                     </div>
                 </div>
-            )}
 
-            <div className="visualization-toolbox-option">
-                <div className="visualization-toolbox-option-description">
-                <Box>
-                    <FormControl size="small">
-                        <InputLabel id="protein-select-label">Protein visualization</InputLabel>
-                        <Select
-                            labelId="protein-select-label"
-                            id="protein-select"
-                            value={this.state.polymerView}
-                            label="Protein visualization"
-                            onChange={(event) => this.changePolymerView(event.target.value as PolymerViewType)}
-                        >
-                        <MenuItem value={PolymerViewType.Atoms}>Balls and Sticks</MenuItem>
-                        <MenuItem value={PolymerViewType.Gaussian_Surface}>Surface</MenuItem>
-                        <MenuItem value={PolymerViewType.Cartoon}>Cartoon</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
+                <div className="visualization-toolbox-option">
+                    <div className="visualization-toolbox-option-description">
+                        <Button variant="outlined" color="primary" className="visualization-toolbox-button">
+                        <a href={this.props.downloadUrl} download={this.props.downloadAs} className="visualization-toolbox-option-link">
+                            Download
+                        </a>
+                        </Button>
+                    </div>
                 </div>
+
+                {this.props.isPredicted && (
+                    <div className="visualization-toolbox-option">
+                        <div className="visualization-toolbox-option-description">
+                            <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.changeShowConfident}>
+                                {this.state.isShowOnlyPredicted ? "Show all regions" : "Show confident regions"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="visualization-toolbox-option">
-                <div className="visualization-toolbox-option-description">
-                <Box>
-                    <FormControl size="small">
-                        <InputLabel id="pockets-color-select-label">Pockets visualization (color by)</InputLabel>
-                        <Select
-                            labelId="pockets-color-select-label"
-                            id="pockets-color-select"
-                            value={this.state.pocketsView}
-                            label="Pockets visualization (color by)"
-                            onChange={(event) => this.changePocketsView(event.target.value as PocketsViewType)}
-                        >
-                        <MenuItem value={PocketsViewType.Ball_Stick_Atoms_Color}>Balls and Sticks (atoms)</MenuItem>
-                        <MenuItem value={PocketsViewType.Ball_Stick_Residues_Color}>Balls and Sticks (residues)</MenuItem>
-                        <MenuItem value={PocketsViewType.Surface_Atoms_Color}>Surface (atoms)</MenuItem>
-                        <MenuItem value={PocketsViewType.Surface_Residues_Color}>Surface (residues)</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
+            <div className="visualization-toolbox-row">
+                <div className="visualization-toolbox-option">
+                    <div className="visualization-toolbox-option-description">
+                    <Box>
+                        <FormControl size="small">
+                            <InputLabel id="protein-select-label">Protein visualization</InputLabel>
+                            <Select
+                                labelId="protein-select-label"
+                                id="protein-select"
+                                value={this.state.polymerView}
+                                label="Protein visualization"
+                                onChange={(event) => this.changePolymerView(event.target.value as PolymerViewType)}
+                            >
+                            <MenuItem value={PolymerViewType.Atoms}>Balls and Sticks</MenuItem>
+                            <MenuItem value={PolymerViewType.Gaussian_Surface}>Surface</MenuItem>
+                            <MenuItem value={PolymerViewType.Cartoon}>Cartoon</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    </div>
                 </div>
-            </div>
 
-            <div className="visualization-toolbox-option">
-                <div className="visualization-toolbox-option-description">
-                <Box>
-                    <FormControl size="small">
-                        <InputLabel id="polymer-color-select-label">Polymer coloring</InputLabel>
-                        <Select
-                            labelId="pockets-color-select-label"
-                            id="pockets-color-select"
-                            value={this.state.polymerColor}
-                            label="Polymer coloring"
-                            onChange={(event) => this.changePolymerColor(event.target.value as PolymerColorType)}
-                        >
-                            <MenuItem value={PolymerColorType.Clean}>Clear</MenuItem>
-                        {this.scoresDataAvailable(this.props.predictionData.structure.scores.conservation) && 
-                            <MenuItem value={PolymerColorType.Conservation}>Conservation</MenuItem>}
-                        {this.scoresDataAvailable(this.props.predictionData.structure.scores.plddt) && 
-                            <MenuItem value={PolymerColorType.AlphaFold}>AlphaFold confidence</MenuItem>}
-                        </Select>
-                    </FormControl>
-                </Box>
+                <div className="visualization-toolbox-option">
+                    <div className="visualization-toolbox-option-description">
+                    <Box>
+                        <FormControl size="small">
+                            <InputLabel id="pockets-color-select-label">Pockets visualization (color by)</InputLabel>
+                            <Select
+                                labelId="pockets-color-select-label"
+                                id="pockets-color-select"
+                                value={this.state.pocketsView}
+                                label="Pockets visualization (color by)"
+                                onChange={(event) => this.changePocketsView(event.target.value as PocketsViewType)}
+                            >
+                            <MenuItem value={PocketsViewType.Ball_Stick_Atoms_Color}>Balls and Sticks (atoms)</MenuItem>
+                            <MenuItem value={PocketsViewType.Ball_Stick_Residues_Color}>Balls and Sticks (residues)</MenuItem>
+                            <MenuItem value={PocketsViewType.Surface_Atoms_Color}>Surface (atoms)</MenuItem>
+                            <MenuItem value={PocketsViewType.Surface_Residues_Color}>Surface (residues)</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    </div>
+                </div>
+
+                <div className="visualization-toolbox-option">
+                    <div className="visualization-toolbox-option-description">
+                    <Box>
+                        <FormControl size="small">
+                            <InputLabel id="polymer-color-select-label">Polymer coloring</InputLabel>
+                            <Select
+                                labelId="pockets-color-select-label"
+                                id="pockets-color-select"
+                                value={this.state.polymerColor}
+                                label="Polymer coloring"
+                                onChange={(event) => this.changePolymerColor(event.target.value as PolymerColorType)}
+                            >
+                                <MenuItem value={PolymerColorType.Clean}>Clear</MenuItem>
+                            {this.scoresDataAvailable(this.props.predictionData.structure.scores.conservation) && 
+                                <MenuItem value={PolymerColorType.Conservation}>Conservation</MenuItem>}
+                            {this.scoresDataAvailable(this.props.predictionData.structure.scores.plddt) && 
+                                <MenuItem value={PolymerColorType.AlphaFold}>AlphaFold confidence</MenuItem>}
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    </div>
                 </div>
             </div>
         </div>
