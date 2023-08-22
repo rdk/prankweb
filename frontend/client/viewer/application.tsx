@@ -47,6 +47,14 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
       }
   });
 
+  // If the Mol* plugin is maximized, hide the React components.
+  MolstarPlugin.layout.events.updated.subscribe(() => {
+    const information = document.getElementById('information')!;
+    const visualizationToolbox = document.getElementById('visualization-toolbox')!;
+    
+    information.style.display = MolstarPlugin.layout.state.isExpanded ? "none" : "block";
+    visualizationToolbox.style.display = MolstarPlugin.layout.state.isExpanded ? "none" : "block";
+  });
 
   // Render pocket list on the right side (or bottom for smartphones) using React.
   const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
