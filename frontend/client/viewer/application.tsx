@@ -8,6 +8,8 @@ import { StructureInformation } from "./components/structure-information";
 import ToolBox from "./components/tool-box";
 import PocketList from "./components/pocket-list";
 import TaskList from "./components/task-list";
+import { VisualizationToolBox } from "./components/visualization-tool-box";
+import BasicTabs from "./components/pocket-tabs";
 
 import { sendDataToPlugins } from './data-loader';
 import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData, ServerTaskDataContents, ServerTaskType } from "../custom-types";
@@ -17,7 +19,6 @@ import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
 import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
 import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView, showPocketInCurrentRepresentation } from './molstar-visualise';
-import { VisualizationToolBox } from "./components/visualization-tool-box";
 
 /**
  * A function to render the actual PrankWeb viewer.
@@ -147,7 +148,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       />);
   }
 
-  // TODO: remove some of these as they are duplicated in visualization-tool-box.tsx
   // The following functions are called by the child components to change the visualisation via the child components.
   onPolymerViewChange(value: PolymerViewType) {
     this.setState({"polymerView": value});
@@ -267,7 +267,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   }
 
   render() {
-    //console.log("Application::render");
     if (this.state.isLoading) {
       return (
         <div>
@@ -297,6 +296,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             onShowConfidentChange={this.onShowConfidentChange}
           />
       */}
+          <BasicTabs />
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
