@@ -5,6 +5,8 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import EnhancedTable from "./data-table";
 
+import { PocketData } from "../../custom-types";
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -12,7 +14,9 @@ interface TabPanelProps {
 }
 
 export default class BasicTabs extends React.Component<
-  {}, {
+  {
+    pockets: PocketData[]
+  }, {
     value: number
   }> {
 
@@ -41,7 +45,7 @@ export default class BasicTabs extends React.Component<
           </Tabs>
         </Box>
         <CustomTabPanel value={this.state.value} index={0}>
-          <EnhancedTable />
+          <EnhancedTable pockets={this.props.pockets}/>
         </CustomTabPanel>
         <CustomTabPanel value={this.state.value} index={1}>
           <Button onClick={() => console.log("test")} variant="outlined" color="secondary">

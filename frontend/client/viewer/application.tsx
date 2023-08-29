@@ -304,7 +304,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             onShowConfidentChange={this.onShowConfidentChange}
           />
       */}
-          <BasicTabs />
+          <BasicTabs 
+            pockets={this.state.data.pockets}
+          />
           <StructureInformation
             metadata={predictionInfo.metadata}
             database={predictionInfo.database}
