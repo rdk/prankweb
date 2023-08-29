@@ -48,6 +48,11 @@ const headCells: readonly HeadCell[] = [
     label: 'Color',
   },
   {
+    id: 'residues',
+    numeric: true,
+    label: '# of residues'
+  },
+  {
     id: 'avgConservation',
     numeric: true,
     label: 'Avg conservation',

@@ -56,7 +56,8 @@ export default class DataTableRow extends React.Component<{
                 </TableCell>
                 <TableCell align="right">{row.score}</TableCell>
                 <TableCell align="right">{row.probability}</TableCell>
-                <TableCell align="right">{row.color}</TableCell>
+                <TableCell align="right" style={{backgroundColor: "#" + row.color}}>{row.color}</TableCell>
+                <TableCell align="right">{row.residues.length}</TableCell>
                 <TableCell align="right">{row.avgConservation}</TableCell>
                 </TableRow>
                 <TableRow>
@@ -64,7 +65,7 @@ export default class DataTableRow extends React.Component<{
                     <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                     <Box sx={{ margin: 1 }}>
                         <Typography variant="h6" gutterBottom component="div">
-                        History
+                        Pocket {row.rank}
                         </Typography>
                         <Table size="small" aria-label="purchases">
                         <TableHead>

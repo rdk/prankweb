@@ -10,14 +10,20 @@ export function getComparator<Key extends keyof any>(
 }
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-    //if the compared properties may be converted to numbers, then treat them so
-    //this is because we store some numbers as strings...
     let aToCompare: any = a[orderBy];
     let bToCompare: any = b[orderBy];
 
+    //if the compared properties may be converted to numbers, then treat them so
+    //this is because we store some numbers as strings...
     if (!isNaN(aToCompare) && !isNaN(bToCompare)) {
       aToCompare = Number(aToCompare);
       bToCompare = Number(bToCompare);
+    }
+
+    //if the compared properties are arrays, then compare their lengths
+    if (Array.isArray(aToCompare) && Array.isArray(bToCompare)) {
+      aToCompare = aToCompare.length;
+      bToCompare = bToCompare.length;
     }
 
     if (bToCompare < aToCompare) {
