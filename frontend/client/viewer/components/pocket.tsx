@@ -6,6 +6,7 @@ import PocketDetails from "./pocket-details";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
+import { calculateColorWithAlpha } from "./tools";
 
 /**
  * This component displays information about a pocket.
@@ -110,23 +111,9 @@ export default class Pocket extends React.Component
     this.setState({ "pocketTextColor": this.computePocketTextColor() });
   }
 
-  /**
-   * Calculates the color of the pocket with the given alpha value.
-   * @param alpha Alpha value of the color
-   * @param bgColor Color in the format #RRGGBB
-   * @returns Calculated color in the format rgba(R,G,B,alpha)
-   */
-  calculatePocketColorWithAlpha(alpha: number, bgColor: string) {
-    const color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
-    const r = parseInt(color.substring(0, 2), 16); // hexToR
-    const g = parseInt(color.substring(2, 4), 16); // hexToG
-    const b = parseInt(color.substring(4, 6), 16); // hexToB
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
-
   render() {
     const pocket = this.props.pocket;
-    let pocketColor = this.calculatePocketColorWithAlpha(0.75, this.props.pocket.color!);
+    let pocketColor = calculateColorWithAlpha(0.75, this.props.pocket.color!);
 
     if (pocket.isVisible === undefined) { //for pockets that load for the first time
       pocket.isVisible = true;

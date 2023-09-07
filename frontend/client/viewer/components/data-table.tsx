@@ -26,7 +26,7 @@ interface HeadCell {
   numeric: boolean;
 }
 
-const headCells: readonly HeadCell[] = [
+const headCells: HeadCell[] = [
   {
     id: 'rank',
     numeric: false,
@@ -42,23 +42,12 @@ const headCells: readonly HeadCell[] = [
     numeric: true,
     label: 'Probability',
   },
-  /*
-  {
-    id: 'color',
-    numeric: true,
-    label: 'Color',
-  },
-  */
   {
     id: 'residues',
     numeric: true,
     label: '# of residues'
   },
-  {
-    id: 'avgConservation',
-    numeric: true,
-    label: 'Avg conservation',
-  },
+  //more are added dynamically based on available conservation/AlphaFold score in the EnhancedTable
 ];
 
 interface EnhancedTableProps {
@@ -158,6 +147,24 @@ export default function EnhancedTable(props: {pockets: PocketData[]}) {
       [order, orderBy, page, rowsPerPage],
   );
 
+  const hasConservation = props.pockets.filter((e: PocketData) => e.avgConservation !== 0).length !== 0;
+  if(hasConservation && !headCells.find((e: HeadCell) => e.id === 'avgConservation')) {
+    headCells.push({
+        id: 'avgConservation',
+        numeric: true,
+        label: 'Avg conservation',
+    });
+  }
+
+  const hasAlphaFold = props.pockets.filter((e: PocketData) => e.avgAlphaFold !== 0).length !== 0;
+  if(hasAlphaFold && !headCells.find((e: HeadCell) => e.id === 'avgAlphaFold')) {
+    headCells.push({
+      id: 'avgAlphaFold',
+      numeric: true,
+      label: 'Avg AlphaFold score',
+    });
+  }
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%' }}>
@@ -176,7 +183,7 @@ export default function EnhancedTable(props: {pockets: PocketData[]}) {
             <TableBody>
               {visibleRows.map((row, index) => {
                 return (
-                  <DataTableRow key={row.name} row={row} dense={dense} emptyRows={emptyRows} />
+                  <DataTableRow key={row.name} row={row} dense={dense} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold} />
                 );
               })}
               {emptyRows > 0 && (
