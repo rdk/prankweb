@@ -6,6 +6,8 @@ import Button from '@mui/material/Button';
 import EnhancedTable from "./data-table";
 
 import { PocketData } from "../../custom-types";
+import { PredictionInfo } from "../../prankweb-api";
+import PredictionInfoTab from "./prediction-info-tab";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -15,7 +17,8 @@ interface TabPanelProps {
 
 export default class BasicTabs extends React.Component<
   {
-    pockets: PocketData[]
+    pockets: PocketData[],
+    predictionInfo: PredictionInfo
   }, {
     value: number
   }> {
@@ -48,10 +51,7 @@ export default class BasicTabs extends React.Component<
           <EnhancedTable pockets={this.props.pockets}/>
         </CustomTabPanel>
         <CustomTabPanel value={this.state.value} index={1}>
-          <Button onClick={() => console.log("test")} variant="outlined" color="secondary">
-            Ahoj
-          </Button>
-          Item Two
+          <PredictionInfoTab predictionInfo={this.props.predictionInfo} />
         </CustomTabPanel>
         <CustomTabPanel value={this.state.value} index={2}>
           Item Three

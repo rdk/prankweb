@@ -306,11 +306,16 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       */}
           <BasicTabs 
             pockets={this.state.data.pockets}
+            predictionInfo={this.props.predictionInfo}
           />
-          <StructureInformation
-            metadata={predictionInfo.metadata}
-            database={predictionInfo.database}
-          />
+          {
+            /*
+            <StructureInformation
+              metadata={predictionInfo.metadata}
+              database={predictionInfo.database}
+            />
+            */
+          }
           <PocketList 
             data={this.state.data}
             showAll={this.onShowAllPockets}

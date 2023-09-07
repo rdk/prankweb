@@ -39,7 +39,7 @@ function StructureInformationBody(
   }
   const isPredicted = props.metadata["predictedStructure"] === true;
   if (isPredicted) {
-    const url = `https://alphafold.ebi.ac.uk/entry/${code}`
+    const url = `https://alphafold.ebi.ac.uk/entry/${code}`;
     return (
       <div className="card-body predicted" role="alert">
         <strong>Warning:</strong> <br/>
