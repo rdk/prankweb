@@ -39,9 +39,9 @@ export default class BasicTabs extends React.Component<
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={this.state.value} onChange={this.handleChange} aria-label="Pocket tools tabs">
-            <Tab label="Item One" {...tabProperties(0)} />
-            <Tab label="Item Two" {...tabProperties(1)} />
-            <Tab label="Item Three" {...tabProperties(2)} />
+            <Tab label="Pockets" {...tabProperties(0)} />
+            <Tab label="Info" {...tabProperties(1)} />
+            <Tab label="Tasks" {...tabProperties(2)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={this.state.value} index={0}>

@@ -42,11 +42,13 @@ const headCells: readonly HeadCell[] = [
     numeric: true,
     label: 'Probability',
   },
+  /*
   {
     id: 'color',
     numeric: true,
     label: 'Color',
   },
+  */
   {
     id: 'residues',
     numeric: true,
@@ -162,7 +164,6 @@ export default function EnhancedTable(props: {pockets: PocketData[]}) {
         <TableHeading />
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
             size={dense ? 'small' : 'medium'}
           >
