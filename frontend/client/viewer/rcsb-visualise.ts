@@ -54,7 +54,7 @@ function calculateViewerWidth() {
     if(width <= xs) return width;
 
     //TODO: temp solution, needs to be changed
-    return Math.floor(width * (5/12)) - 250;
+    return Math.floor(width * (7/12)) - 250;
 
     if(width <= lg) {
         return Math.floor(width * (8/12)) - 230;
