@@ -61,14 +61,13 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
 
 /**
  * Sends requests to the backend to compute the docking task and periodically checks if the task is finished.
- * @param firstFetch True if this is the first request (including fails), false otherwise
  * @param prediction Prediction info
  * @param pocket Pocket data
  * @param hash Task identifier (hash)
  * @param serverTasks A list of all server tasks
  * @returns Completed task data
  */
-export async function computeDockingTaskOnBackend(firstFetch: boolean, prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTaskData[], plugin: PluginUIContext): Promise<any>{
+export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTaskData[], plugin: PluginUIContext): Promise<any>{
     if(hash === "") {
         return;
     }
@@ -116,6 +115,7 @@ export async function computeDockingTaskOnBackend(firstFetch: boolean, predictio
         }),
     }).then((res) => {
         //let the next call handle the response
+        console.log(res);
     }
     ).catch(err => {
         console.log(err);

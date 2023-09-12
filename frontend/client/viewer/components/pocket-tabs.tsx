@@ -2,12 +2,13 @@ import React from "react";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import EnhancedTable from "./data-table";
 
 import { PocketData } from "../../custom-types";
 import { PredictionInfo } from "../../prankweb-api";
 import PredictionInfoTab from "./prediction-info-tab";
+import TasksTab from "./tasks-tab";
+import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -23,6 +24,7 @@ export default class BasicTabs extends React.Component<
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
+    plugin: PluginUIContext
   }, {
     value: number
   }> {
@@ -46,9 +48,9 @@ export default class BasicTabs extends React.Component<
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={this.state.value} onChange={this.handleChange} aria-label="Pocket tools tabs">
-            <Tab label="Pockets" {...tabProperties(0)} />
-            <Tab label="Info" {...tabProperties(1)} />
-            <Tab label="Tasks" {...tabProperties(2)} />
+            <Tab {...tabProperties(0, "Pockets")} />
+            <Tab {...tabProperties(1, "Info")} />
+            <Tab {...tabProperties(2, "Tasks")} />
           </Tabs>
         </Box>
         <CustomTabPanel value={this.state.value} index={0}>
@@ -59,17 +61,17 @@ export default class BasicTabs extends React.Component<
           <PredictionInfoTab predictionInfo={this.props.predictionInfo} />
         </CustomTabPanel>
         <CustomTabPanel value={this.state.value} index={2}>
-          Item Three
+          <TasksTab pockets={this.props.pockets} predictionInfo={this.props.predictionInfo} plugin={this.props.plugin} />
         </CustomTabPanel>
       </Box>
     );
   }
 }
 
-function tabProperties(index: number) {
+function tabProperties(index: number, label: string) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    label: label
   };
 }
 

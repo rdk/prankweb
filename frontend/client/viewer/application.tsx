@@ -257,6 +257,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
           newTasks.push({
             "type": ServerTaskType.Docking,
+            "pocket": task.initialData.pocket,
             "data": task
           });
         }
@@ -311,6 +312,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             showOnlyPocket={this.onShowOnlyPocket}
             focusPocket={this.onFocusPocket}
             highlightPocket={this.onHighlightPocket}
+            plugin={this.props.molstarPlugin}
           />
           {
             /*

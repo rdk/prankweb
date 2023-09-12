@@ -216,6 +216,7 @@ export enum ClientTaskType {
 
 export interface ClientTaskData {
     type: ClientTaskType;
+    pocket: string;
     data: any;
 }
 
@@ -231,6 +232,7 @@ export enum ServerTaskType {
 
 export interface ServerTaskData {
     type: ServerTaskType;
+    pocket: string;
     data: ServerTaskDataContents;
 }
 

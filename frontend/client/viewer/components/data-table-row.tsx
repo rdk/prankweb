@@ -79,7 +79,7 @@ export default class DataTableRow extends React.Component<{
 
     togglePocketVisibility() {
         this.props.setPocketVisibility(this.state.index, !this.props.pocket.isVisible);
-        //force rerender
+        //this changes the pocket visibility, so we have to render again
         this.forceUpdate();
     }
 

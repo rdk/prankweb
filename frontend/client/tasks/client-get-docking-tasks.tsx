@@ -21,12 +21,14 @@ export async function getDockingTaskCount(prediction: PredictionInfo, pocket: Po
         const numOfTasks = json["tasks"].filter((task: ServerTaskDataContents) => task.initialData.pocket == pocket.rank).length;
         return {
             "data": numOfTasks,
+            "pocket": pocket.rank,
             "type": ClientTaskType.DockingTaskCount
         };
     }
     
     return {
         "data": 0,
+        "pocket": pocket.rank,
         "type": ClientTaskType.DockingTaskCount
     }
 }
