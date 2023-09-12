@@ -18,7 +18,11 @@ interface TabPanelProps {
 export default class BasicTabs extends React.Component<
   {
     pockets: PocketData[],
-    predictionInfo: PredictionInfo
+    predictionInfo: PredictionInfo,
+    setPocketVisibility: (index: number, isVisible: boolean) => void,
+    showOnlyPocket: (index: number) => void,
+    focusPocket: (index: number) => void,
+    highlightPocket: (index: number, isHighlighted: boolean) => void,
   }, {
     value: number
   }> {
@@ -48,7 +52,8 @@ export default class BasicTabs extends React.Component<
           </Tabs>
         </Box>
         <CustomTabPanel value={this.state.value} index={0}>
-          <EnhancedTable pockets={this.props.pockets}/>
+          <EnhancedTable pockets={this.props.pockets} setPocketVisibility={this.props.setPocketVisibility} showOnlyPocket={this.props.showOnlyPocket} 
+          focusPocket={this.props.focusPocket} highlightPocket={this.props.highlightPocket}/>
         </CustomTabPanel>
         <CustomTabPanel value={this.state.value} index={1}>
           <PredictionInfoTab predictionInfo={this.props.predictionInfo} />

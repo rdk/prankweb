@@ -108,7 +108,13 @@ function TableHeading() {
   );
 }
 
-export default function EnhancedTable(props: {pockets: PocketData[]}) {
+export default function EnhancedTable(props: {
+  pockets: PocketData[],
+  setPocketVisibility: (index: number, isVisible: boolean) => void,
+  showOnlyPocket: (index: number) => void,
+  focusPocket: (index: number) => void,
+  highlightPocket: (index: number, isHighlighted: boolean) => void
+}) {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof PocketData>('rank');
   const [page, setPage] = React.useState(0);
@@ -183,7 +189,10 @@ export default function EnhancedTable(props: {pockets: PocketData[]}) {
             <TableBody>
               {visibleRows.map((row, index) => {
                 return (
-                  <DataTableRow key={row.name} row={row} dense={dense} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold} />
+                  <DataTableRow key={row.name} pocket={row} dense={dense} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold} 
+                  setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} focusPocket={props.focusPocket}
+                  highlightPocket={props.highlightPocket}
+                  />
                 );
               })}
               {emptyRows > 0 && (

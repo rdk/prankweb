@@ -307,6 +307,10 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
           <BasicTabs 
             pockets={this.state.data.pockets}
             predictionInfo={this.props.predictionInfo}
+            setPocketVisibility={this.onSetPocketVisibility}
+            showOnlyPocket={this.onShowOnlyPocket}
+            focusPocket={this.onFocusPocket}
+            highlightPocket={this.onHighlightPocket}
           />
           {
             /*
