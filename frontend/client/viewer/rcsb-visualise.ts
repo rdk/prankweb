@@ -6,6 +6,29 @@ import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from ".
 //contains the last highlighted element
 let lastElement: number = -1;
 
+/*  
+    This is a workaround for the RcsbFvDisplayTypes being const enum with string values.
+    That is not supported by the current version of the TypeScript transpiler (esbuild-loader)
+    as we are still using Webpack.
+    More info: https://github.com/evanw/esbuild/issues/128
+    According to this issue, the following string constants might be changed when upgrading the RcsbFv library.
+*/
+enum RcsbFvDisplayTypesFixed {
+    BLOCK,
+    AREA,
+    SEQUENCE
+};
+
+function getRcsbFvDisplayTypeFromFixed(displayType: RcsbFvDisplayTypesFixed) {
+    const mapping = {
+        [RcsbFvDisplayTypesFixed.BLOCK]: "block",
+        [RcsbFvDisplayTypesFixed.AREA]: "area",
+        [RcsbFvDisplayTypesFixed.SEQUENCE]: "sequence"
+    };
+
+    return mapping[displayType] as RcsbFvDisplayTypes;
+}
+
 /**
  * Method which initializes the Rcsb viewer and adds the tracks to it.
  * @param data Prediction data
@@ -116,7 +139,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         trackId: "sequenceTrack",
         trackHeight: 20,
         trackColor: "#F9F9F9",
-        displayType: RcsbFvDisplayTypes.SEQUENCE,
+        displayType: getRcsbFvDisplayTypeFromFixed(RcsbFvDisplayTypesFixed.SEQUENCE),
         nonEmptyDisplay: true,
         rowTitle: "SEQUENCE",
         trackData: [{
@@ -149,7 +172,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackId: "bindingsTrack",
             trackHeight: 20,
             trackColor: "#F9F9F9",
-            displayType: RcsbFvDisplayTypes.BLOCK,
+            displayType: getRcsbFvDisplayTypeFromFixed(RcsbFvDisplayTypesFixed.BLOCK),
             displayColor: "#9542F5",
             rowTitle: "BINDING",
             trackData: bindingData
@@ -194,7 +217,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackId: "pocketsTrack",
             trackHeight: 20,
             trackColor: "#F9F9F9",
-            displayType: RcsbFvDisplayTypes.BLOCK,
+            displayType: getRcsbFvDisplayTypeFromFixed(RcsbFvDisplayTypesFixed.BLOCK),
             displayColor: "#FF0000",
             rowTitle: "POCKETS",
             trackData: pocketsData
@@ -221,7 +244,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackId: "conservationTrack",
             trackHeight: 40,
             trackColor: "#F9F9F9",
-            displayType: RcsbFvDisplayTypes.AREA,
+            displayType: getRcsbFvDisplayTypeFromFixed(RcsbFvDisplayTypesFixed.AREA),
             displayColor: "#6d6d6d",
             rowTitle: "CONSERVATION",
             trackData: conservationData,
@@ -249,7 +272,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
             trackId: "alphafoldTrack",
             trackHeight: 40,
             trackColor: "#F9F9F9",
-            displayType: RcsbFvDisplayTypes.AREA,
+            displayType: getRcsbFvDisplayTypeFromFixed(RcsbFvDisplayTypesFixed.AREA),
             displayColor: {
                 "thresholds": AlphaFoldThresholdsRcsb,
                 "colors": AlphaFoldColorsRcsb,
