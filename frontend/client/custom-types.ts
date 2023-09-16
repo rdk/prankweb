@@ -159,7 +159,6 @@ export interface ReactApplicationState {
     polymerColor: PolymerColorType,
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
-    serverTasks: ServerTask[],
     numUpdated: number,
     tabIndex: number,
     initialPocket: number

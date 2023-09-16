@@ -4,10 +4,6 @@ import { createRoot } from 'react-dom/client';
 import "./application.css";
 import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
 
-import { StructureInformation } from "./components/structure-information";
-import ToolBox from "./components/tool-box";
-import PocketList from "./components/pocket-list";
-import TaskList from "./components/task-list";
 import { VisualizationToolBox } from "./components/visualization-tool-box";
 import BasicTabs from "./components/pocket-tabs";
 
@@ -80,7 +76,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "polymerColor": this.props.polymerColor,
     "isShowOnlyPredicted": false,
     "pluginRcsb": {} as RcsbFv,
-    "serverTasks": [], // contains the list of server tasks requested by the user in this session
     "numUpdated": 0,
     "tabIndex": 0,
     "initialPocket": 1
@@ -297,29 +292,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         }
       }
       });
-
-      /*
-      //append the new tasks to the existing ones
-      console.log(this.state.serverTasks);
-      let newTasks: ServerTaskData[] = this.state.serverTasks;
-      taskStatusJSON["tasks"].forEach((task: ServerTaskDataContents) => {
-        if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
-          newTasks.push({
-            "type": ServerTaskType.Docking,
-            "pocket": task.initialData.pocket,
-            "data": task
-          });
-        }
-        else if (newTasks.find((t: ServerTaskData) => t.data.status !== task.status)) {
-          //update the status
-          const index = newTasks.findIndex((t: ServerTaskData) => t.data.id === task.id);
-          let formerResponseData = newTasks[index].data.responseData;
-          task.responseData = formerResponseData;
-          newTasks[index].data = task;
-        }
-      });
-      this.setState({serverTasks: newTasks});
-      */
     }
     //poll again after 7 seconds
     setTimeout(() => this.getTaskList(), 7000);
@@ -346,22 +318,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
-          {/*
-          <ToolBox
-            predictionData={this.state.data}
-            downloadUrl={getApiDownloadUrl(predictionInfo)}
-            downloadAs={downloadAs}
-            polymerView={this.state.polymerView}
-            pocketsView={this.state.pocketsView}
-            polymerColor={this.state.polymerColor}
-            onPolymerViewChange={this.onPolymerViewChange}
-            onPocketsViewChange={this.onPocketsViewChange}
-            onPolymerColorChange={this.onPolymerColorChange}
-            isPredicted={isPredicted}
-            isShowOnlyPredicted={this.state.isShowOnlyPredicted}
-            onShowConfidentChange={this.onShowConfidentChange}
-          />
-      */}
           <BasicTabs 
             pockets={this.state.data.pockets}
             predictionInfo={this.props.predictionInfo}
@@ -375,29 +331,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             setTab={this.changeTab}
             initialPocket={this.state.initialPocket}
           />
-          {
-            /*
-            <StructureInformation
-              metadata={predictionInfo.metadata}
-              database={predictionInfo.database}
-            />
-            */
-          }
-          {
-            /*
-            <PocketList 
-              data={this.state.data}
-              showAll={this.onShowAllPockets}
-              setPocketVisibility={this.onSetPocketVisibility}
-              showOnlyPocket={this.onShowOnlyPocket}
-              focusPocket={this.onFocusPocket}
-              highlightPocket={this.onHighlightPocket}
-              plugin={this.props.molstarPlugin}
-              prediction={this.props.predictionInfo}
-              serverTasks={this.state.serverTasks}
-            />
-            */
-          }
         </div>
       );
     }

@@ -1,5 +1,3 @@
-import React from "react";
-
 import { ClientTask, ClientTaskType, PocketData, ServerTaskInfo } from "../custom-types";
 import { PredictionInfo } from "../prankweb-api";
 
@@ -33,15 +31,4 @@ export async function getDockingTaskCount(prediction: PredictionInfo, pocket: Po
         "pocket": Number(pocket.rank),
         "type": ClientTaskType.DockingTaskCount
     }
-}
-
-/**
- * Renders the final data of this task as a JSX element.
- * @param data Data to render
- * @returns JSX element
- */
-export function renderOnTaskDockingTasksCountCompleted(data: ClientTask) {
-    return (
-        <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
-    );
 }

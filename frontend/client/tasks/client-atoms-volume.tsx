@@ -1,5 +1,3 @@
-import React from "react";
-
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PocketData, ClientTask, ClientTaskType, Point3D } from "../custom-types";
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
@@ -67,15 +65,4 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
     };
 
     return data;
-}
-
-/**
- * Renders the final data of this task as a JSX element.
- * @param data Data to render
- * @returns JSX element
- */
-export function renderOnTaskVolumeCompleted(data: ClientTask) {
-    return (
-        <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
-    );
 }
