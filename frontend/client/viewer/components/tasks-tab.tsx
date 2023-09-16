@@ -151,62 +151,77 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             <h3>Tasks</h3>
             <div>
                 <h4>Create task</h4>
-                <FormControl sx={{minWidth: 250}}>
-                    <InputLabel>Task type</InputLabel>
-                    <Select
-                        labelId="task"
-                        id="select-task-create-type"
-                        value={task?.id.toString() || ""}
-                        label="Task type"
-                        onChange={handleTaskTypeChange}
-                    >
-                        {tasks.map((task: TaskTypeMenuItem) => <MenuItem value={task.id} key={task.id}>{task.name}</MenuItem>)}
-                    </Select>
-                </FormControl>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                            <FormControl sx={{minWidth: "15rem", margin: "0.5rem"}}>
+                                <InputLabel>Task type</InputLabel>
+                                <Select
+                                    labelId="task"
+                                    id="select-task-create-type"
+                                    value={task?.id.toString() || ""}
+                                    label="Task type"
+                                    onChange={handleTaskTypeChange}
+                                >
+                                    {tasks.map((task: TaskTypeMenuItem) => <MenuItem value={task.id} key={task.id}>{task.name}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+                            </td>
+                            <td>
+                            <FormControl sx={{minWidth: "15rem", margin: "0.5rem"}}>
+                                <InputLabel>Pocket number</InputLabel>
+                                <Select
+                                    labelId="pocket-number"
+                                    id="select-pocket-number"
+                                    value={pocketNumber.toString()}
+                                    label="Pocket number"
+                                    onChange={handlePocketNumberChange}
+                                >
+                                    {props.pockets.map((pocket: PocketData) => <MenuItem value={pocket.rank} key={pocket.rank}>{pocket.rank}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+                            </td>
+                        </tr>
 
-                <FormControl sx={{minWidth: 250}}>
-                    <InputLabel>Pocket number</InputLabel>
-                    <Select
-                        labelId="pocket-number"
-                        id="select-pocket-number"
-                        value={pocketNumber.toString()}
-                        label="Pocket number"
-                        onChange={handlePocketNumberChange}
-                    >
-                        {props.pockets.map((pocket: PocketData) => <MenuItem value={pocket.rank} key={pocket.rank}>{pocket.rank}</MenuItem>)}
-                    </Select>
-                </FormControl>
+                        {task?.type === TaskType.Server &&
+                        <tr>
+                            <td>
+                                <FormControl sx={{minWidth: "15rem", margin: "0.5rem"}}>
+                                    <TextField
+                                        label="Enter task parameters"
+                                        multiline
+                                        maxRows={8}
+                                        variant="standard"
+                                        value={parameters}
+                                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                            setParameters(event.target.value);
+                                        }}
+                                    />
+                                </FormControl>
+                            </td>
+                            <td>
+                                <FormControl sx={{minWidth: "15rem", margin: "0.5rem"}}>
+                                    <TextField
+                                        label="Enter task name"
+                                        variant="standard"
+                                        value={name}
+                                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                            setName(event.target.value);
+                                        }}
+                                    />
+                                </FormControl>
+                            </td>
+                        </tr>}
 
-                {task?.type === TaskType.Server &&
-                <div>
-                    <FormControl sx={{minWidth: 250}}>
-                        <TextField
-                            label="Enter task parameters"
-                            multiline
-                            maxRows={8}
-                            variant="standard"
-                            sx={{border: "1px solid #000000"}}
-                            value={parameters}
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                setParameters(event.target.value);
-                            }}
-                        />
-                    </FormControl>
-
-                    <FormControl sx={{minWidth: 250}}>
-                        <TextField
-                            label="Enter task name"
-                            variant="standard"
-                            sx={{border: "1px solid #000000"}}
-                            value={name}
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                setName(event.target.value);
-                            }}
-                        />
-                    </FormControl>
-                </div>}
-
-                <Button variant="contained" sx={{marginTop: "1rem"}} onClick={handleSubmitButton}>Create task</Button>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <Button variant="contained" sx={{marginTop: "1rem", margin: "0.5rem"}} onClick={handleSubmitButton}>Create task</Button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div>
                 <h4>Finished tasks</h4>
