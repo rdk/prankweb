@@ -79,7 +79,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "pluginRcsb": {} as RcsbFv,
     "serverTasks": [], // contains the list of server tasks requested by the user in this session
     "numUpdated": 0,
-    "tabIndex": 0
+    "tabIndex": 0,
+    "initialPocket": 1
   };
 
   constructor(props: ReactApplicationProps) {
@@ -318,8 +319,11 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     setTimeout(() => this.getTaskList(), 7000);
   }
 
-  changeTab(num: number) {
+  changeTab(num: number, pocketIndex?: number) {
     this.setState({tabIndex: num, numUpdated: this.state.numUpdated + 1});
+    if(pocketIndex !== undefined) {
+      this.setState({initialPocket: pocketIndex});
+    }
   }
 
   render() {
@@ -362,6 +366,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             plugin={this.props.molstarPlugin}
             tab={this.state.tabIndex}
             setTab={this.changeTab}
+            initialPocket={this.state.initialPocket}
           />
           {
             /*
@@ -371,17 +376,21 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             />
             */
           }
-          <PocketList 
-            data={this.state.data}
-            showAll={this.onShowAllPockets}
-            setPocketVisibility={this.onSetPocketVisibility}
-            showOnlyPocket={this.onShowOnlyPocket}
-            focusPocket={this.onFocusPocket}
-            highlightPocket={this.onHighlightPocket}
-            plugin={this.props.molstarPlugin}
-            prediction={this.props.predictionInfo}
-            serverTasks={this.state.serverTasks}
-          />
+          {
+            /*
+            <PocketList 
+              data={this.state.data}
+              showAll={this.onShowAllPockets}
+              setPocketVisibility={this.onSetPocketVisibility}
+              showOnlyPocket={this.onShowOnlyPocket}
+              focusPocket={this.onFocusPocket}
+              highlightPocket={this.onHighlightPocket}
+              plugin={this.props.molstarPlugin}
+              prediction={this.props.predictionInfo}
+              serverTasks={this.state.serverTasks}
+            />
+            */
+          }
         </div>
       );
     }

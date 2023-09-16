@@ -25,7 +25,8 @@ export default function BasicTabs(props: {
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     plugin: PluginUIContext,
     tab: number,
-    setTab: (tab: number) => void
+    setTab: (tab: number, initialPocket?: number) => void,
+    initialPocket: number
   }) {
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -45,13 +46,13 @@ export default function BasicTabs(props: {
       </Box>
       <CustomTabPanel value={props.tab} index={0}>
         <EnhancedTable pockets={props.pockets} setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} 
-        focusPocket={props.focusPocket} highlightPocket={props.highlightPocket}/>
+        focusPocket={props.focusPocket} highlightPocket={props.highlightPocket} setTab={props.setTab}/>
       </CustomTabPanel>
       <CustomTabPanel value={props.tab} index={1}>
         <PredictionInfoTab predictionInfo={props.predictionInfo} />
       </CustomTabPanel>
       <CustomTabPanel value={props.tab} index={2}>
-        <TasksTab pockets={props.pockets} predictionInfo={props.predictionInfo} plugin={props.plugin} />
+        <TasksTab pockets={props.pockets} predictionInfo={props.predictionInfo} plugin={props.plugin} initialPocket={props.initialPocket} />
       </CustomTabPanel>
     </Box>
   );

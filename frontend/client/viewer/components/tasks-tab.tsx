@@ -4,8 +4,13 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ClientTask, ClientTaskType, PocketData, ServerTaskLocalStorageData, ServerTaskType } from "../../custom-types";
+import { ClientTask, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
 import { Button } from "@mui/material";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 
 import { PredictionInfo } from "../../prankweb-api";
 import { computeDockingTaskOnBackend } from "../../tasks/server-docking-task";
@@ -26,7 +31,7 @@ type TaskTypeMenuItem = {
     compute: (params: string, customName: string, pocketIndex: number) => void
 }
 
-export default function TasksTab(props: {pockets: PocketData[], predictionInfo: PredictionInfo, plugin: PluginUIContext}) {
+export default function TasksTab(props: {pockets: PocketData[], predictionInfo: PredictionInfo, plugin: PluginUIContext, initialPocket: number}) {
     const tasks: TaskTypeMenuItem[] = [
         {
             id: 1,
@@ -64,7 +69,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                 tasks.push({
                     "name": customName,
                     "params": params,
-                    "pocket": pocketIndex,
+                    "pocket": pocketIndex + 1,
                     "status": "queued",
                     "type": ServerTaskType.Docking,
                     "responseData": null
@@ -77,7 +82,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
     ];
 
     const [task, setTask] = React.useState<TaskTypeMenuItem>(tasks[0]);
-    const [pocketNumber, setPocketNumber] = React.useState<number>(1);
+    const [pocketNumber, setPocketNumber] = React.useState<number>(props.initialPocket);
     const [name, setName] = React.useState<string>("");
     const [parameters, setParameters] = React.useState<string>("");
 
@@ -96,7 +101,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
     }
 
     const handleFinishedClientTask = (task: ClientTask) => {
-        setFinishedClientTasks([...finishedClientTasks, task]);
+        setFinishedClientTasks(prevState => [task, ...prevState]);
     }
 
     let savedTasks = localStorage.getItem("tasks");
@@ -168,8 +173,38 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             <div>
                 <h4>Finished tasks</h4>
                 <div>
-                    {finishedClientTasks.map((task: ClientTask, i: number) => <div key={i}>{task.pocket}, {task.data}</div>)}
-                    {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) => <div key={i}>{task.name}, {task.pocket}, {task.status}</div>)}
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                            <TableCell>Type</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Pocket</TableCell>
+                            <TableCell>Status/result</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {finishedClientTasks.map((task: ClientTask, i: number) => {
+                                return (
+                                    <TableRow key={i}>
+                                        <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
+                                        <TableCell>{"-"}</TableCell>
+                                        <TableCell>{task.pocket}</TableCell>
+                                        <TableCell>{task.data}</TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                            {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) => {
+                                return (
+                                    <TableRow key={i}>
+                                        <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
+                                        <TableCell>{task.name}</TableCell>
+                                        <TableCell>{task.pocket}</TableCell>
+                                        <TableCell>{task.status}</TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
         </div>

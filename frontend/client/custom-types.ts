@@ -161,7 +161,8 @@ export interface ReactApplicationState {
     pluginRcsb: RcsbFv | undefined,
     serverTasks: ServerTask[],
     numUpdated: number,
-    tabIndex: number
+    tabIndex: number,
+    initialPocket: number
 }
 
 /**
@@ -216,9 +217,14 @@ export enum ClientTaskType {
     DockingTaskCount = 1
 }
 
+export const ClientTaskTypeDescriptors = [
+    "Atoms volume",
+    "Number of docking tasks"
+]
+
 export interface ClientTask {
-    type: ClientTaskType;
     pocket: string;
+    type: ClientTaskType;
     data: any;
 }
 
@@ -231,6 +237,10 @@ export interface Point3D {
 export enum ServerTaskType {
     Docking = 0
 }
+
+export const ServerTaskTypeDescriptors = [
+    "Molecular docking"
+]
 
 export interface ServerTask {
     pocket: string;

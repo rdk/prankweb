@@ -15,6 +15,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./data-table.css"
 import { PocketData } from '../../custom-types';
 import { calculateColorWithAlpha } from './tools';
+import { Button } from '@mui/material';
 
 export default class DataTableRow extends React.Component<{ 
     pocket: PocketData, 
@@ -26,6 +27,7 @@ export default class DataTableRow extends React.Component<{
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
+    setTab: (tab: number, initialPocket?: number) => void
 }, {
     open: boolean,
     index: number,
@@ -45,6 +47,7 @@ export default class DataTableRow extends React.Component<{
         this.onPocketClick = this.onPocketClick.bind(this);
         this.showOnlyClick = this.showOnlyClick.bind(this);
         this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
+        this.handleCreateTask = this.handleCreateTask.bind(this);
     }
 
     setOpen() {
@@ -83,8 +86,16 @@ export default class DataTableRow extends React.Component<{
         this.forceUpdate();
     }
 
+    handleCreateTask() {
+        //the tab index is 2
+        this.props.setTab(2, Number(this.props.pocket.rank));
+    }
+
     render() {
         const pocket = this.props.pocket;
+        if (pocket.isVisible === undefined) { //for pockets that load for the first time
+            pocket.isVisible = true;
+        }
 
         return(
             <React.Fragment>
@@ -152,6 +163,7 @@ export default class DataTableRow extends React.Component<{
                                 <i className="bi bi-check-circle" style={{"width": "1em"}}></i>
                                 }
                             </button>
+                            <Button variant="outlined" onClick={this.handleCreateTask}>Create task</Button>
                         </div>
                         <Table size="small" aria-label="purchases">
                         <TableHead>
