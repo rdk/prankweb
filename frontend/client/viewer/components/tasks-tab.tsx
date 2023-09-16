@@ -47,7 +47,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                     const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
 
                     tasks.push({
-                        "pocket": (pocketIndex + 1).toString(),
+                        "pocket": (pocketIndex + 1),
                         "type": ClientTaskType.Volume,
                         "data": task.data
                     });
@@ -70,7 +70,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                     const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
 
                     tasks.push({
-                        "pocket": (pocketIndex + 1).toString(),
+                        "pocket": (pocketIndex + 1),
                         "type": ClientTaskType.DockingTaskCount,
                         "data": task.data
                     });
@@ -126,6 +126,16 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
 
     const forceComponentUpdate = () => {
         setForceUpdate(prevState => prevState + 1);
+    }
+
+    const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
+        switch(serverTask.type) {
+            case ServerTaskType.Docking:
+                downloadDockingResult(serverTask.params, serverTask.responseData.url);
+                break;
+            default:
+                break;
+        }
     }
 
     let savedTasks = localStorage.getItem("serverTasks");
@@ -230,7 +240,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                                         <TableCell>{task.name}</TableCell>
                                         <TableCell>{task.created}</TableCell>
                                         <TableCell>{task.pocket}</TableCell>
-                                        <TableCell>{task.status === "successful" ? <span onClick={() => downloadDockingResult(task.params, task.responseData.url)} style={{color: "blue", textDecoration: "underline", cursor: "pointer"}}>successful</span> : task.status}</TableCell>
+                                        <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{color: "blue", textDecoration: "underline", cursor: "pointer"}}>successful</span> : task.status}</TableCell>
                                     </TableRow>
                                 )
                             })}

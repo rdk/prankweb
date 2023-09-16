@@ -38,7 +38,7 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
     if(pocketVolumes.has(pocket.name)) {
         return {
             "data": pocketVolumes.get(pocket.name),
-            "pocket": pocket.rank,
+            "pocket": Number(pocket.rank),
             "type": ClientTaskType.Volume
         };
     }
@@ -62,7 +62,7 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
 
     const data: ClientTask = {
         "data": finalVolume,
-        "pocket": pocket.rank,
+        "pocket": Number(pocket.rank),
         "type": ClientTaskType.Volume
     };
 

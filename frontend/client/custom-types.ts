@@ -223,7 +223,7 @@ export const ClientTaskTypeDescriptors = [
 ]
 
 export interface ClientTask {
-    pocket: string;
+    pocket: number;
     type: ClientTaskType;
     data: any;
 }

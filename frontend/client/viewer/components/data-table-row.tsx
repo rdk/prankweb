@@ -13,9 +13,10 @@ import Collapse from '@mui/material/Collapse';
 
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./data-table.css"
-import { PocketData } from '../../custom-types';
+import { ClientTaskLocalStorageData, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from '../../custom-types';
 import { calculateColorWithAlpha } from './tools';
 import { Button } from '@mui/material';
+import { downloadDockingResult } from '../../tasks/server-docking-task';
 
 export default class DataTableRow extends React.Component<{ 
     pocket: PocketData, 
@@ -48,6 +49,7 @@ export default class DataTableRow extends React.Component<{
         this.showOnlyClick = this.showOnlyClick.bind(this);
         this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
         this.handleCreateTask = this.handleCreateTask.bind(this);
+        this.handleResultClick = this.handleResultClick.bind(this);
     }
 
     setOpen() {
@@ -91,11 +93,29 @@ export default class DataTableRow extends React.Component<{
         this.props.setTab(2, Number(this.props.pocket.rank));
     }
 
+    handleResultClick(serverTask: ServerTaskLocalStorageData) {
+        switch(serverTask.type) {
+            case ServerTaskType.Docking:
+                downloadDockingResult(serverTask.params, serverTask.responseData.url);
+                break;
+            default:
+                break;
+        }
+    }
+
     render() {
         const pocket = this.props.pocket;
         if (pocket.isVisible === undefined) { //for pockets that load for the first time
             pocket.isVisible = true;
         }
+
+        let serverTasks = localStorage.getItem("serverTasks");
+        if(!serverTasks) serverTasks = "[]";
+        const serverTasksParsed: ServerTaskLocalStorageData[] = JSON.parse(serverTasks);
+
+        let clientTasks = localStorage.getItem("clientTasks");
+        if(!clientTasks) clientTasks = "[]";
+        const clientTasksParsed: ClientTaskLocalStorageData[] = JSON.parse(clientTasks);
 
         return(
             <React.Fragment>
@@ -165,22 +185,41 @@ export default class DataTableRow extends React.Component<{
                             </button>
                             <Button variant="outlined" onClick={this.handleCreateTask}>Create task</Button>
                         </div>
-                        <Table size="small" aria-label="purchases">
+                        <h4>Tasks</h4>
+                        <Table size="small">
                         <TableHead>
                             <TableRow>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Customer</TableCell>
-                            <TableCell align="right">Amount</TableCell>
-                            <TableCell align="right">Total price ($)</TableCell>
+                            <TableCell>Type</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Timestamp</TableCell>
+                            <TableCell>Status/result</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            <TableRow>
-                                <TableCell component="th" scope="row">1.1.1990</TableCell>
-                                <TableCell>1</TableCell>
-                                <TableCell align="right">10</TableCell>
-                                <TableCell align="right">50</TableCell>
-                            </TableRow>
+                            {clientTasksParsed.map((row: ClientTaskLocalStorageData) => {
+                                if(row.pocket === Number(pocket.rank)) {
+                                    return (
+                                        <TableRow key={row.pocket}>
+                                            <TableCell>{ClientTaskTypeDescriptors[row.type]}</TableCell>
+                                            <TableCell>{"-"}</TableCell>
+                                            <TableCell>{"-"}</TableCell>
+                                            <TableCell>{row.data}</TableCell>
+                                        </TableRow>
+                                    )
+                                }
+                            })}
+                            {serverTasksParsed.map((row: ServerTaskLocalStorageData) => {
+                                if(row.pocket === Number(pocket.rank)) {
+                                    return (
+                                        <TableRow key={row.pocket}>
+                                            <TableCell>{ServerTaskTypeDescriptors[row.type]}</TableCell>
+                                            <TableCell>{row.name}</TableCell>
+                                            <TableCell>{row.created}</TableCell>
+                                            <TableCell>{row.status === "successful" ? <span onClick={() => this.handleResultClick(row)} style={{color: "blue", textDecoration: "underline", cursor: "pointer"}}>successful</span> : row.status}</TableCell>
+                                        </TableRow>
+                                    )
+                                }
+                            })}
                         </TableBody>
                         </Table>
                     </Box>
