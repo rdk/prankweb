@@ -1,7 +1,7 @@
 import React from "react";
 
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import { PocketData, ClientTaskData, ClientTaskType, Point3D } from "../custom-types";
+import { PocketData, ClientTask, ClientTaskType, Point3D } from "../custom-types";
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import qh from 'quickhull3d';
 
@@ -33,7 +33,7 @@ function computeTriangleVolume(p1: Point3D, p2: Point3D, p3: Point3D) {
  * @param pocket Pocket data
  * @returns Computed pocket volume
  */
-export async function computePocketVolume(plugin: PluginUIContext, pocket: PocketData): Promise<ClientTaskData> {
+export async function computePocketVolume(plugin: PluginUIContext, pocket: PocketData): Promise<ClientTask> {
 
     if(pocketVolumes.has(pocket.name)) {
         return {
@@ -60,7 +60,7 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
 
     pocketVolumes.set(pocket.name, finalVolume);
 
-    const data: ClientTaskData = {
+    const data: ClientTask = {
         "data": finalVolume,
         "pocket": pocket.rank,
         "type": ClientTaskType.Volume
@@ -74,7 +74,7 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
  * @param data Data to render
  * @returns JSX element
  */
-export function renderOnTaskVolumeCompleted(data: ClientTaskData) {
+export function renderOnTaskVolumeCompleted(data: ClientTask) {
     return (
         <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
     );

@@ -1,5 +1,5 @@
 import React from "react";
-import { PocketData, ServerTaskData } from "../../custom-types";
+import { PocketData, ServerTask } from "../../custom-types";
 import DraggableDialog from './draggable-dialog'
 import PocketDetails from "./pocket-details";
 
@@ -23,7 +23,7 @@ export default class Pocket extends React.Component
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     plugin: PluginUIContext,
     prediction: PredictionInfo,
-    serverTasks: ServerTaskData[]
+    serverTasks: ServerTask[]
   }, {
     visible: boolean,
     details: boolean,

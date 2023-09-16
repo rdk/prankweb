@@ -2,7 +2,7 @@ import React from "react";
 import { PredictionInfo } from "../../prankweb-api";
 
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { ServerTaskData } from "../../custom-types";
+import { ServerTask } from "../../custom-types";
 
 /**
  * This component lists the tasks associated with a prediction.
@@ -11,7 +11,7 @@ import { ServerTaskData } from "../../custom-types";
 export default class TaskList extends React.Component<
     {
         prediction: PredictionInfo
-        tasks: ServerTaskData[]
+        tasks: ServerTask[]
     },{
         expanded: boolean
     }> {
@@ -63,7 +63,7 @@ export default class TaskList extends React.Component<
  */
 class TaskListContent extends React.Component<{
     prediction: PredictionInfo
-    tasks: ServerTaskData[]
+    tasks: ServerTask[]
   }, {}> {
 
     constructor(props: any) {
@@ -73,7 +73,7 @@ class TaskListContent extends React.Component<{
     render() {
         return (
             <ul className="list-group list-group-flush">
-                {this.props.tasks.map((task: ServerTaskData, index: number) => {
+                {this.props.tasks.map((task: ServerTask, index: number) => {
                     return <li key={index} className="list-group-item">{`Task ${task.data.id} (hash ${task.data.initialData["hash"]}, pocket ${task.data.initialData.pocket}, last updated ${task.data.lastChange})`}</li>
                 })}
             </ul>

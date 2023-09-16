@@ -1,7 +1,7 @@
 import React from "react";
 import { LoadingButton } from '@mui/lab';
 import { Modal, Box, Typography, TextField } from "@mui/material";
-import { PocketData, ServerTaskData, ServerTaskType } from '../../custom-types';
+import { PocketData, ServerTask, ServerTaskType } from '../../custom-types';
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 
@@ -20,13 +20,13 @@ export default class PocketServerParametrizedTask extends React.Component
         plugin: PluginUIContext,
         taskType: ServerTaskType,
         prediction: PredictionInfo,
-        serverTasks: ServerTaskData[],
+        serverTasks: ServerTask[],
         modalDescription: string,
         compute: (hash: string) => Promise<any>
-        renderOnComplete: (responseData: ServerTaskData, hash: string) => JSX.Element
+        renderOnComplete: (responseData: ServerTask, hash: string) => JSX.Element
         hashMethod: (prediction: PredictionInfo, pocket: PocketData, formData: string) => string
     }, {
-        taskData: ServerTaskData | undefined,
+        taskData: ServerTask | undefined,
         computed: boolean,
         loading: boolean,
         modalOpen: boolean,

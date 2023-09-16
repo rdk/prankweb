@@ -1,5 +1,5 @@
 import React from "react";
-import { PredictionData, ServerTaskData } from "../../custom-types";
+import { PredictionData, ServerTask } from "../../custom-types";
 import Pocket from "./pocket";
 
 import "./pocket-list.css";
@@ -20,7 +20,7 @@ export default class PocketList extends React.Component
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     plugin: PluginUIContext,
     prediction: PredictionInfo,
-    serverTasks: ServerTaskData[]
+    serverTasks: ServerTask[]
   }, {}> {
 
   render() {

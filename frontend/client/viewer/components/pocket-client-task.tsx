@@ -1,7 +1,7 @@
 import React from "react";
 import { LoadingButton } from '@mui/lab';
 
-import { ClientTaskData, ClientTaskType, PocketData } from '../../custom-types';
+import { ClientTask, ClientTaskType, PocketData } from '../../custom-types';
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 
@@ -19,10 +19,10 @@ export default class PocketClientTask extends React.Component
         plugin: PluginUIContext,
         taskType: ClientTaskType,
         prediction: PredictionInfo,
-        compute: () => Promise<ClientTaskData>,                 //the computation that returns a promise with the data to be rendered
-        renderOnComplete: (data: ClientTaskData) => JSX.Element //called when the computation is complete
+        compute: () => Promise<ClientTask>,                 //the computation that returns a promise with the data to be rendered
+        renderOnComplete: (data: ClientTask) => JSX.Element //called when the computation is complete
     }, {
-        taskData: ClientTaskData | undefined,
+        taskData: ClientTask | undefined,
         computed: boolean,
         loading: boolean
     }> {

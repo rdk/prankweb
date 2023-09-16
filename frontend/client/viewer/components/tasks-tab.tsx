@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ClientTaskData, ClientTaskType, PocketData, ServerTaskType } from "../../custom-types";
+import { ClientTask, ClientTaskType, PocketData, ServerTaskLocalStorageData, ServerTaskType } from "../../custom-types";
 import { Button } from "@mui/material";
 
 import { PredictionInfo } from "../../prankweb-api";
@@ -35,7 +35,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             name: "Volume",
             compute: (params, customName, pocketIndex) => {
                 const promise = computePocketVolume(props.plugin, props.pockets[pocketIndex]);
-                promise.then((task: ClientTaskData) => {
+                promise.then((task: ClientTask) => {
                     handleFinishedClientTask(task);
                 });
             }
@@ -47,7 +47,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             name: "DockingTaskCount",
             compute: (params, customName, pocketIndex) => {
                 const promise = getDockingTaskCount(props.predictionInfo, props.pockets[pocketIndex]);
-                promise.then((task: ClientTaskData) => {
+                promise.then((task: ClientTask) => {
                     handleFinishedClientTask(task);
                 });
             }
@@ -58,6 +58,19 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             type: TaskType.Server,
             name: "Docking",
             compute: (params, customName, pocketIndex) => {
+                let savedTasks = localStorage.getItem("tasks");
+                if(!savedTasks) savedTasks = "[]";
+                const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
+                tasks.push({
+                    "name": customName,
+                    "params": params,
+                    "pocket": pocketIndex,
+                    "status": "queued",
+                    "type": ServerTaskType.Docking,
+                    "responseData": null
+                });
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+                console.log(tasks);
                 computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params, [], props.plugin);
             }
         }
@@ -68,7 +81,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
     const [name, setName] = React.useState<string>("");
     const [parameters, setParameters] = React.useState<string>("");
 
-    const [finishedClientTasks, setFinishedClientTasks] = React.useState<ClientTaskData[]>([]);
+    const [finishedClientTasks, setFinishedClientTasks] = React.useState<ClientTask[]>([]);
 
     const handleTaskTypeChange = (event: SelectChangeEvent) => {
         setTask(tasks.find(task => task.id == Number(event.target.value))!);
@@ -82,9 +95,13 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
         task.compute(parameters, name, pocketNumber - 1);
     }
 
-    const handleFinishedClientTask = (task: ClientTaskData) => {
+    const handleFinishedClientTask = (task: ClientTask) => {
         setFinishedClientTasks([...finishedClientTasks, task]);
     }
+
+    let savedTasks = localStorage.getItem("tasks");
+    if(!savedTasks) savedTasks = "[]";
+    const tasksFromLocalStorage: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
 
     return (
         <div>
@@ -129,7 +146,6 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                             value={parameters}
                             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                 setParameters(event.target.value);
-                                console.log(event.target.value);
                             }}
                         />
                     </FormControl>
@@ -152,7 +168,8 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             <div>
                 <h4>Finished tasks</h4>
                 <div>
-                    {finishedClientTasks.map((task: ClientTaskData, i: number) => <div key={i}>{task.pocket}, {task.data}</div>)}
+                    {finishedClientTasks.map((task: ClientTask, i: number) => <div key={i}>{task.pocket}, {task.data}</div>)}
+                    {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) => <div key={i}>{task.name}, {task.pocket}, {task.status}</div>)}
                 </div>
             </div>
         </div>

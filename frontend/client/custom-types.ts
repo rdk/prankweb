@@ -159,7 +159,9 @@ export interface ReactApplicationState {
     polymerColor: PolymerColorType,
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
-    serverTasks: ServerTaskData[]
+    serverTasks: ServerTask[],
+    numUpdated: number,
+    tabIndex: number
 }
 
 /**
@@ -214,7 +216,7 @@ export enum ClientTaskType {
     DockingTaskCount = 1
 }
 
-export interface ClientTaskData {
+export interface ClientTask {
     type: ClientTaskType;
     pocket: string;
     data: any;
@@ -230,13 +232,13 @@ export enum ServerTaskType {
     Docking = 0
 }
 
-export interface ServerTaskData {
-    type: ServerTaskType;
+export interface ServerTask {
     pocket: string;
-    data: ServerTaskDataContents;
+    type: ServerTaskType;
+    data: ServerTaskInfo;
 }
 
-export interface ServerTaskDataContents {
+export interface ServerTaskInfo {
     id: string;
     created: string;
     lastChange: string;
@@ -247,4 +249,13 @@ export interface ServerTaskDataContents {
         [key: string]: any; //other data
     };   //initial data
     responseData: any;  //response data
+}
+
+export interface ServerTaskLocalStorageData {
+    name: string,
+    params: string,
+    pocket: number,
+    status: string,
+    type: ServerTaskType,
+    responseData: any
 }

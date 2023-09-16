@@ -8,7 +8,7 @@ import PocketRunningTasks from "./pocket-running-tasks";
 import { computePocketVolume, renderOnTaskVolumeCompleted } from "../../tasks/client-atoms-volume";
 import { getDockingTaskCount, renderOnTaskDockingTasksCountCompleted } from "../../tasks/client-get-docking-tasks";
 
-import { PocketData, ServerTaskData, ClientTaskType, ServerTaskType } from "../../custom-types";
+import { PocketData, ServerTask, ClientTaskType, ServerTaskType } from "../../custom-types";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
 import { computeDockingTaskOnBackend, dockingHash, renderOnServerDockingTaskCompleted } from "../../tasks/server-docking-task";
@@ -24,9 +24,9 @@ export default class PocketDialogDetails extends React.Component
         inDialog: boolean,
         plugin: PluginUIContext,
         prediction: PredictionInfo
-        serverTasks: ServerTaskData[]
+        serverTasks: ServerTask[]
     }, {
-        serverTasks: ServerTaskData[]
+        serverTasks: ServerTask[]
     }> {
 
     constructor(props: any) {

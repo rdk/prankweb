@@ -12,7 +12,7 @@ import { VisualizationToolBox } from "./components/visualization-tool-box";
 import BasicTabs from "./components/pocket-tabs";
 
 import { sendDataToPlugins } from './data-loader';
-import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData, ServerTaskDataContents, ServerTaskType } from "../custom-types";
+import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTask, ServerTaskInfo, ServerTaskLocalStorageData, ServerTaskType } from "../custom-types";
 
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
@@ -77,7 +77,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "polymerColor": this.props.polymerColor,
     "isShowOnlyPredicted": false,
     "pluginRcsb": {} as RcsbFv,
-    "serverTasks": [] // contains the list of server tasks requested by the user in this session
+    "serverTasks": [], // contains the list of server tasks requested by the user in this session
+    "numUpdated": 0,
+    "tabIndex": 0
   };
 
   constructor(props: ReactApplicationProps) {
@@ -91,6 +93,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     this.onFocusPocket = this.onFocusPocket.bind(this);
     this.onHighlightPocket = this.onHighlightPocket.bind(this);
     this.onShowConfidentChange = this.onShowConfidentChange.bind(this);
+    this.changeTab = this.changeTab.bind(this);
   }
 
   componentDidMount() {
@@ -244,16 +247,55 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
    */
   async getTaskList() {
     //this applies to the docking task only, may fetch multiple backend tasks in the future
-    let json = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
+    let taskStatusJSON = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
       .then(res => res.json())
       .catch(err => {
         return;
       }); //we could handle the error, but we do not care if the poll fails sometimes
-    if(json) {
+
+    if(taskStatusJSON) {
+      //look into the local storage and check if there are any updates
+      let savedTasks = localStorage.getItem("tasks");
+      if(!savedTasks) savedTasks = "[]";
+      const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
+      tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
+        if(task.status === "successful" || task.status === "failed") return;
+
+        const individualTask: ServerTaskInfo = taskStatusJSON["tasks"].find((t: ServerTaskInfo) => t.initialData.hash === task.params);
+        if(individualTask) {
+          if(individualTask.status !== task.status) {
+            //update the status
+            tasks[i].status = individualTask.status;
+
+            //download the computed data
+            if(individualTask.status === "successful") {
+              const data = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/public/result.json`, {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  "hash": task.params,
+              }
+              )}).then(res => res.json()).catch(err => console.log(err));
+              tasks[i].responseData = data;
+            }
+
+            //save the updated tasks
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+
+            //and trigger re-render
+            this.setState({numUpdated: this.state.numUpdated + 1});
+        }
+      }
+      });
+
+      /*
       //append the new tasks to the existing ones
       console.log(this.state.serverTasks);
       let newTasks: ServerTaskData[] = this.state.serverTasks;
-      json["tasks"].forEach((task: ServerTaskDataContents) => {
+      taskStatusJSON["tasks"].forEach((task: ServerTaskDataContents) => {
         if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
           newTasks.push({
             "type": ServerTaskType.Docking,
@@ -270,9 +312,14 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         }
       });
       this.setState({serverTasks: newTasks});
+      */
     }
     //poll again after 7 seconds
     setTimeout(() => this.getTaskList(), 7000);
+  }
+
+  changeTab(num: number) {
+    this.setState({tabIndex: num, numUpdated: this.state.numUpdated + 1});
   }
 
   render() {
@@ -313,6 +360,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             focusPocket={this.onFocusPocket}
             highlightPocket={this.onHighlightPocket}
             plugin={this.props.molstarPlugin}
+            tab={this.state.tabIndex}
+            setTab={this.changeTab}
           />
           {
             /*

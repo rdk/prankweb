@@ -7,7 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Paper, { PaperProps } from '@mui/material/Paper';
 import Draggable from 'react-draggable';
-import { PocketData, ServerTaskData } from "../../custom-types";
+import { PocketData, ServerTask } from "../../custom-types";
 import PocketDetails from "./pocket-details";
 import { PluginUIContext } from 'molstar/lib/mol-plugin-ui/context';
 import { PredictionInfo } from '../../prankweb-api';
@@ -28,7 +28,7 @@ export default class DraggableDialog extends React.Component<{
   prediction: PredictionInfo,
   pocketTextColor: string,
   pocketHeaderColor: string,
-  serverTasks: ServerTaskData[]
+  serverTasks: ServerTask[]
 }, {
   visible: boolean
 }> {

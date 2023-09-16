@@ -1,5 +1,5 @@
 import React from "react";
-import { PocketData, ServerTaskData, ServerTaskType } from "../../custom-types";
+import { PocketData, ServerTask, ServerTaskType } from "../../custom-types";
 import PocketProperty from "./pocket-property";
 import { renderOnServerDockingTaskCompleted, renderOnServerDockingTaskFailed, renderOnServerDockingTaskRunning } from "../../tasks/server-docking-task";
 
@@ -10,7 +10,7 @@ export default class PocketRunningTasks extends React.Component
     <{
         pocket: PocketData,
         inDialog: boolean,
-        serverTasks: ServerTaskData[]
+        serverTasks: ServerTask[]
     }, {}> {
 
     constructor(props: any) {
@@ -18,30 +18,30 @@ export default class PocketRunningTasks extends React.Component
         this.defaultImplementation = this.defaultImplementation.bind(this);
     }
 
-    defaultImplementation(serverTask: ServerTaskData, index: number) {
+    defaultImplementation(serverTask: ServerTask, index: number) {
         return <PocketProperty key={index} inDialog={this.props.inDialog} title={"Backend task (" + serverTask.type + ")"} data={"completed"}/>
     }
 
     render() {
         type MethodMap = {
-            [key in ServerTaskType]: (e: ServerTaskData) => JSX.Element;
+            [key in ServerTaskType]: (e: ServerTask) => JSX.Element;
         }
 
         const completedMethods: MethodMap = {
-            [ServerTaskType.Docking]: (e: ServerTaskData) => renderOnServerDockingTaskCompleted(e, this.props.pocket, e.data.initialData.hash)
+            [ServerTaskType.Docking]: (e: ServerTask) => renderOnServerDockingTaskCompleted(e, this.props.pocket, e.data.initialData.hash)
         }
 
         const runningMethods: MethodMap = {
-            [ServerTaskType.Docking]: (e: ServerTaskData) => renderOnServerDockingTaskRunning(this.props.pocket, e.data.initialData.hash)
+            [ServerTaskType.Docking]: (e: ServerTask) => renderOnServerDockingTaskRunning(this.props.pocket, e.data.initialData.hash)
         }
 
         const failedMethods: MethodMap = {
-            [ServerTaskType.Docking]: (e: ServerTaskData) => renderOnServerDockingTaskFailed(this.props.pocket, e.data.initialData.hash)
+            [ServerTaskType.Docking]: (e: ServerTask) => renderOnServerDockingTaskFailed(this.props.pocket, e.data.initialData.hash)
         }
 
         return (
             <div style={{"display": "inline"}}>
-                {this.props.inDialog && this.props.serverTasks.map((e: ServerTaskData, index) => {
+                {this.props.inDialog && this.props.serverTasks.map((e: ServerTask, index) => {
                     //finished task in this session
                     if(e.data.responseData && e.data.initialData.pocket === this.props.pocket.rank && e.data.status === "successful") {
                         return completedMethods[e.type](e);

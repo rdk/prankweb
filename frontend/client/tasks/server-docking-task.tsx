@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 
 import { PredictionInfo } from "../prankweb-api";
 import { PocketData, ServerTaskType, Point3D } from "../custom-types";
-import { ServerTaskData } from "../custom-types";
+import { ServerTask } from "../custom-types";
 
 import PocketProperty from "../viewer/components/pocket-property";
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
@@ -67,11 +67,12 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
  * @param serverTasks A list of all server tasks
  * @returns Completed task data
  */
-export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTaskData[], plugin: PluginUIContext): Promise<any>{
+export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTask[], plugin: PluginUIContext): Promise<any>{
     if(hash === "") {
         return;
     }
 
+    /*
     let matchingTasks = (serverTasks.filter((e: ServerTaskData) => e.type === ServerTaskType.Docking && e.data.initialData.hash === hash && e.data.initialData.pocket === pocket.rank));
 
     //check if the task is finished
@@ -99,6 +100,7 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
         }
         return;
     }
+    */
 
     const box = computeBoundingBox(plugin, pocket);
 
@@ -114,7 +116,6 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
             "bounding_box": box
         }),
     }).then((res) => {
-        //let the next call handle the response
         console.log(res);
     }
     ).catch(err => {
@@ -129,7 +130,7 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
  * @param pocket Pocket data
  * @returns JSX element
  */
-export function renderOnServerDockingTaskCompleted(taskData: ServerTaskData, pocket: PocketData, hash: string) {
+export function renderOnServerDockingTaskCompleted(taskData: ServerTask, pocket: PocketData, hash: string) {
     let shorterHash = hash;
     if(hash.length > 15) {
         shorterHash = hash.substring(0, 15) + "...";

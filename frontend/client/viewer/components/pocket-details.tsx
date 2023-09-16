@@ -1,5 +1,5 @@
 import React from "react";
-import { PocketData, ServerTaskData } from "../../custom-types";
+import { PocketData, ServerTask } from "../../custom-types";
 import PocketProperty from "./pocket-property";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionInfo } from "../../prankweb-api";
@@ -16,7 +16,7 @@ export default class PocketDetails extends React.Component
         inDialog: boolean,
         plugin: PluginUIContext,
         prediction: PredictionInfo
-        serverTasks: ServerTaskData[]
+        serverTasks: ServerTask[]
     }, {}> {
 
     constructor(props: any) {

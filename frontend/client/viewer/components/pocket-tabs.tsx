@@ -16,56 +16,45 @@ interface TabPanelProps {
   value: number;
 }
 
-export default class BasicTabs extends React.Component<
-  {
+export default function BasicTabs(props: {
     pockets: PocketData[],
     predictionInfo: PredictionInfo,
     setPocketVisibility: (index: number, isVisible: boolean) => void,
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
-    plugin: PluginUIContext
-  }, {
-    value: number
-  }> {
+    plugin: PluginUIContext,
+    tab: number,
+    setTab: (tab: number) => void
+  }) {
 
-  constructor(props: any) {
-    super(props);
-
-    this.state = {
-      value: 0
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    this.setState({value: newValue});
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    props.setTab(newValue);
   };
 
-  render() {
-    return (
-      <Box sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={this.state.value} onChange={this.handleChange} aria-label="Pocket tools tabs">
-            <Tab {...tabProperties(0, "Pockets")} />
-            <Tab {...tabProperties(1, "Info")} />
-            <Tab {...tabProperties(2, "Tasks")} />
-          </Tabs>
-        </Box>
-        <CustomTabPanel value={this.state.value} index={0}>
-          <EnhancedTable pockets={this.props.pockets} setPocketVisibility={this.props.setPocketVisibility} showOnlyPocket={this.props.showOnlyPocket} 
-          focusPocket={this.props.focusPocket} highlightPocket={this.props.highlightPocket}/>
-        </CustomTabPanel>
-        <CustomTabPanel value={this.state.value} index={1}>
-          <PredictionInfoTab predictionInfo={this.props.predictionInfo} />
-        </CustomTabPanel>
-        <CustomTabPanel value={this.state.value} index={2}>
-          <TasksTab pockets={this.props.pockets} predictionInfo={this.props.predictionInfo} plugin={this.props.plugin} />
-        </CustomTabPanel>
+  const tabNames = ["Pockets", "Info", "Tasks"];
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={props.tab} onChange={handleChange} aria-label="Pocket tools tabs">
+          {tabNames.map((name, index) => {
+              return <Tab key={index} {...tabProperties(index, name)} />
+          })}
+        </Tabs>
       </Box>
-    );
-  }
+      <CustomTabPanel value={props.tab} index={0}>
+        <EnhancedTable pockets={props.pockets} setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} 
+        focusPocket={props.focusPocket} highlightPocket={props.highlightPocket}/>
+      </CustomTabPanel>
+      <CustomTabPanel value={props.tab} index={1}>
+        <PredictionInfoTab predictionInfo={props.predictionInfo} />
+      </CustomTabPanel>
+      <CustomTabPanel value={props.tab} index={2}>
+        <TasksTab pockets={props.pockets} predictionInfo={props.predictionInfo} plugin={props.plugin} />
+      </CustomTabPanel>
+    </Box>
+  );
 }
 
 function tabProperties(index: number, label: string) {

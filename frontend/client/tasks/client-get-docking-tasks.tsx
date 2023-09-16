@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ClientTaskData, ClientTaskType, PocketData, ServerTaskDataContents } from "../custom-types";
+import { ClientTask, ClientTaskType, PocketData, ServerTaskInfo } from "../custom-types";
 import { PredictionInfo } from "../prankweb-api";
 
 /**
@@ -8,7 +8,7 @@ import { PredictionInfo } from "../prankweb-api";
  * @param prediction Prediction info
  * @returns Data with a number of tasks
 */
-export async function getDockingTaskCount(prediction: PredictionInfo, pocket: PocketData): Promise<ClientTaskData> {
+export async function getDockingTaskCount(prediction: PredictionInfo, pocket: PocketData): Promise<ClientTask> {
 
     const json = await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/tasks`)
         .then(res => res.json())
@@ -18,7 +18,7 @@ export async function getDockingTaskCount(prediction: PredictionInfo, pocket: Po
         });
 
     if(json) {
-        const numOfTasks = json["tasks"].filter((task: ServerTaskDataContents) => task.initialData.pocket == pocket.rank).length;
+        const numOfTasks = json["tasks"].filter((task: ServerTaskInfo) => task.initialData.pocket == pocket.rank).length;
         return {
             "data": numOfTasks,
             "pocket": pocket.rank,
@@ -38,7 +38,7 @@ export async function getDockingTaskCount(prediction: PredictionInfo, pocket: Po
  * @param data Data to render
  * @returns JSX element
  */
-export function renderOnTaskDockingTasksCountCompleted(data: ClientTaskData) {
+export function renderOnTaskDockingTasksCountCompleted(data: ClientTask) {
     return (
         <span style={{float: "right", marginLeft: "1rem"}}>{data.data}</span>
     );
