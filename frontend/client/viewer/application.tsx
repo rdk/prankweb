@@ -56,6 +56,9 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
     visualizationToolbox.style.display = MolstarPlugin.layout.state.isExpanded ? "none" : "block";
   });
 
+  // Before rendering the data, clear the results of client-side tasks.
+  localStorage.removeItem("clientTasks");
+
   // Render pocket list on the right side (or bottom for smartphones) using React.
   const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
   const pocketListRoot = createRoot(pocketListContainer!);
@@ -256,7 +259,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
     if(taskStatusJSON) {
       //look into the local storage and check if there are any updates
-      let savedTasks = localStorage.getItem("tasks");
+      let savedTasks = localStorage.getItem("serverTasks");
       if(!savedTasks) savedTasks = "[]";
       const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
       tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
@@ -284,10 +287,13 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             }
 
             //save the updated tasks
-            localStorage.setItem("tasks", JSON.stringify(tasks));
+            localStorage.setItem("serverTasks", JSON.stringify(tasks));
 
+            console.log("saving the updated tasks");
             //and trigger re-render
-            this.setState({numUpdated: this.state.numUpdated + 1});
+            this.setState(prevState => ({
+              numUpdated: prevState.numUpdated + 1
+            }));
         }
       }
       });
@@ -365,6 +371,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             highlightPocket={this.onHighlightPocket}
             plugin={this.props.molstarPlugin}
             tab={this.state.tabIndex}
+            key={this.state.numUpdated}
             setTab={this.changeTab}
             initialPocket={this.state.initialPocket}
           />

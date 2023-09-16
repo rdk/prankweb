@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ClientTask, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
+import { ClientTask, ClientTaskLocalStorageData, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
 import { Button } from "@mui/material";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,7 +13,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
 import { PredictionInfo } from "../../prankweb-api";
-import { computeDockingTaskOnBackend } from "../../tasks/server-docking-task";
+import { computeDockingTaskOnBackend, downloadDockingResult } from "../../tasks/server-docking-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { getDockingTaskCount } from "../../tasks/client-get-docking-tasks";
 import { computePocketVolume } from "../../tasks/client-atoms-volume";
@@ -40,8 +40,20 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             name: "Volume",
             compute: (params, customName, pocketIndex) => {
                 const promise = computePocketVolume(props.plugin, props.pockets[pocketIndex]);
+
                 promise.then((task: ClientTask) => {
-                    handleFinishedClientTask(task);
+                    let savedTasks = localStorage.getItem("clientTasks");
+                    if(!savedTasks) savedTasks = "[]";
+                    const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
+
+                    tasks.push({
+                        "pocket": (pocketIndex + 1).toString(),
+                        "type": ClientTaskType.Volume,
+                        "data": task.data
+                    });
+
+                    localStorage.setItem("clientTasks", JSON.stringify(tasks));
+                    console.log(tasks);
                 });
             }
         },
@@ -53,7 +65,18 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             compute: (params, customName, pocketIndex) => {
                 const promise = getDockingTaskCount(props.predictionInfo, props.pockets[pocketIndex]);
                 promise.then((task: ClientTask) => {
-                    handleFinishedClientTask(task);
+                    let savedTasks = localStorage.getItem("clientTasks");
+                    if(!savedTasks) savedTasks = "[]";
+                    const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
+
+                    tasks.push({
+                        "pocket": (pocketIndex + 1).toString(),
+                        "type": ClientTaskType.DockingTaskCount,
+                        "data": task.data
+                    });
+
+                    localStorage.setItem("clientTasks", JSON.stringify(tasks));
+                    console.log(tasks);
                 });
             }
         },
@@ -63,18 +86,19 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
             type: TaskType.Server,
             name: "Docking",
             compute: (params, customName, pocketIndex) => {
-                let savedTasks = localStorage.getItem("tasks");
+                let savedTasks = localStorage.getItem("serverTasks");
                 if(!savedTasks) savedTasks = "[]";
                 const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
                 tasks.push({
                     "name": customName,
                     "params": params,
                     "pocket": pocketIndex + 1,
+                    "created": new Date().toISOString(),
                     "status": "queued",
                     "type": ServerTaskType.Docking,
                     "responseData": null
                 });
-                localStorage.setItem("tasks", JSON.stringify(tasks));
+                localStorage.setItem("serverTasks", JSON.stringify(tasks));
                 console.log(tasks);
                 computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params, [], props.plugin);
             }
@@ -85,8 +109,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
     const [pocketNumber, setPocketNumber] = React.useState<number>(props.initialPocket);
     const [name, setName] = React.useState<string>("");
     const [parameters, setParameters] = React.useState<string>("");
-
-    const [finishedClientTasks, setFinishedClientTasks] = React.useState<ClientTask[]>([]);
+    const [forceUpdate, setForceUpdate] = React.useState<number>(0);
 
     const handleTaskTypeChange = (event: SelectChangeEvent) => {
         setTask(tasks.find(task => task.id == Number(event.target.value))!);
@@ -96,17 +119,22 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
         setPocketNumber(Number(event.target.value));
     };
 
-    const handleSubmitButton = () => {
+    const handleSubmitButton = async () => {
         task.compute(parameters, name, pocketNumber - 1);
+        setTimeout(forceComponentUpdate, 250);
     }
 
-    const handleFinishedClientTask = (task: ClientTask) => {
-        setFinishedClientTasks(prevState => [task, ...prevState]);
+    const forceComponentUpdate = () => {
+        setForceUpdate(prevState => prevState + 1);
     }
 
-    let savedTasks = localStorage.getItem("tasks");
+    let savedTasks = localStorage.getItem("serverTasks");
     if(!savedTasks) savedTasks = "[]";
     const tasksFromLocalStorage: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
+
+    let savedClientTasks = localStorage.getItem("clientTasks");
+    if(!savedClientTasks) savedClientTasks = "[]";
+    const finishedClientTasks: ClientTaskLocalStorageData[] = JSON.parse(savedClientTasks);
 
     return (
         <div>
@@ -178,6 +206,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                             <TableRow>
                             <TableCell>Type</TableCell>
                             <TableCell>Name</TableCell>
+                            <TableCell>Timestamp</TableCell>
                             <TableCell>Pocket</TableCell>
                             <TableCell>Status/result</TableCell>
                             </TableRow>
@@ -187,6 +216,7 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                                 return (
                                     <TableRow key={i}>
                                         <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
+                                        <TableCell>{"-"}</TableCell>
                                         <TableCell>{"-"}</TableCell>
                                         <TableCell>{task.pocket}</TableCell>
                                         <TableCell>{task.data}</TableCell>
@@ -198,8 +228,9 @@ export default function TasksTab(props: {pockets: PocketData[], predictionInfo: 
                                     <TableRow key={i}>
                                         <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
                                         <TableCell>{task.name}</TableCell>
+                                        <TableCell>{task.created}</TableCell>
                                         <TableCell>{task.pocket}</TableCell>
-                                        <TableCell>{task.status}</TableCell>
+                                        <TableCell>{task.status === "successful" ? <span onClick={() => downloadDockingResult(task.params, task.responseData.url)} style={{color: "blue", textDecoration: "underline", cursor: "pointer"}}>successful</span> : task.status}</TableCell>
                                     </TableRow>
                                 )
                             })}

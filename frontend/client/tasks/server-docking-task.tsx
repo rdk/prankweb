@@ -139,7 +139,7 @@ export function renderOnServerDockingTaskCompleted(taskData: ServerTask, pocket:
         <PocketProperty inDialog={true} title={"Docking task (" + shorterHash + ")"} data={
             //there should be only one result
             taskData.data.responseData.map((e: any) =>
-                <Button variant="contained" color="success" size="small" onClick={() => downloadResult(hash, e.url)}>
+                <Button variant="contained" color="success" size="small" onClick={() => downloadDockingResult(hash, e.url)}>
                     Result
                 </Button>
             )
@@ -196,7 +196,7 @@ export function dockingHash(prediction: PredictionInfo, pocket: PocketData, form
  * @param fileURL URL to download the result from
  * @returns void
 */
-function downloadResult(hash: string, fileURL: string) {
+export function downloadDockingResult(hash: string, fileURL: string) {
     // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     fetch(fileURL, {
         method: 'POST',

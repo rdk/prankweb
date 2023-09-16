@@ -228,6 +228,10 @@ export interface ClientTask {
     data: any;
 }
 
+export interface ClientTaskLocalStorageData extends ClientTask {
+    //potentially may contain more data
+}
+
 export interface Point3D {
     x: number;
     y: number;
@@ -265,6 +269,7 @@ export interface ServerTaskLocalStorageData {
     name: string,
     params: string,
     pocket: number,
+    created: string,
     status: string,
     type: ServerTaskType,
     responseData: any

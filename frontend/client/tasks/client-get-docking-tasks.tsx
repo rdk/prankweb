@@ -10,12 +10,14 @@ import { PredictionInfo } from "../prankweb-api";
 */
 export async function getDockingTaskCount(prediction: PredictionInfo, pocket: PocketData): Promise<ClientTask> {
 
-    const json = await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/tasks`)
-        .then(res => res.json())
+    const json = await (await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/tasks`, { headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+        }}).then(res => res.json())
         .catch(err => { 
             console.log(err);
-            setTimeout(() => getDockingTaskCount(prediction, pocket), 1000);
-        });
+            //setTimeout(() => getDockingTaskCount(prediction, pocket), 1000);
+        }));
 
     if(json) {
         const numOfTasks = json["tasks"].filter((task: ServerTaskInfo) => task.initialData.pocket == pocket.rank).length;
