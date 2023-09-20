@@ -24,14 +24,14 @@ async function initialize() {
     const id = params.get("id");
     const database = params.get("database");
 
-    if(id === null || database === null) {
+    if (id === null || database === null) {
         handleError();
         return;
     }
 
     const predictionInfo = await fetchPrediction(database, id);
 
-    if(predictionInfo.content === null) {
+    if (predictionInfo.content === null) {
         handleError();
         return;
     }

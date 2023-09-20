@@ -59,7 +59,7 @@ interface AminoAcid {
     name: string;
 }
 
-export const aminoCodeMap : AminoAcid[] = [
+export const aminoCodeMap: AminoAcid[] = [
     { letter: "A", code: "ALA", name: "Alanine" },
     { letter: "R", code: "ARG", name: "Arginine" },
     { letter: "N", code: "ASN", name: "Asparagine" },
@@ -147,7 +147,7 @@ export interface ReactApplicationProps {
     predictionInfo: PredictionInfo,
     polymerView: PolymerViewType,
     pocketsView: PocketsViewType,
-    polymerColor: PolymerColorType
+    polymerColor: PolymerColorType;
 }
 
 export interface ReactApplicationState {
@@ -161,7 +161,7 @@ export interface ReactApplicationState {
     pluginRcsb: RcsbFv | undefined,
     numUpdated: number,
     tabIndex: number,
-    initialPocket: number
+    initialPocket: number;
 }
 
 /**
@@ -192,7 +192,7 @@ export const AlphaFoldColorsMolStar = [
     Color.fromRgb(101, 203, 243),
     Color.fromRgb(255, 219, 19),
     Color.fromRgb(255, 125, 69)
-]
+];
 
 /**
  * This array contains first colors used to color the pockets.
@@ -219,7 +219,7 @@ export enum ClientTaskType {
 export const ClientTaskTypeDescriptors = [
     "Atoms volume",
     "Number of docking tasks"
-]
+];
 
 export interface ClientTask {
     pocket: number;
@@ -243,7 +243,7 @@ export enum ServerTaskType {
 
 export const ServerTaskTypeDescriptors = [
     "Molecular docking"
-]
+];
 
 export interface ServerTask {
     pocket: string;
@@ -271,5 +271,5 @@ export interface ServerTaskLocalStorageData {
     created: string,
     status: string,
     type: ServerTaskType,
-    responseData: any
+    responseData: any;
 }

@@ -21,7 +21,7 @@ export interface PredictionInfo {
     structureName: string;
     predictionName: string;
     predictedStructure?: boolean;
-  }
+  };
 }
 
 /**
@@ -92,6 +92,6 @@ export async function fetchPredictionLog(
  * @param id The ID of the prediction.
  * @returns An URL to the ZIP file.
  */
-export function getApiDownloadUrl({database, id}: PredictionInfo) {
+export function getApiDownloadUrl({ database, id }: PredictionInfo) {
   return `./api/v2/prediction/${database}/${id}/public/prankweb.zip`;
 }

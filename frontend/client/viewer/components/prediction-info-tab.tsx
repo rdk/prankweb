@@ -1,17 +1,17 @@
 import React from "react";
 import { PredictionInfo } from "../../prankweb-api";
 
-export default function PredictionInfoTab(props: {predictionInfo: PredictionInfo}) {
+export default function PredictionInfoTab(props: { predictionInfo: PredictionInfo; }) {
     const pInfo = props.predictionInfo;
     const isUserProvided = pInfo.database.includes("user-upload");
     const isPredicted = pInfo.metadata.predictedStructure === true;
-    
+
     let url = "";
 
-    if(isPredicted) {
+    if (isPredicted) {
         url = `https://alphafold.ebi.ac.uk/entry/${pInfo.metadata.predictionName}`;
     }
-    else if(!isUserProvided) { //this means that the structure is experimental
+    else if (!isUserProvided) { //this means that the structure is experimental
         url = `https://www.rcsb.org/structure/${pInfo.metadata.predictionName}`;
     }
 
@@ -30,5 +30,5 @@ export default function PredictionInfoTab(props: {predictionInfo: PredictionInfo
                 TODO: here we should add something about the prediction model (P2Rank version etc.)
             </ul>
         </div>
-    )
+    );
 }

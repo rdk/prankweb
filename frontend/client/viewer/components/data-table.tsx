@@ -178,7 +178,7 @@ export default function EnhancedTable(props: {
         <TableHeading />
         <TableContainer>
           <Table
-            aria-labelledby="tableTitle"
+            className='pocket-table'
             size={dense ? 'small' : 'medium'}
           >
             <EnhancedTableHead
@@ -187,15 +187,12 @@ export default function EnhancedTable(props: {
               onRequestSort={handleRequestSort}
               rowCount={props.pockets.length}
             />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                return (
+            <TableBody className='pocket-table-body'>
+              {visibleRows.map((row, index) => (
                   <DataTableRow key={row.name} pocket={row} dense={dense} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold} 
                   setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} focusPocket={props.focusPocket}
-                  highlightPocket={props.highlightPocket} setTab={props.setTab}
-                  />
-                );
-              })}
+                  highlightPocket={props.highlightPocket} setTab={props.setTab} />
+              ))}
               {emptyRows > 0 && (
                 <TableRow
                   style={{

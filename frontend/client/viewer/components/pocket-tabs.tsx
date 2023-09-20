@@ -11,9 +11,9 @@ import TasksTab from "./tasks-tab";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
 interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+    children?: React.ReactNode;
+    index: number;
+    value: number;
 }
 
 export default function BasicTabs(props: {
@@ -26,57 +26,57 @@ export default function BasicTabs(props: {
     plugin: PluginUIContext,
     tab: number,
     setTab: (tab: number, initialPocket?: number) => void,
-    initialPocket: number
-  }) {
+    initialPocket: number;
+}) {
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    props.setTab(newValue);
-  };
+    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+        props.setTab(newValue);
+    };
 
-  const tabNames = ["Pockets", "Info", "Tasks"];
+    const tabNames = ["Pockets", "Info", "Tasks"];
 
-  return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={props.tab} onChange={handleChange} aria-label="Pocket tools tabs">
-          {tabNames.map((name, index) => {
-              return <Tab key={index} {...tabProperties(index, name)} />
-          })}
-        </Tabs>
-      </Box>
-      <CustomTabPanel value={props.tab} index={0}>
-        <EnhancedTable pockets={props.pockets} setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} 
-        focusPocket={props.focusPocket} highlightPocket={props.highlightPocket} setTab={props.setTab}/>
-      </CustomTabPanel>
-      <CustomTabPanel value={props.tab} index={1}>
-        <PredictionInfoTab predictionInfo={props.predictionInfo} />
-      </CustomTabPanel>
-      <CustomTabPanel value={props.tab} index={2}>
-        <TasksTab pockets={props.pockets} predictionInfo={props.predictionInfo} plugin={props.plugin} initialPocket={props.initialPocket} />
-      </CustomTabPanel>
-    </Box>
-  );
+    return (
+        <Box sx={{ width: '100%' }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={props.tab} onChange={handleChange} aria-label="Pocket tools tabs">
+                    {tabNames.map((name, index) => {
+                        return <Tab key={index} {...tabProperties(index, name)} />;
+                    })}
+                </Tabs>
+            </Box>
+            <CustomTabPanel value={props.tab} index={0}>
+                <EnhancedTable pockets={props.pockets} setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket}
+                    focusPocket={props.focusPocket} highlightPocket={props.highlightPocket} setTab={props.setTab} />
+            </CustomTabPanel>
+            <CustomTabPanel value={props.tab} index={1}>
+                <PredictionInfoTab predictionInfo={props.predictionInfo} />
+            </CustomTabPanel>
+            <CustomTabPanel value={props.tab} index={2}>
+                <TasksTab pockets={props.pockets} predictionInfo={props.predictionInfo} plugin={props.plugin} initialPocket={props.initialPocket} />
+            </CustomTabPanel>
+        </Box>
+    );
 }
 
 function tabProperties(index: number, label: string) {
-  return {
-    id: `simple-tab-${index}`,
-    label: label
-  };
+    return {
+        id: `simple-tab-${index}`,
+        label: label
+    };
 }
 
 function CustomTabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+    const { children, value, index, ...other } = props;
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && children}
-    </div>
-  );
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && children}
+        </div>
+    );
 }
