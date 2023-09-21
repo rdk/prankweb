@@ -6,15 +6,5 @@ module.exports = merge(common, {
   "devtool": "eval",
   "devServer": {
     "hot": true,
-  },
-  "module": {
-    "rules": [
-      {
-        "enforce": "pre",
-        "test": /\.(js|jsx)$/,
-        "exclude": [/node_modules/, /assets/],
-        "use": ["babel-loader"],
-      },
-    ],
-  },
+  }
 });

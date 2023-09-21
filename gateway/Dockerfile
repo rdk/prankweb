@@ -7,9 +7,16 @@ ARG GOOGLE_ANALYTICS
 
 WORKDIR /opt/frontend
 
+# copy package.json and package-lock.json to prevent re-running npm ci on every code change
+COPY ./frontend/package.json ./
+COPY ./frontend/package-lock.json ./
+
+RUN npm ci
+
+# copy the rest of the source codes and build the application
 COPY ./frontend/ ./
 
-RUN npm ci && npm run build
+RUN npm run build
 
 #
 # Prepare passwords.

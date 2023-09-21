@@ -28,13 +28,12 @@ module.exports = {
   "module": {
     "rules": [
       {
-        "test": /\.jsx?$/,
-        "use": "babel-loader",
-      },
-      {
-        "test": /\.tsx?$/,
-        "use": "ts-loader",
-        "exclude": /node_modules/,
+        "test": /\.[jt]sx?$/,
+        "loader": "esbuild-loader",
+        "options": {
+          "loader": "tsx",
+          "target": "es2019"
+        }
       },
       {
         "test": /\.html$/,

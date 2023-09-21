@@ -4,13 +4,11 @@ import { createRoot } from 'react-dom/client';
 import "./application.css";
 import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
 
-import { StructureInformation } from "./components/structure-information";
-import ToolBox from "./components/tool-box";
-import PocketList from "./components/pocket-list";
-import TaskList from "./components/task-list";
+import { VisualizationToolBox } from "./components/visualization-tool-box";
+import BasicTabs from "./components/pocket-tabs";
 
 import { sendDataToPlugins } from './data-loader';
-import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskData, ServerTaskDataContents, ServerTaskType } from "../custom-types";
+import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTask, ServerTaskInfo, ServerTaskLocalStorageData, ServerTaskType } from "../custom-types";
 
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
@@ -25,37 +23,49 @@ import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerVi
 export async function renderProteinView(predictionInfo: PredictionInfo) {
   const wrapper = document.getElementById('application-molstar')!;
   const MolstarPlugin = await createPluginUI(wrapper, {
-      ...DefaultPluginUISpec(),
-      layout: {
-          initial: {
-              isExpanded: false,
-              showControls: true,
-              controlsDisplay: "reactive",
-              regionState: {
-                  top: "hidden",    //sequence
-                  left: (window.innerWidth > 1200) ? "collapsed" : "hidden", 
-                                    //tree with some components, hide for small and medium screens
-                  bottom: "hidden", //shows log information
-                  right: "hidden"   //structure tools
-              }
-          }
-      },
-      components: {
-          remoteState: 'none'
+    ...DefaultPluginUISpec(),
+    layout: {
+      initial: {
+        isExpanded: false,
+        showControls: true,
+        controlsDisplay: "reactive",
+        regionState: {
+          top: "hidden",    //sequence
+          left: (window.innerWidth > 1200) ? "collapsed" : "hidden",
+          //tree with some components, hide for small and medium screens
+          bottom: "hidden", //shows log information
+          right: "hidden"   //structure tools
+        }
       }
+    },
+    components: {
+      remoteState: 'none'
+    }
   });
 
+  // If the Mol* plugin is maximized, hide the React components.
+  MolstarPlugin.layout.events.updated.subscribe(() => {
+    const information = document.getElementById('information')!;
+    const visualizationToolbox = document.getElementById('visualization-toolbox')!;
+
+    information.style.display = MolstarPlugin.layout.state.isExpanded ? "none" : "block";
+    visualizationToolbox.style.display = MolstarPlugin.layout.state.isExpanded ? "none" : "block";
+  });
+
+  // Before rendering the data, clear the results of client-side tasks.
+  localStorage.removeItem("clientTasks");
+
   // Render pocket list on the right side (or bottom for smartphones) using React.
-  const container = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
-  const root = createRoot(container!);
-  root.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
-    pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean}/>);
+  const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
+  const pocketListRoot = createRoot(pocketListContainer!);
+  pocketListRoot.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
+    pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean} />);
 }
 
 /**
  * A React component containing all of the components other than the Mol* and RCSB plugins.
  */
-export class Application extends React.Component<ReactApplicationProps, ReactApplicationState> 
+export class Application extends React.Component<ReactApplicationProps, ReactApplicationState>
 {
   state = {
     "isLoading": true,
@@ -66,7 +76,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     "polymerColor": this.props.polymerColor,
     "isShowOnlyPredicted": false,
     "pluginRcsb": {} as RcsbFv,
-    "serverTasks": [] // contains the list of server tasks requested by the user in this session
+    "numUpdated": 0,
+    "tabIndex": 0,
+    "initialPocket": 1
   };
 
   constructor(props: ReactApplicationProps) {
@@ -74,29 +86,32 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
     this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
     this.onPolymerColorChange = this.onPolymerColorChange.bind(this);
-    this.onShowAllPockets = this.onShowAllPockets.bind(this);
+    this.onToggleAllPockets = this.onToggleAllPockets.bind(this);
     this.onSetPocketVisibility = this.onSetPocketVisibility.bind(this);
     this.onShowOnlyPocket = this.onShowOnlyPocket.bind(this);
     this.onFocusPocket = this.onFocusPocket.bind(this);
     this.onHighlightPocket = this.onHighlightPocket.bind(this);
     this.onShowConfidentChange = this.onShowConfidentChange.bind(this);
+    this.changeTab = this.changeTab.bind(this);
   }
 
   componentDidMount() {
-    //console.log("Application::componentDidMount");
     this.loadData();
     this.getTaskList();
   }
 
   /**
    * Loads the data from the server and sends them to the plugins.
+   * Also renders the tool box on the bottom of the visualization using React.
    */
   async loadData() {
     this.setState({
       "isLoading": true,
       "error": undefined,
     });
-    const {molstarPlugin, predictionInfo} = this.props;
+    const { molstarPlugin, predictionInfo } = this.props;
+
+    let loadedData: [PredictionData, RcsbFv] | null = null;
 
     //at first we need the plugins to download the needed data and visualise them
     await sendDataToPlugins(
@@ -106,26 +121,52 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
       predictionInfo.metadata.structureName,
       predictionInfo.metadata.predictedStructure ? true : false
     ).then((data) => {
-      this.setState({
-      "isLoading": false,
-      "data": data[0],
-      "pluginRcsb": data[1]
-    })}).catch((error) => {
+      loadedData = data;
       this.setState({
         "isLoading": false,
-      })
+        "data": data[0],
+        "pluginRcsb": data[1]
+      });
+    }).catch((error) => {
+      this.setState({
+        "isLoading": false,
+      });
       console.log(error);
     });
+
+    if (!loadedData) return;
+
+    // Render the tool box on the bottom of the visualization using React.
+    const toolBoxContainer = document.getElementById('visualization-toolbox');
+    const toolBoxRoot = createRoot(toolBoxContainer!);
+    const downloadAs = `prankweb-${this.props.predictionInfo.metadata.predictionName}.zip`;
+    const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
+
+    toolBoxRoot.render(<VisualizationToolBox
+      downloadUrl={getApiDownloadUrl(this.props.predictionInfo)}
+      downloadAs={downloadAs}
+      molstarPlugin={this.props.molstarPlugin}
+      predictionData={loadedData[0]}
+      pluginRcsb={loadedData[1]}
+      isPredicted={isPredicted}
+      polymerView={this.state.polymerView}
+      pocketsView={this.state.pocketsView}
+      polymerColor={this.state.polymerColor}
+      onShowConfidentChange={this.onShowConfidentChange}
+      onPolymerViewChange={this.onPolymerViewChange}
+      onPocketsViewChange={this.onPocketsViewChange}
+      onPolymerColorChange={this.onPolymerColorChange}
+    />);
   }
 
   // The following functions are called by the child components to change the visualisation via the child components.
   onPolymerViewChange(value: PolymerViewType) {
-    this.setState({"polymerView": value});
+    this.setState({ "polymerView": value });
     updatePolymerView(value, this.props.molstarPlugin, this.state.isShowOnlyPredicted);
   }
 
   onPocketsViewChange(value: PocketsViewType) {
-    this.setState({"pocketsView": value});
+    this.setState({ "pocketsView": value });
     let index = 0;
     this.state.data.pockets.forEach(pocket => {
       this.onSetPocketVisibility(index, pocket.isVisible ? true : false, value);
@@ -134,28 +175,26 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
   }
 
   onPolymerColorChange(value: PolymerColorType) {
-    this.setState({"polymerColor": value});
+    this.setState({ "polymerColor": value });
     overPaintPolymer(value, this.props.molstarPlugin, this.state.data);
   }
 
   onShowConfidentChange() {
-    const isShowOnlyPredicted= !this.state.isShowOnlyPredicted;
+    const isShowOnlyPredicted = !this.state.isShowOnlyPredicted;
     this.setState({
       "isShowOnlyPredicted": isShowOnlyPredicted
     });
     updatePolymerView(this.state.polymerView, this.props.molstarPlugin, isShowOnlyPredicted);
   }
 
-  onShowAllPockets() {
-    let index = 0;
-    this.state.data.pockets.forEach(pocket => { 
-      this.onSetPocketVisibility(index, true);
-      index++;
+  onToggleAllPockets(visible: boolean) {
+    this.state.data.pockets.map((pocket, i) => {
+      this.onSetPocketVisibility(i, visible);
     });
   }
 
   onSetPocketVisibility(index: number, isVisible: boolean, value?: PocketsViewType) {
-    let stateData: PredictionData = {...this.state.data};
+    let stateData: PredictionData = { ...this.state.data };
     stateData.pockets[index].isVisible = isVisible;
     this.setState({
       data: stateData
@@ -165,8 +204,8 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     //currently there is no other way to "remove" one of the pockets without modyfing the others
     const newColor = isVisible ? "#" + this.state.data.pockets[index].color : "#F9F9F9";
     const track = this.state.pluginRcsb.getBoardData().find(e => e.trackId === "pocketsTrack");
-    if(track) {
-      track.trackData!.filter((e : RcsbFvTrackDataElementInterface) => e.provenanceName === `pocket${index+1}`).forEach((foundPocket : RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
+    if (track) {
+      track.trackData!.filter((e: RcsbFvTrackDataElementInterface) => e.provenanceName === `pocket${index + 1}`).forEach((foundPocket: RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
       const newData = track.trackData;
       this.state.pluginRcsb.updateTrackData("pocketsTrack", newData!);
     }
@@ -174,7 +213,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     //then resolve Mol*
     //here value may be passed as an parameter whilst changing the pocket view type, because the state is not updated yet.
     //Otherwise the value is taken from the state.
-    if(value === null || value === undefined) {
+    if (value === null || value === undefined) {
       showPocketInCurrentRepresentation(this.props.molstarPlugin, this.state.pocketsView, index, isVisible);
     }
     else {
@@ -184,7 +223,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
   onShowOnlyPocket(index: number) {
     let i = 0;
-    this.state.data.pockets.forEach(pocket => { 
+    this.state.data.pockets.forEach(pocket => {
       this.onSetPocketVisibility(i, (index === i) ? true : false);
       i++;
     });
@@ -206,38 +245,66 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
    */
   async getTaskList() {
     //this applies to the docking task only, may fetch multiple backend tasks in the future
-    let json = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, {cache: "no-store"})
+    let taskStatusJSON = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, { cache: "no-store" })
       .then(res => res.json())
       .catch(err => {
         return;
       }); //we could handle the error, but we do not care if the poll fails sometimes
-    if(json) {
-      //append the new tasks to the existing ones
-      console.log(this.state.serverTasks);
-      let newTasks: ServerTaskData[] = this.state.serverTasks;
-      json["tasks"].forEach((task: ServerTaskDataContents) => {
-        if(!newTasks.find((t: ServerTaskData) => t.data.id === task.id)) {
-          newTasks.push({
-            "type": ServerTaskType.Docking,
-            "data": task
-          });
-        }
-        else if (newTasks.find((t: ServerTaskData) => t.data.status !== task.status)) {
-          //update the status
-          const index = newTasks.findIndex((t: ServerTaskData) => t.data.id === task.id);
-          let formerResponseData = newTasks[index].data.responseData;
-          task.responseData = formerResponseData;
-          newTasks[index].data = task;
+
+    if (taskStatusJSON) {
+      //look into the local storage and check if there are any updates
+      let savedTasks = localStorage.getItem("serverTasks");
+      if (!savedTasks) savedTasks = "[]";
+      const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
+      tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
+        if (task.status === "successful" || task.status === "failed") return;
+
+        const individualTask: ServerTaskInfo = taskStatusJSON["tasks"].find((t: ServerTaskInfo) => t.initialData.hash === task.params);
+        if (individualTask) {
+          if (individualTask.status !== task.status) {
+            //update the status
+            tasks[i].status = individualTask.status;
+
+            //download the computed data
+            if (individualTask.status === "successful") {
+              const data = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/public/result.json`, {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  "hash": task.params,
+                }
+                )
+              }).then(res => res.json()).catch(err => console.log(err));
+              tasks[i].responseData = data;
+            }
+
+            //save the updated tasks
+            localStorage.setItem("serverTasks", JSON.stringify(tasks));
+
+            console.log("saving the updated tasks");
+            //and trigger re-render
+            this.setState(prevState => ({
+              numUpdated: prevState.numUpdated + 1
+            }));
+          }
         }
       });
-      this.setState({serverTasks: newTasks});
     }
     //poll again after 7 seconds
     setTimeout(() => this.getTaskList(), 7000);
   }
 
+  changeTab(num: number, pocketIndex?: number) {
+    this.setState({ tabIndex: num, numUpdated: this.state.numUpdated + 1 });
+    if (pocketIndex !== undefined) {
+      this.setState({ initialPocket: pocketIndex });
+    }
+  }
+
   render() {
-    //console.log("Application::render");
     if (this.state.isLoading) {
       return (
         <div>
@@ -245,51 +312,32 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         </div>
       );
     }
-    const {predictionInfo} = this.props;
+    const { predictionInfo } = this.props;
     const downloadAs = `prankweb-${predictionInfo.metadata.predictionName}.zip`;
     if (this.state.data) {
       const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
       return (
         <div>
-          <ToolBox
-            predictionData={this.state.data}
-            downloadUrl={getApiDownloadUrl(predictionInfo)}
-            downloadAs={downloadAs}
-            polymerView={this.state.polymerView}
-            pocketsView={this.state.pocketsView}
-            polymerColor={this.state.polymerColor}
-            onPolymerViewChange={this.onPolymerViewChange}
-            onPocketsViewChange={this.onPocketsViewChange}
-            onPolymerColorChange={this.onPolymerColorChange}
-            isPredicted={isPredicted}
-            isShowOnlyPredicted={this.state.isShowOnlyPredicted}
-            onShowConfidentChange={this.onShowConfidentChange}
-          />
-          <StructureInformation
-            metadata={predictionInfo.metadata}
-            database={predictionInfo.database}
-          />
-          <TaskList 
-            prediction={predictionInfo}
-            tasks={this.state.serverTasks}
-          />
-          <PocketList 
-            data={this.state.data}
-            showAll={this.onShowAllPockets}
+          <BasicTabs
+            pockets={this.state.data.pockets}
+            predictionInfo={this.props.predictionInfo}
             setPocketVisibility={this.onSetPocketVisibility}
             showOnlyPocket={this.onShowOnlyPocket}
             focusPocket={this.onFocusPocket}
             highlightPocket={this.onHighlightPocket}
+            toggleAllPockets={this.onToggleAllPockets}
             plugin={this.props.molstarPlugin}
-            prediction={this.props.predictionInfo}
-            serverTasks={this.state.serverTasks}
+            tab={this.state.tabIndex}
+            key={this.state.numUpdated}
+            setTab={this.changeTab}
+            initialPocket={this.state.initialPocket}
           />
         </div>
       );
     }
     console.error("Can't load data:", this.state.error);
     return (
-      <div style={{"textAlign": "center"}}>
+      <div style={{ "textAlign": "center" }}>
         <h1 className="text-center">Can't load data</h1>
         <button className="btn btn-warning" onClick={this.loadData}>
           Force reload

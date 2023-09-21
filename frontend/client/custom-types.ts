@@ -59,7 +59,7 @@ interface AminoAcid {
     name: string;
 }
 
-export const aminoCodeMap : AminoAcid[] = [
+export const aminoCodeMap: AminoAcid[] = [
     { letter: "A", code: "ALA", name: "Alanine" },
     { letter: "R", code: "ARG", name: "Arginine" },
     { letter: "N", code: "ASN", name: "Asparagine" },
@@ -147,7 +147,7 @@ export interface ReactApplicationProps {
     predictionInfo: PredictionInfo,
     polymerView: PolymerViewType,
     pocketsView: PocketsViewType,
-    polymerColor: PolymerColorType
+    polymerColor: PolymerColorType;
 }
 
 export interface ReactApplicationState {
@@ -159,7 +159,9 @@ export interface ReactApplicationState {
     polymerColor: PolymerColorType,
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
-    serverTasks: ServerTaskData[]
+    numUpdated: number,
+    tabIndex: number,
+    initialPocket: number;
 }
 
 /**
@@ -190,7 +192,7 @@ export const AlphaFoldColorsMolStar = [
     Color.fromRgb(101, 203, 243),
     Color.fromRgb(255, 219, 19),
     Color.fromRgb(255, 125, 69)
-]
+];
 
 /**
  * This array contains first colors used to color the pockets.
@@ -214,9 +216,19 @@ export enum ClientTaskType {
     DockingTaskCount = 1
 }
 
-export interface ClientTaskData {
+export const ClientTaskTypeDescriptors = [
+    "Atoms volume",
+    "Number of docking tasks"
+];
+
+export interface ClientTask {
+    pocket: number;
     type: ClientTaskType;
     data: any;
+}
+
+export interface ClientTaskLocalStorageData extends ClientTask {
+    //potentially may contain more data
 }
 
 export interface Point3D {
@@ -229,12 +241,17 @@ export enum ServerTaskType {
     Docking = 0
 }
 
-export interface ServerTaskData {
+export const ServerTaskTypeDescriptors = [
+    "Molecular docking"
+];
+
+export interface ServerTask {
+    pocket: string;
     type: ServerTaskType;
-    data: ServerTaskDataContents;
+    data: ServerTaskInfo;
 }
 
-export interface ServerTaskDataContents {
+export interface ServerTaskInfo {
     id: string;
     created: string;
     lastChange: string;
@@ -245,4 +262,14 @@ export interface ServerTaskDataContents {
         [key: string]: any; //other data
     };   //initial data
     responseData: any;  //response data
+}
+
+export interface ServerTaskLocalStorageData {
+    name: string,
+    params: string,
+    pocket: number,
+    created: string,
+    status: string,
+    type: ServerTaskType,
+    responseData: any;
 }
