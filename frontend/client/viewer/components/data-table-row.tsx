@@ -2,7 +2,6 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -12,7 +11,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./data-table.css";
 import { PocketData } from '../../custom-types';
 import { calculateColorWithAlpha } from './tools';
-import { Button } from '@mui/material';
 import DataTableRowDetails from "./data-table-row-details";
 
 export default class DataTableRow extends React.Component<{
@@ -44,7 +42,6 @@ export default class DataTableRow extends React.Component<{
         this.onPocketMouseLeave = this.onPocketMouseLeave.bind(this);
         this.onPocketClick = this.onPocketClick.bind(this);
         this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
-        this.handleCreateTask = this.handleCreateTask.bind(this);
     }
 
     setOpen() {
@@ -79,11 +76,6 @@ export default class DataTableRow extends React.Component<{
         this.forceUpdate();
     }
 
-    handleCreateTask() {
-        //the tab index is 2
-        this.props.setTab(2, Number(this.props.pocket.rank));
-    }
-
     render() {
         const pocket = this.props.pocket;
         if (pocket.isVisible === undefined) { //for pockets that load for the first time
@@ -102,6 +94,33 @@ export default class DataTableRow extends React.Component<{
                             {this.state.open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                         </IconButton>
                     </TableCell>
+                    <TableCell component="th" scope="row">
+                        <button
+                            type="button"
+                            title="Show / Hide pocket."
+                            className="btn btn-outline-secondary btnIcon"
+                            onClick={this.togglePocketVisibility}>
+                            {pocket.isVisible ?
+                                <i className="bi bi-x-circle" style={{ "width": "0.5em" }}></i>
+                                :
+                                <i className="bi bi-check-circle" style={{ "width": "0.5em" }}></i>
+                            }
+                        </button>
+                        <button
+                            type="button"
+                            style={{
+                                "display": pocket.isVisible ? "inline" : "none",
+                                "marginLeft": "0.5rem"
+                            }}
+                            title="Focus/highlight to this pocket."
+                            className="btn btn-outline-secondary btnIcon"
+                            onClick={this.onPocketClick}
+                            onMouseEnter={this.onPocketMouseEnter}
+                            onMouseLeave={this.onPocketMouseLeave}
+                        >
+                            <i className="bi bi-search" style={{ "width": "0.5em" }}></i>
+                        </button>
+                    </TableCell>
                     <TableCell component="th" scope="row" style={{
                         "backgroundColor": (pocket.isVisible || pocket.isVisible === undefined) ? calculateColorWithAlpha(0.75, this.props.pocket.color!) : "#ffffff"
                     }}>
@@ -109,9 +128,6 @@ export default class DataTableRow extends React.Component<{
                     </TableCell>
                     <TableCell align="right">{pocket.score}</TableCell>
                     <TableCell align="right">{pocket.probability}</TableCell>
-                    {
-                        //<TableCell align="right" style={{backgroundColor: "#" + row.color}}>{row.color}</TableCell>
-                    }
                     <TableCell align="right">{pocket.residues.length}</TableCell>
                     {this.props.hasConservation && <TableCell align="right">{pocket.avgConservation}</TableCell>}
                     {this.props.hasAlphaFold && <TableCell align="right">{pocket.avgAlphaFold}</TableCell>}
@@ -120,38 +136,7 @@ export default class DataTableRow extends React.Component<{
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
                         <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                             <Box sx={{ margin: 1 }}>
-                                <Typography variant="h6" gutterBottom component="div">
-                                    Pocket {pocket.rank}
-                                </Typography>
-                                <div>
-                                    <button
-                                        type="button"
-                                        style={{
-                                            "display": pocket.isVisible ? "inline" : "none",
-                                        }}
-                                        title="Focus/highlight to this pocket."
-                                        className="btn btn-outline-secondary btnIcon"
-                                        onClick={this.onPocketClick}
-                                        onMouseEnter={this.onPocketMouseEnter}
-                                        onMouseLeave={this.onPocketMouseLeave}
-                                    >
-                                        <i className="bi bi-search" style={{ "width": "1em" }}></i>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        title="Show / Hide pocket."
-                                        className="btn btn-outline-secondary btnIcon"
-                                        onClick={this.togglePocketVisibility}>
-                                        {pocket.isVisible ?
-                                            <i className="bi bi-x-circle" style={{ "width": "1em" }}></i>
-                                            :
-                                            <i className="bi bi-check-circle" style={{ "width": "1em" }}></i>
-                                        }
-                                    </button>
-                                </div>
-                                <h4>Tasks</h4>
-                                <Button variant="outlined" onClick={this.handleCreateTask}>Create task</Button>
-                                <DataTableRowDetails pocket={pocket} />
+                                <DataTableRowDetails pocket={pocket} setTab={this.props.setTab} />
                             </Box>
                         </Collapse>
                     </TableCell>

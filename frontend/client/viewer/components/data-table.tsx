@@ -23,28 +23,27 @@ import { PocketData } from '../../custom-types';
 interface HeadCell {
     id: keyof PocketData;
     label: string;
-    numeric: boolean;
 }
 
 const headCells: HeadCell[] = [
     {
+        id: 'rank',     // sort by rank even though there are buttons
+        label: 'Tools',
+    },
+    {
         id: 'rank',
-        numeric: false,
         label: 'Rank',
     },
     {
         id: 'score',
-        numeric: true,
         label: 'Score',
     },
     {
         id: 'probability',
-        numeric: true,
         label: 'Probability',
     },
     {
         id: 'residues',
-        numeric: true,
         label: '# of residues'
     },
     //more are added dynamically based on available conservation/AlphaFold score in the EnhancedTable
@@ -72,8 +71,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                 {headCells.map((headCell) => (
                     <TableCell
                         key={headCell.id}
-                        align={headCell.numeric ? 'right' : 'left'}
-                        padding={'normal'}
+                        align={'center'}
+                        padding={'none'}
                         sortDirection={orderBy === headCell.id ? order : false}
                     >
                         <TableSortLabel
@@ -181,7 +180,6 @@ export default function EnhancedTable(props: {
     if (hasConservation && !headCells.find((e: HeadCell) => e.id === 'avgConservation')) {
         headCells.push({
             id: 'avgConservation',
-            numeric: true,
             label: 'Avg conservation',
         });
     }
@@ -190,7 +188,6 @@ export default function EnhancedTable(props: {
     if (hasAlphaFold && !headCells.find((e: HeadCell) => e.id === 'avgAlphaFold')) {
         headCells.push({
             id: 'avgAlphaFold',
-            numeric: true,
             label: 'Avg AlphaFold score',
         });
     }
