@@ -22,6 +22,7 @@ export default function BasicTabs(props: {
     setPocketVisibility: (index: number, isVisible: boolean) => void,
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
+    toggleAllPockets: (visible: boolean) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     plugin: PluginUIContext,
     tab: number,
@@ -46,7 +47,8 @@ export default function BasicTabs(props: {
             </Box>
             <CustomTabPanel value={props.tab} index={0}>
                 <EnhancedTable pockets={props.pockets} setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket}
-                    focusPocket={props.focusPocket} highlightPocket={props.highlightPocket} setTab={props.setTab} />
+                    focusPocket={props.focusPocket} highlightPocket={props.highlightPocket} setTab={props.setTab}
+                    toggleAllPockets={props.toggleAllPockets} />
             </CustomTabPanel>
             <CustomTabPanel value={props.tab} index={1}>
                 <PredictionInfoTab predictionInfo={props.predictionInfo} />

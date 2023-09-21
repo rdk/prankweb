@@ -43,7 +43,6 @@ export default class DataTableRow extends React.Component<{
         this.onPocketMouseEnter = this.onPocketMouseEnter.bind(this);
         this.onPocketMouseLeave = this.onPocketMouseLeave.bind(this);
         this.onPocketClick = this.onPocketClick.bind(this);
-        this.showOnlyClick = this.showOnlyClick.bind(this);
         this.togglePocketVisibility = this.togglePocketVisibility.bind(this);
         this.handleCreateTask = this.handleCreateTask.bind(this);
     }
@@ -72,10 +71,6 @@ export default class DataTableRow extends React.Component<{
             return;
         }
         this.props.focusPocket(this.state.index);
-    }
-
-    showOnlyClick() {
-        this.props.showOnlyPocket(this.state.index);
     }
 
     togglePocketVisibility() {
@@ -131,14 +126,6 @@ export default class DataTableRow extends React.Component<{
                                 <div>
                                     <button
                                         type="button"
-                                        title="Show only this pocket"
-                                        className="btn btn-outline-secondary btnIcon"
-                                        onClick={this.showOnlyClick}
-                                    >
-                                        <i className="bi bi-eye" style={{ "width": "1em" }}></i>
-                                    </button>
-                                    <button
-                                        type="button"
                                         style={{
                                             "display": pocket.isVisible ? "inline" : "none",
                                         }}
@@ -161,9 +148,9 @@ export default class DataTableRow extends React.Component<{
                                             <i className="bi bi-check-circle" style={{ "width": "1em" }}></i>
                                         }
                                     </button>
-                                    <Button variant="outlined" onClick={this.handleCreateTask}>Create task</Button>
                                 </div>
                                 <h4>Tasks</h4>
+                                <Button variant="outlined" onClick={this.handleCreateTask}>Create task</Button>
                                 <DataTableRowDetails pocket={pocket} />
                             </Box>
                         </Collapse>
