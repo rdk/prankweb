@@ -86,7 +86,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     this.onPolymerViewChange = this.onPolymerViewChange.bind(this);
     this.onPocketsViewChange = this.onPocketsViewChange.bind(this);
     this.onPolymerColorChange = this.onPolymerColorChange.bind(this);
-    this.onShowAllPockets = this.onShowAllPockets.bind(this);
+    this.onToggleAllPockets = this.onToggleAllPockets.bind(this);
     this.onSetPocketVisibility = this.onSetPocketVisibility.bind(this);
     this.onShowOnlyPocket = this.onShowOnlyPocket.bind(this);
     this.onFocusPocket = this.onFocusPocket.bind(this);
@@ -187,11 +187,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
     updatePolymerView(this.state.polymerView, this.props.molstarPlugin, isShowOnlyPredicted);
   }
 
-  onShowAllPockets() {
-    let index = 0;
-    this.state.data.pockets.forEach(pocket => {
-      this.onSetPocketVisibility(index, true);
-      index++;
+  onToggleAllPockets(visible: boolean) {
+    this.state.data.pockets.map((pocket, i) => {
+      this.onSetPocketVisibility(i, visible);
     });
   }
 
@@ -327,6 +325,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
             showOnlyPocket={this.onShowOnlyPocket}
             focusPocket={this.onFocusPocket}
             highlightPocket={this.onHighlightPocket}
+            toggleAllPockets={this.onToggleAllPockets}
             plugin={this.props.molstarPlugin}
             tab={this.state.tabIndex}
             key={this.state.numUpdated}

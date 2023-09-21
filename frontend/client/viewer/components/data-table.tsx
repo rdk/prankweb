@@ -95,16 +95,38 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     );
 }
 
-function TableHeading() {
+function TableHeading(props: { toggleAllPockets: (visible: boolean) => void; }) {
+
+    const [visible, setVisible] = React.useState(true);
+
+    const onToggleAllPockets = () => {
+        props.toggleAllPockets(!visible);
+        setVisible(!visible);
+    };
+
     return (
-        <Typography
-            sx={{ flex: '1 1 100%', pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, pt: 2 }}
-            variant="h6"
-            id="tableTitle"
-            component="div"
-        >
-            Pockets
-        </Typography>
+        <div>
+            <Typography
+                sx={{ flex: '1 1 100%', pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, pt: 2 }}
+                variant="h6"
+                id="tableTitle"
+            >
+                Pockets
+                <button
+                    style={{ marginLeft: "0.5rem" }}
+                    type="button"
+                    title="Show / hide all pockets."
+                    className="btn btn-outline-secondary btnIcon"
+                    onClick={onToggleAllPockets}>
+                    {visible ?
+                        <i className="bi bi-x-circle" style={{ "width": "1em" }}></i>
+                        :
+                        <i className="bi bi-check-circle" style={{ "width": "1em" }}></i>
+                    }
+                </button>
+            </Typography>
+        </div>
+
     );
 }
 
@@ -114,7 +136,8 @@ export default function EnhancedTable(props: {
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
-    setTab: (tab: number, initialPocket?: number) => void;
+    setTab: (tab: number, initialPocket?: number) => void,
+    toggleAllPockets: (visible: boolean) => void,
 }) {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<keyof PocketData>('rank');
@@ -175,7 +198,7 @@ export default function EnhancedTable(props: {
     return (
         <Box sx={{ width: '100%' }}>
             <Paper sx={{ width: '100%' }}>
-                <TableHeading />
+                <TableHeading toggleAllPockets={props.toggleAllPockets} />
                 <TableContainer>
                     <Table
                         className='pocket-table'
