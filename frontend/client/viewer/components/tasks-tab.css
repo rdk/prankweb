@@ -1,0 +1,12 @@
+.create-task-table {
+    width: 100%;
+}
+
+.create-task-table tr {
+    width: 100%;
+}
+
+.create-task-table td {
+    padding: 0.5rem;
+    width: 50%;
+}

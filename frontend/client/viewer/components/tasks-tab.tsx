@@ -12,6 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
+import "./tasks-tab.css";
 import { PredictionInfo } from "../../prankweb-api";
 import { computeDockingTaskOnBackend, downloadDockingResult } from "../../tasks/server-docking-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
@@ -156,11 +157,11 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             <h3>Tasks</h3>
             <div>
                 <h4>Create task</h4>
-                <table>
+                <table className="create-task-table">
                     <tbody>
                         <tr>
                             <td>
-                                <FormControl sx={{ minWidth: "15rem", margin: "0.5rem" }}>
+                                <FormControl sx={{ width: "100%" }}>
                                     <InputLabel>Task type</InputLabel>
                                     <Select
                                         labelId="task"
@@ -174,7 +175,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                 </FormControl>
                             </td>
                             <td>
-                                <FormControl sx={{ minWidth: "15rem", margin: "0.5rem" }}>
+                                <FormControl sx={{ width: "100%" }}>
                                     <InputLabel>Pocket number</InputLabel>
                                     <Select
                                         labelId="pocket-number"
@@ -192,7 +193,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                             task?.type === TaskType.Server &&
                             <tr>
                                 <td colSpan={2}>
-                                    <FormControl sx={{ width: "100%", margin: "0.5rem" }}>
+                                    <FormControl sx={{ width: "100%" }}>
                                         <TextField
                                             label="Enter task name"
                                             variant="standard"
@@ -210,7 +211,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                             task?.parameterDescriptions.map((description: string, i: number) =>
                                 <tr key={i}>
                                     <td colSpan={2}>
-                                        <FormControl sx={{ width: "100%", margin: "0.5rem" }}>
+                                        <FormControl sx={{ width: "100%" }}>
                                             <TextField
                                                 label={description}
                                                 multiline
@@ -229,10 +230,10 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                             )
                         }
                         <tr>
-                            <td></td>
                             <td>
-                                <Button variant="contained" sx={{ marginTop: "1rem", margin: "0.5rem" }} onClick={handleSubmitButton}>Create task</Button>
+                                <Button variant="contained" onClick={handleSubmitButton}>Create task</Button>
                             </td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

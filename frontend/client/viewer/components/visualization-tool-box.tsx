@@ -124,67 +124,61 @@ export class VisualizationToolBox extends React.Component<{
                 <div className="visualization-toolbox-row">
                     <div className="visualization-toolbox-option">
                         <div className="visualization-toolbox-option-description">
-                            <Box>
-                                <FormControl size="small">
-                                    <InputLabel id="protein-select-label">Protein visualization</InputLabel>
-                                    <Select
-                                        labelId="protein-select-label"
-                                        id="protein-select"
-                                        value={this.state.polymerView}
-                                        label="Protein visualization"
-                                        onChange={(event) => this.changePolymerView(event.target.value as PolymerViewType)}
-                                    >
-                                        <MenuItem value={PolymerViewType.Atoms}>Balls and Sticks</MenuItem>
-                                        <MenuItem value={PolymerViewType.Gaussian_Surface}>Surface</MenuItem>
-                                        <MenuItem value={PolymerViewType.Cartoon}>Cartoon</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Box>
+                            <FormControl size="small" className="visualization-toolbox-formcontrol">
+                                <Select
+                                    labelId="protein-select-label"
+                                    id="protein-select"
+                                    value={this.state.polymerView}
+                                    onChange={(event) => this.changePolymerView(event.target.value as PolymerViewType)}
+                                    className="visualization-toolbox-select"
+                                >
+                                    <MenuItem value={PolymerViewType.Atoms}>Balls and Sticks</MenuItem>
+                                    <MenuItem value={PolymerViewType.Gaussian_Surface}>Surface</MenuItem>
+                                    <MenuItem value={PolymerViewType.Cartoon}>Cartoon</MenuItem>
+                                </Select>
+                                <FormHelperText sx={{ textAlign: "center" }}>Protein visualization</FormHelperText>
+                            </FormControl>
                         </div>
                     </div>
 
                     <div className="visualization-toolbox-option">
                         <div className="visualization-toolbox-option-description">
-                            <Box>
-                                <FormControl size="small">
-                                    <InputLabel id="pockets-color-select-label">Pockets visualization (color by)</InputLabel>
-                                    <Select
-                                        labelId="pockets-color-select-label"
-                                        id="pockets-color-select"
-                                        value={this.state.pocketsView}
-                                        label="Pockets visualization (color by)"
-                                        onChange={(event) => this.changePocketsView(event.target.value as PocketsViewType)}
-                                    >
-                                        <MenuItem value={PocketsViewType.Ball_Stick_Atoms_Color}>Balls and Sticks (atoms)</MenuItem>
-                                        <MenuItem value={PocketsViewType.Ball_Stick_Residues_Color}>Balls and Sticks (residues)</MenuItem>
-                                        <MenuItem value={PocketsViewType.Surface_Atoms_Color}>Surface (atoms)</MenuItem>
-                                        <MenuItem value={PocketsViewType.Surface_Residues_Color}>Surface (residues)</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Box>
+                            <FormControl size="small" className="visualization-toolbox-formcontrol">
+                                <Select
+                                    labelId="pockets-color-select-label"
+                                    id="pockets-color-select"
+                                    value={this.state.pocketsView}
+                                    onChange={(event) => this.changePocketsView(event.target.value as PocketsViewType)}
+                                    className="visualization-toolbox-select"
+                                >
+                                    <MenuItem value={PocketsViewType.Ball_Stick_Atoms_Color}>Balls and Sticks (atoms)</MenuItem>
+                                    <MenuItem value={PocketsViewType.Ball_Stick_Residues_Color}>Balls and Sticks (residues)</MenuItem>
+                                    <MenuItem value={PocketsViewType.Surface_Atoms_Color}>Surface (atoms)</MenuItem>
+                                    <MenuItem value={PocketsViewType.Surface_Residues_Color}>Surface (residues)</MenuItem>
+                                </Select>
+                                <FormHelperText sx={{ textAlign: "center" }}>Pockets visualization (color by)</FormHelperText>
+                            </FormControl>
                         </div>
                     </div>
 
                     <div className="visualization-toolbox-option">
                         <div className="visualization-toolbox-option-description">
-                            <Box>
-                                <FormControl size="small">
-                                    <InputLabel id="polymer-color-select-label">Polymer coloring</InputLabel>
-                                    <Select
-                                        labelId="pockets-color-select-label"
-                                        id="pockets-color-select"
-                                        value={this.state.polymerColor}
-                                        label="Polymer coloring"
-                                        onChange={(event) => this.changePolymerColor(event.target.value as PolymerColorType)}
-                                    >
-                                        <MenuItem value={PolymerColorType.Clean}>Clear</MenuItem>
-                                        {this.scoresDataAvailable(this.props.predictionData.structure.scores.conservation) &&
-                                            <MenuItem value={PolymerColorType.Conservation}>Conservation</MenuItem>}
-                                        {this.scoresDataAvailable(this.props.predictionData.structure.scores.plddt) &&
-                                            <MenuItem value={PolymerColorType.AlphaFold}>AlphaFold confidence</MenuItem>}
-                                    </Select>
-                                </FormControl>
-                            </Box>
+                            <FormControl size="small" className="visualization-toolbox-formcontrol">
+                                <Select
+                                    labelId="pockets-color-select-label"
+                                    id="pockets-color-select"
+                                    value={this.state.polymerColor}
+                                    onChange={(event) => this.changePolymerColor(event.target.value as PolymerColorType)}
+                                    className="visualization-toolbox-select"
+                                >
+                                    <MenuItem value={PolymerColorType.Clean}>Clear</MenuItem>
+                                    {this.scoresDataAvailable(this.props.predictionData.structure.scores.conservation) &&
+                                        <MenuItem value={PolymerColorType.Conservation}>Conservation</MenuItem>}
+                                    {this.scoresDataAvailable(this.props.predictionData.structure.scores.plddt) &&
+                                        <MenuItem value={PolymerColorType.AlphaFold}>AlphaFold confidence</MenuItem>}
+                                </Select>
+                                <FormHelperText sx={{ textAlign: "center" }}>Polymer coloring</FormHelperText>
+                            </FormControl>
                         </div>
                     </div>
                 </div>
