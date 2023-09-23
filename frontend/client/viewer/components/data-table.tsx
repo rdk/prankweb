@@ -137,6 +137,7 @@ export default function EnhancedTable(props: {
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     setTab: (tab: number, initialPocket?: number) => void,
     toggleAllPockets: (visible: boolean) => void,
+    structureId: string;
 }) {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<keyof PocketData>('rank');
@@ -211,7 +212,7 @@ export default function EnhancedTable(props: {
                             {visibleRows.map((row, index) => (
                                 <DataTableRow key={row.name} pocket={row} dense={dense} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold}
                                     setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} focusPocket={props.focusPocket}
-                                    highlightPocket={props.highlightPocket} setTab={props.setTab} />
+                                    highlightPocket={props.highlightPocket} setTab={props.setTab} structureId={props.structureId} />
                             ))}
                             {emptyRows > 0 && (
                                 <TableRow

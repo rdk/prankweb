@@ -23,7 +23,8 @@ export default class DataTableRow extends React.Component<{
     showOnlyPocket: (index: number) => void,
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
-    setTab: (tab: number, initialPocket?: number) => void;
+    setTab: (tab: number, initialPocket?: number) => void,
+    structureId: string;
 }, {
     open: boolean,
     index: number,
@@ -136,7 +137,7 @@ export default class DataTableRow extends React.Component<{
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
                         <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                             <Box sx={{ margin: 1 }}>
-                                <DataTableRowDetails pocket={pocket} setTab={this.props.setTab} />
+                                <DataTableRowDetails pocket={pocket} setTab={this.props.setTab} structureId={this.props.structureId} />
                             </Box>
                         </Collapse>
                     </TableCell>

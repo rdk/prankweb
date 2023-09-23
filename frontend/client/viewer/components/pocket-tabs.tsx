@@ -48,7 +48,7 @@ export default function BasicTabs(props: {
             <CustomTabPanel value={props.tab} index={0}>
                 <EnhancedTable pockets={props.pockets} setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket}
                     focusPocket={props.focusPocket} highlightPocket={props.highlightPocket} setTab={props.setTab}
-                    toggleAllPockets={props.toggleAllPockets} />
+                    toggleAllPockets={props.toggleAllPockets} structureId={props.predictionInfo.id} />
             </CustomTabPanel>
             <CustomTabPanel value={props.tab} index={1}>
                 <PredictionInfoTab predictionInfo={props.predictionInfo} />

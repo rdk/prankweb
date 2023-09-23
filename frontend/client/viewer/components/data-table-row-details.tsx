@@ -8,14 +8,14 @@ import { Button } from '@mui/material';
 import { ClientTaskLocalStorageData, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
 import { downloadDockingResult } from '../../tasks/server-docking-task';
 
-export default function DataTableRowDetails(props: { pocket: PocketData; setTab: (tab: number, initialPocket?: number) => void; }) {
+export default function DataTableRowDetails(props: { pocket: PocketData; setTab: (tab: number, initialPocket?: number) => void, structureId: string; }) {
     const pocket = props.pocket;
 
-    let serverTasks = localStorage.getItem("serverTasks");
+    let serverTasks = localStorage.getItem(`${props.structureId}_serverTasks`);
     if (!serverTasks) serverTasks = "[]";
     const serverTasksParsed: ServerTaskLocalStorageData[] = JSON.parse(serverTasks);
 
-    let clientTasks = localStorage.getItem("clientTasks");
+    let clientTasks = localStorage.getItem(`${props.structureId}_clientTasks`);
     if (!clientTasks) clientTasks = "[]";
     const clientTasksParsed: ClientTaskLocalStorageData[] = JSON.parse(clientTasks);
 

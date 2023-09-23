@@ -44,7 +44,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                 const promise = computePocketVolume(props.plugin, props.pockets[pocketIndex]);
 
                 promise.then((task: ClientTask) => {
-                    let savedTasks = localStorage.getItem("clientTasks");
+                    let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
                     if (!savedTasks) savedTasks = "[]";
                     const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
 
@@ -54,7 +54,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                         "data": task.data
                     });
 
-                    localStorage.setItem("clientTasks", JSON.stringify(tasks));
+                    localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(tasks));
                 });
             },
             parameterDescriptions: []
@@ -67,7 +67,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             compute: (params, customName, pocketIndex) => {
                 const promise = getDockingTaskCount(props.predictionInfo, props.pockets[pocketIndex]);
                 promise.then((task: ClientTask) => {
-                    let savedTasks = localStorage.getItem("clientTasks");
+                    let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
                     if (!savedTasks) savedTasks = "[]";
                     const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
 
@@ -77,7 +77,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                         "data": task.data
                     });
 
-                    localStorage.setItem("clientTasks", JSON.stringify(tasks));
+                    localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(tasks));
                 });
             },
             parameterDescriptions: []
@@ -88,7 +88,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             type: TaskType.Server,
             name: "Docking",
             compute: (params, customName, pocketIndex) => {
-                let savedTasks = localStorage.getItem("serverTasks");
+                let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
                 if (!savedTasks) savedTasks = "[]";
                 const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
                 tasks.push({
@@ -100,7 +100,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "type": ServerTaskType.Docking,
                     "responseData": null
                 });
-                localStorage.setItem("serverTasks", JSON.stringify(tasks));
+                localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
                 computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], [], props.plugin);
             },
             parameterDescriptions: [
@@ -144,11 +144,11 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
         }
     };
 
-    let savedTasks = localStorage.getItem("serverTasks");
+    let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
     if (!savedTasks) savedTasks = "[]";
     const tasksFromLocalStorage: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
 
-    let savedClientTasks = localStorage.getItem("clientTasks");
+    let savedClientTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
     if (!savedClientTasks) savedClientTasks = "[]";
     const finishedClientTasks: ClientTaskLocalStorageData[] = JSON.parse(savedClientTasks);
 

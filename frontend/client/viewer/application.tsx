@@ -53,7 +53,7 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
     });
 
     // Before rendering the data, clear the results of client-side tasks.
-    localStorage.removeItem("clientTasks");
+    localStorage.removeItem(`${predictionInfo.id}_clientTasks`);
 
     // Render pocket list on the right side (or bottom for smartphones) using React.
     const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
@@ -253,7 +253,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
         if (taskStatusJSON) {
             //look into the local storage and check if there are any updates
-            let savedTasks = localStorage.getItem("serverTasks");
+            let savedTasks = localStorage.getItem(`${this.props.predictionInfo.id}_serverTasks`);
             if (!savedTasks) savedTasks = "[]";
             const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
             tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
@@ -282,7 +282,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
                         }
 
                         //save the updated tasks
-                        localStorage.setItem("serverTasks", JSON.stringify(tasks));
+                        localStorage.setItem(`${this.props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
 
                         //and trigger re-render
                         this.setState(prevState => ({
