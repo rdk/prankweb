@@ -28,7 +28,8 @@ type TaskTypeMenuItem = {
     specificType: ServerTaskType | ClientTaskType;
     type: TaskType,
     name: string,
-    compute: (params: string, customName: string, pocketIndex: number) => void;
+    compute: (params: string[], customName: string, pocketIndex: number) => void;
+    parameterDescriptions: string[];
 };
 
 export default function TasksTab(props: { pockets: PocketData[], predictionInfo: PredictionInfo, plugin: PluginUIContext, initialPocket: number; }) {
@@ -53,9 +54,9 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     });
 
                     localStorage.setItem("clientTasks", JSON.stringify(tasks));
-                    console.log(tasks);
                 });
-            }
+            },
+            parameterDescriptions: []
         },
         {
             id: 2,
@@ -76,9 +77,9 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     });
 
                     localStorage.setItem("clientTasks", JSON.stringify(tasks));
-                    console.log(tasks);
                 });
-            }
+            },
+            parameterDescriptions: []
         },
         {
             id: 3,
@@ -99,20 +100,24 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "responseData": null
                 });
                 localStorage.setItem("serverTasks", JSON.stringify(tasks));
-                console.log(tasks);
-                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params, [], props.plugin);
-            }
+                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], [], props.plugin);
+            },
+            parameterDescriptions: [
+                "Enter the molecule in SMILES format",
+            ]
         }
     ];
 
     const [task, setTask] = React.useState<TaskTypeMenuItem>(tasks[0]);
     const [pocketNumber, setPocketNumber] = React.useState<number>(props.initialPocket);
     const [name, setName] = React.useState<string>("");
-    const [parameters, setParameters] = React.useState<string>("");
+    const [parameters, setParameters] = React.useState<string[]>([]);
     const [forceUpdate, setForceUpdate] = React.useState<number>(0);
 
     const handleTaskTypeChange = (event: SelectChangeEvent) => {
-        setTask(tasks.find(task => task.id == Number(event.target.value))!);
+        const newTask = tasks.find(task => task.id == Number(event.target.value))!;
+        setTask(newTask);
+        setParameters(Array(newTask.parameterDescriptions.length).fill(""));
     };
 
     const handlePocketNumberChange = (event: SelectChangeEvent) => {
@@ -131,7 +136,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
         switch (serverTask.type) {
             case ServerTaskType.Docking:
-                downloadDockingResult(serverTask.params, serverTask.responseData.url);
+                downloadDockingResult(serverTask.params[0], serverTask.responseData.url);
                 break;
             default:
                 break;
@@ -183,25 +188,11 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                 </FormControl>
                             </td>
                         </tr>
-
-                        {task?.type === TaskType.Server &&
+                        {// allow to name only server tasks
+                            task?.type === TaskType.Server &&
                             <tr>
-                                <td>
-                                    <FormControl sx={{ minWidth: "15rem", margin: "0.5rem" }}>
-                                        <TextField
-                                            label="Enter task parameters"
-                                            multiline
-                                            maxRows={8}
-                                            variant="standard"
-                                            value={parameters}
-                                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                                setParameters(event.target.value);
-                                            }}
-                                        />
-                                    </FormControl>
-                                </td>
-                                <td>
-                                    <FormControl sx={{ minWidth: "15rem", margin: "0.5rem" }}>
+                                <td colSpan={2}>
+                                    <FormControl sx={{ width: "100%", margin: "0.5rem" }}>
                                         <TextField
                                             label="Enter task name"
                                             variant="standard"
@@ -212,8 +203,31 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                         />
                                     </FormControl>
                                 </td>
-                            </tr>}
+                            </tr>
+                        }
 
+                        {// render parameter input fields
+                            task?.parameterDescriptions.map((description: string, i: number) =>
+                                <tr key={i}>
+                                    <td colSpan={2}>
+                                        <FormControl sx={{ width: "100%", margin: "0.5rem" }}>
+                                            <TextField
+                                                label={description}
+                                                multiline
+                                                maxRows={8}
+                                                variant="standard"
+                                                value={parameters[i]}
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                    const newParameters = [...parameters];
+                                                    newParameters[i] = event.target.value;
+                                                    setParameters(newParameters);
+                                                }}
+                                            />
+                                        </FormControl>
+                                    </td>
+                                </tr>
+                            )
+                        }
                         <tr>
                             <td></td>
                             <td>

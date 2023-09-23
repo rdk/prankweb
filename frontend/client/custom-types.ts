@@ -266,7 +266,7 @@ export interface ServerTaskInfo {
 
 export interface ServerTaskLocalStorageData {
     name: string,
-    params: string,
+    params: string[],
     pocket: number,
     created: string,
     status: string,

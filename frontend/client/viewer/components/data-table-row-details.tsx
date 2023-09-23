@@ -22,7 +22,7 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
     const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
         switch (serverTask.type) {
             case ServerTaskType.Docking:
-                downloadDockingResult(serverTask.params, serverTask.responseData.url);
+                downloadDockingResult(serverTask.params[0], serverTask.responseData.url);
                 break;
             default:
                 break;
