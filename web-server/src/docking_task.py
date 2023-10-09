@@ -38,7 +38,7 @@ class DockingTask:
         self.database_name = database_name
         self.root_path = os.path.join(self._get_docking_task_directory(), self.database_name)
 
-    def get_file_with_post_param(self, prediction_id: str, file_name: str, data_hash: str):
+    def get_file_with_post_param(self, prediction_id: str, file_name: str, data_hash: str, pocket: str):
         """
         Gets a file from a task with a given identifier and a given file name.
         """
@@ -52,7 +52,7 @@ class DockingTask:
                 found = False
                 fileData = json.load(f)
                 for task in fileData["tasks"]:
-                    if task["initialData"]["hash"] == data_hash:
+                    if task["initialData"]["hash"] == data_hash and task["initialData"]["pocket"] == pocket:
                         directory = os.path.join(directory, str(task["id"]))
                         found = True
                         break

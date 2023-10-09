@@ -78,10 +78,11 @@ def route_post_docking_file(database_name: str, prediction_name: str):
 def route_get_docking_file_with_param(database_name: str, prediction_name: str, file_name: str):
     data = request.get_json(force=True)
     param = data.get("hash", None)
-    if data is None or param is None:
+    pocket = data.get("pocket", None)
+    if data is None or param is None or pocket is None:
         return "", 404
     dt = DockingTask(database_name=database_name)
-    return dt.get_file_with_post_param(prediction_name.upper(), file_name, param)
+    return dt.get_file_with_post_param(prediction_name.upper(), file_name, param, str(pocket))
 
 @api_v2.route(
     "/docking/<database_name>/<prediction_name>/tasks",

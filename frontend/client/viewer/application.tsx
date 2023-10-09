@@ -274,9 +274,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    "hash": task.params,
-                                }
-                                )
+                                    "hash": task.params[0],
+                                    "pocket": task.pocket,
+                                })
                             }).then(res => res.json()).catch(err => console.log(err));
                             tasks[i].responseData = data;
                         }
