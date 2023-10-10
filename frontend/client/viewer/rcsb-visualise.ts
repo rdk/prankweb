@@ -295,16 +295,16 @@ function getLogBaseX(x: number, y: number) {
 
 /**
  * Method which assigns a color to a pocket, tries to choose one from the preset ones otherwise generates a random one
- * @param pocketId Pocket number
+ * @param pocketRank Pocket rank
  * @returns A new color for the pocket
  */
-function pickColor(pocketId: number) {
-    if (pocketId >= DefaultPocketColors.length) {
+function pickColor(pocketRank: number) {
+    if (pocketRank >= DefaultPocketColors.length) {
         let result = Math.floor(Math.random() * 16777215).toString(16); //picks a totally random color
         if (result.length < 6) {
             result = "0".repeat(6 - result.length) + result;
         }
         return result;
     }
-    return DefaultPocketColors[pocketId];
+    return DefaultPocketColors[pocketRank];
 }

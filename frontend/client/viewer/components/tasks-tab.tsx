@@ -86,7 +86,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     ];
 
     const [task, setTask] = React.useState<TaskTypeMenuItem>(tasks[0]);
-    const [pocketNumber, setPocketNumber] = React.useState<number>(props.initialPocket);
+    const [pocketRank, setPocketRank] = React.useState<number>(props.initialPocket);
     const [name, setName] = React.useState<string>("");
     const [parameters, setParameters] = React.useState<string[]>([]);
     const [forceUpdate, setForceUpdate] = React.useState<number>(0);
@@ -97,12 +97,12 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
         setParameters(Array(newTask.parameterDescriptions.length).fill(""));
     };
 
-    const handlePocketNumberChange = (event: SelectChangeEvent) => {
-        setPocketNumber(Number(event.target.value));
+    const handlePocketRankChange = (event: SelectChangeEvent) => {
+        setPocketRank(Number(event.target.value));
     };
 
     const handleSubmitButton = async () => {
-        task.compute(parameters, name, pocketNumber - 1);
+        task.compute(parameters, name, pocketRank - 1);
         setTimeout(forceComponentUpdate, 250);
     };
 
@@ -152,13 +152,13 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                             </td>
                             <td>
                                 <FormControl sx={{ width: "100%" }}>
-                                    <InputLabel>Pocket number</InputLabel>
+                                    <InputLabel>Pocket rank</InputLabel>
                                     <Select
-                                        labelId="pocket-number"
-                                        id="select-pocket-number"
-                                        value={pocketNumber.toString()}
-                                        label="Pocket number"
-                                        onChange={handlePocketNumberChange}
+                                        labelId="pocket-rank"
+                                        id="select-pocket-rank"
+                                        value={pocketRank.toString()}
+                                        label="Pocket rank"
+                                        onChange={handlePocketRankChange}
                                     >
                                         {props.pockets.map((pocket: PocketData) => <MenuItem value={pocket.rank} key={pocket.rank}>{pocket.rank}</MenuItem>)}
                                     </Select>
