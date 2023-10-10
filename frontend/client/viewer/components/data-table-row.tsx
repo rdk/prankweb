@@ -89,6 +89,7 @@ export default class DataTableRow extends React.Component<{
                         <IconButton
                             aria-label="expand row"
                             size="small"
+                            style={{ "padding": "0.25rem" }}
                             onClick={() => this.setOpen()}
                         >
                             {this.state.open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -99,18 +100,20 @@ export default class DataTableRow extends React.Component<{
                             type="button"
                             title="Show / Hide pocket."
                             className="btn btn-outline-secondary btnIcon"
+                            style={{ "padding": "0.25rem" }}
                             onClick={this.togglePocketVisibility}>
                             {pocket.isVisible ?
-                                <i className="bi bi-x-circle" style={{ "width": "0.5em" }}></i>
+                                <i className="bi bi-eye-fill" style={{ "display": "block", "fontSize": "small" }}></i>
                                 :
-                                <i className="bi bi-check-circle" style={{ "width": "0.5em" }}></i>
+                                <i className="bi bi-eye" style={{ "display": "block", "fontSize": "small" }}></i>
                             }
                         </button>
+                        &nbsp;
                         <button
                             type="button"
                             style={{
                                 "display": pocket.isVisible ? "inline" : "none",
-                                "marginLeft": "0.5rem"
+                                "padding": "0.25rem"
                             }}
                             title="Focus/highlight to this pocket."
                             className="btn btn-outline-secondary btnIcon"
@@ -118,10 +121,10 @@ export default class DataTableRow extends React.Component<{
                             onMouseEnter={this.onPocketMouseEnter}
                             onMouseLeave={this.onPocketMouseLeave}
                         >
-                            <i className="bi bi-search" style={{ "width": "0.5em" }}></i>
+                            <i className="bi bi-search" style={{ "display": "block", "fontSize": "small" }}></i>
                         </button>
                     </TableCell>
-                    <TableCell component="th" scope="row" style={{
+                    <TableCell component="th" scope="row" align="center" style={{
                         "backgroundColor": (pocket.isVisible || pocket.isVisible === undefined) ? calculateColorWithAlpha(0.75, this.props.pocket.color!) : "#ffffff"
                     }}>
                         {pocket.rank}
@@ -141,7 +144,7 @@ export default class DataTableRow extends React.Component<{
                         </Collapse>
                     </TableCell>
                 </TableRow>
-            </React.Fragment>
+            </React.Fragment >
         );
     }
 }

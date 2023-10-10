@@ -111,15 +111,15 @@ function TableHeading(props: { toggleAllPockets: (visible: boolean) => void; }) 
             >
                 Pockets
                 <button
-                    style={{ marginLeft: "0.5rem" }}
+                    style={{ marginLeft: "0.5rem", padding: "0.25rem" }}
                     type="button"
                     title="Show / hide all pockets."
                     className="btn btn-outline-secondary btnIcon"
                     onClick={onToggleAllPockets}>
                     {visible ?
-                        <i className="bi bi-x-circle" style={{ "width": "1em" }}></i>
+                        <i className="bi bi-eye-fill" style={{ "display": "block", "fontSize": "small" }}></i>
                         :
-                        <i className="bi bi-check-circle" style={{ "width": "1em" }}></i>
+                        <i className="bi bi-eye" style={{ "display": "block", "fontSize": "small" }}></i>
                     }
                 </button>
             </Typography>
