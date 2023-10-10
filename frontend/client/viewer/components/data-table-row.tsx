@@ -15,7 +15,6 @@ import DataTableRowDetails from "./data-table-row-details";
 
 export default class DataTableRow extends React.Component<{
     pocket: PocketData,
-    dense: boolean,
     emptyRows: number,
     hasConservation: boolean,
     hasAlphaFold: boolean,

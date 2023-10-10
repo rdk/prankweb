@@ -10,8 +10,6 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import { visuallyHidden } from '@mui/utils';
 
 import "./data-table.css";
@@ -142,7 +140,6 @@ export default function EnhancedTable(props: {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<keyof PocketData>('rank');
     const [page, setPage] = React.useState(0);
-    const [dense, setDense] = React.useState(false);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     const handleRequestSort = (
@@ -161,10 +158,6 @@ export default function EnhancedTable(props: {
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
-
-    const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setDense(event.target.checked);
     };
 
     // Avoid a layout jump when reaching the last page with empty rows.
@@ -200,7 +193,7 @@ export default function EnhancedTable(props: {
                 <TableContainer>
                     <Table
                         className='pocket-table'
-                        size={dense ? 'small' : 'medium'}
+                        size={'small'}
                     >
                         <EnhancedTableHead
                             order={order}
@@ -210,14 +203,14 @@ export default function EnhancedTable(props: {
                         />
                         <TableBody className='pocket-table-body'>
                             {visibleRows.map((row, index) => (
-                                <DataTableRow key={row.name} pocket={row} dense={dense} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold}
+                                <DataTableRow key={row.name} pocket={row} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold}
                                     setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} focusPocket={props.focusPocket}
                                     highlightPocket={props.highlightPocket} setTab={props.setTab} structureId={props.structureId} />
                             ))}
                             {emptyRows > 0 && (
                                 <TableRow
                                     style={{
-                                        height: (dense ? 35 : 55) * emptyRows,
+                                        height: (35) * emptyRows,
                                     }}
                                 >
                                 </TableRow>
@@ -235,10 +228,6 @@ export default function EnhancedTable(props: {
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
             </Paper>
-            <FormControlLabel
-                control={<Switch checked={dense} onChange={handleChangeDense} />}
-                label="Dense padding"
-            />
         </Box>
     );
 }
