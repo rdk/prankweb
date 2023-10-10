@@ -104,7 +104,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                 computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], [], props.plugin);
             },
             parameterDescriptions: [
-                "Enter the molecule in SMILES format",
+                "Enter the molecule in SMILES format (e.g. c1ccccc1)",
             ]
         }
     ];
@@ -137,7 +137,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
         switch (serverTask.type) {
             case ServerTaskType.Docking:
-                downloadDockingResult(serverTask.params[0], serverTask.responseData.url);
+                downloadDockingResult(serverTask.params[0], serverTask.responseData[0].url, serverTask.pocket.toString());
                 break;
             default:
                 break;

@@ -33,7 +33,7 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
     let maxDistance = 0;
     coords.forEach(coord => {
         const distance = twoPointsDistance(coord, center);
-        if(distance > maxDistance) {
+        if (distance > maxDistance) {
             maxDistance = distance;
         }
     });
@@ -63,8 +63,8 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
  * @param serverTasks A list of all server tasks
  * @returns Completed task data
  */
-export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTask[], plugin: PluginUIContext): Promise<any>{
-    if(hash === "") {
+export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTask[], plugin: PluginUIContext): Promise<any> {
+    if (hash === "") {
         return;
     }
 
@@ -107,7 +107,8 @@ export function dockingHash(prediction: PredictionInfo, pocket: PocketData, form
  * @param fileURL URL to download the result from
  * @returns void
 */
-export function downloadDockingResult(hash: string, fileURL: string) {
+export function downloadDockingResult(hash: string, fileURL: string, pocket: string) {
+    console.log(fileURL);
     // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     fetch(fileURL, {
         method: 'POST',
@@ -117,23 +118,24 @@ export function downloadDockingResult(hash: string, fileURL: string) {
         },
         body: JSON.stringify({
             "hash": hash,
+            "pocket": pocket
         })
-      })
-      .then((response) => response.blob())
-      .then((blob) => {
-        // Create blob link to download
-        const url = window.URL.createObjectURL(
-          new Blob([blob]),
-        );
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute(
-          'download',
-          `result.pdbqt`,
-        );
-    
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode!.removeChild(link);
-      });
+    })
+        .then((response) => response.blob())
+        .then((blob) => {
+            // Create blob link to download
+            const url = window.URL.createObjectURL(
+                new Blob([blob]),
+            );
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute(
+                'download',
+                `result.pdbqt`,
+            );
+
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode!.removeChild(link);
+        });
 }
