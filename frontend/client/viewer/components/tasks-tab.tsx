@@ -254,7 +254,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                         <TableBody>
                             {finishedClientTasks.map((task: ClientTask, i: number) => {
                                 return (
-                                    <TableRow key={i}>
+                                    <TableRow key={i + "_client"}>
                                         <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
                                         <TableCell>{"-"}</TableCell>
                                         <TableCell>{"-"}</TableCell>
@@ -265,7 +265,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                             })}
                             {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) => {
                                 return (
-                                    <TableRow key={i}>
+                                    <TableRow key={i + "_server"}>
                                         <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
                                         <TableCell>{task.name}</TableCell>
                                         <TableCell>{task.created}</TableCell>

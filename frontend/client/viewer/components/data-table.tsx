@@ -19,13 +19,13 @@ import { getComparator, Order } from './tools';
 import { PocketData } from '../../custom-types';
 
 interface HeadCell {
-    id: keyof PocketData;
+    id: keyof PocketData | null;
     label: string;
 }
 
 const headCells: HeadCell[] = [
     {
-        id: 'rank',     // sort by rank even though there are buttons
+        id: null,     // sort by rank even though there are buttons
         label: 'Tools',
     },
     {
@@ -58,7 +58,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     const { order, orderBy, rowCount, onRequestSort } =
         props;
     const createSortHandler =
-        (property: keyof PocketData) => (event: React.MouseEvent<unknown>) => {
+        (property: keyof PocketData | null) => (event: React.MouseEvent<unknown>) => {
+            if (property === null) return;
             onRequestSort(event, property);
         };
 
@@ -68,7 +69,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                 <TableCell padding="checkbox"></TableCell>
                 {headCells.map((headCell) => (
                     <TableCell
-                        key={headCell.id}
+                        key={headCell.id + "_head"}
                         align={'center'}
                         padding={'none'}
                         sortDirection={orderBy === headCell.id ? order : false}
@@ -203,7 +204,7 @@ export default function EnhancedTable(props: {
                         />
                         <TableBody className='pocket-table-body'>
                             {visibleRows.map((row, index) => (
-                                <DataTableRow key={row.name} pocket={row} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold}
+                                <DataTableRow key={row.name + "_row"} pocket={row} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold}
                                     setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} focusPocket={props.focusPocket}
                                     highlightPocket={props.highlightPocket} setTab={props.setTab} structureId={props.structureId} />
                             ))}
