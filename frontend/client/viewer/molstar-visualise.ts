@@ -159,9 +159,9 @@ export function updatePolymerView(value: PolymerViewType, plugin: PluginUIContex
  */
 export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUIContext, prediction: PredictionData) {
     switch (value) {
-        case PolymerColorType.Clean:
-            overPaintStructureClear(plugin, prediction);
-            overPaintPocketsClear(plugin, prediction);
+        case PolymerColorType.White:
+            overPaintStructureWhite(plugin, prediction);
+            overPaintPocketsWhite(plugin, prediction);
             return;
         case PolymerColorType.Conservation:
             overPaintStructureWithConservation(plugin, prediction);
@@ -180,7 +180,7 @@ export async function overPaintPolymer(value: PolymerColorType, plugin: PluginUI
  * @param prediction Prediction data
  * @returns void
  */
-async function overPaintStructureClear(plugin: PluginUIContext, prediction: PredictionData) {
+async function overPaintStructureWhite(plugin: PluginUIContext, prediction: PredictionData) {
     const chains: ChainData[] = [];
     const params: any = [];
 
@@ -222,7 +222,7 @@ async function overPaintStructureClear(plugin: PluginUIContext, prediction: Pred
  * @param prediction Prediction data
  * @returns void
  */
-async function overPaintPocketsClear(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
+async function overPaintPocketsWhite(plugin: PluginUIContext, prediction: PredictionData) { //clears current overpaint with a white color
     for (const pocket of prediction.pockets) {
         const builder = plugin.state.data.build();
         const chains: ChainData[] = [];

@@ -122,7 +122,7 @@ export enum PocketsViewType {
 }
 
 export enum PolymerColorType {
-    Clean = 0,
+    White = 0,
     Conservation = 1,
     AlphaFold = 2
 }

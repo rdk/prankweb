@@ -52,14 +52,14 @@ export async function renderProteinView(predictionInfo: PredictionInfo) {
         visualizationToolbox.style.display = MolstarPlugin.layout.state.isExpanded ? "none" : "block";
     });
 
-    // Before rendering the data, clear the results of client-side tasks.
-    localStorage.removeItem(`${predictionInfo.id}_clientTasks`);
+    // Before rendering the data, clear the results of client-side tasks (currently removed).
+    // localStorage.removeItem(`${predictionInfo.id}_clientTasks`);
 
     // Render pocket list on the right side (or bottom for smartphones) using React.
     const pocketListContainer = (window.innerWidth >= 768) ? document.getElementById('pocket-list-aside') : document.getElementById('pocket-list-aside-mobile');
     const pocketListRoot = createRoot(pocketListContainer!);
     pocketListRoot.render(<Application molstarPlugin={MolstarPlugin} predictionInfo={predictionInfo}
-        pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.Clean} />);
+        pocketsView={PocketsViewType.Surface_Atoms_Color} polymerView={PolymerViewType.Gaussian_Surface} polymerColor={PolymerColorType.White} />);
 }
 
 /**

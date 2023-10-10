@@ -171,7 +171,7 @@ export class VisualizationToolBox extends React.Component<{
                                     onChange={(event) => this.changePolymerColor(event.target.value as PolymerColorType)}
                                     className="visualization-toolbox-select"
                                 >
-                                    <MenuItem value={PolymerColorType.Clean}>Clear</MenuItem>
+                                    <MenuItem value={PolymerColorType.White}>White</MenuItem>
                                     {this.scoresDataAvailable(this.props.predictionData.structure.scores.conservation) &&
                                         <MenuItem value={PolymerColorType.Conservation}>Conservation</MenuItem>}
                                     {this.scoresDataAvailable(this.props.predictionData.structure.scores.plddt) &&
