@@ -22,7 +22,6 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
 
     return (
         <div>
-            <h2>Prediction info</h2>
             <ul>
                 <li>Structure ID: {pInfo.id}</li>
                 <li>Database: {pInfo.database}</li>

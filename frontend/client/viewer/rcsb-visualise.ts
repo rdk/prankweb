@@ -96,7 +96,7 @@ function calculateViewerWidth() {
  */
 function elementClicked(predictionData: PredictionData, molstarPlugin: PluginUIContext, trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) {
     if (trackData && predictionData) {
-        let element = predictionData.structure.indices[trackData.begin - 1];
+        let element = predictionData.structure.indices[trackData!.begin - 1];
         if (element) {
             let id = Number(element.substring(element.indexOf('_') + 1));
             highlightInViewerAuthId(molstarPlugin, element[0], [id]);
