@@ -16,7 +16,6 @@ import "./tasks-tab.css";
 import { PredictionInfo } from "../../prankweb-api";
 import { computeDockingTaskOnBackend, downloadDockingResult } from "../../tasks/server-docking-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import { getDockingTaskCount } from "../../tasks/client-get-docking-tasks";
 import { computePocketVolume } from "../../tasks/client-atoms-volume";
 
 enum TaskType {
@@ -61,29 +60,6 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
         },
         {
             id: 2,
-            specificType: ClientTaskType.DockingTaskCount,
-            type: TaskType.Client,
-            name: "DockingTaskCount",
-            compute: (params, customName, pocketIndex) => {
-                const promise = getDockingTaskCount(props.predictionInfo, props.pockets[pocketIndex]);
-                promise.then((task: ClientTask) => {
-                    let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
-                    if (!savedTasks) savedTasks = "[]";
-                    const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
-
-                    tasks.push({
-                        "pocket": (pocketIndex + 1),
-                        "type": ClientTaskType.DockingTaskCount,
-                        "data": task.data
-                    });
-
-                    localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(tasks));
-                });
-            },
-            parameterDescriptions: []
-        },
-        {
-            id: 3,
             specificType: ServerTaskType.Docking,
             type: TaskType.Server,
             name: "Docking",
@@ -259,7 +235,10 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                         <TableCell>{"-"}</TableCell>
                                         <TableCell>{"-"}</TableCell>
                                         <TableCell>{task.pocket}</TableCell>
-                                        <TableCell>{task.data}</TableCell>
+                                        <TableCell>
+                                            {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
+                                            {task.type === ClientTaskType.Volume && " Å³"}
+                                        </TableCell>
                                     </TableRow>
                                 );
                             })}

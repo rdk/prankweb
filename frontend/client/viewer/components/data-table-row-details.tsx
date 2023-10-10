@@ -7,6 +7,7 @@ import TableRow from '@mui/material/TableRow';
 import { Button } from '@mui/material';
 import { ClientTaskLocalStorageData, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
 import { downloadDockingResult } from '../../tasks/server-docking-task';
+import { ClientTaskType } from "../../custom-types";
 
 export default function DataTableRowDetails(props: { pocket: PocketData; setTab: (tab: number, initialPocket?: number) => void, structureId: string; }) {
     const pocket = props.pocket;
@@ -22,7 +23,7 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
     const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
         switch (serverTask.type) {
             case ServerTaskType.Docking:
-                downloadDockingResult(serverTask.params[0], serverTask.responseData.url);
+                downloadDockingResult(serverTask.params[0], serverTask.responseData[0].url, pocket.rank);
                 break;
             default:
                 break;
@@ -56,7 +57,10 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
                                     <TableCell>{ClientTaskTypeDescriptors[row.type]}</TableCell>
                                     <TableCell>{"-"}</TableCell>
                                     <TableCell>{"-"}</TableCell>
-                                    <TableCell>{row.data}</TableCell>
+                                    <TableCell>
+                                        {(!isNaN(row.data)) ? row.data.toFixed(1) : row.data}
+                                        {row.type === ClientTaskType.Volume && " Å³"}
+                                    </TableCell>
                                 </TableRow>
                             );
                         }

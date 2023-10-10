@@ -212,13 +212,11 @@ export const DefaultPocketColors = [
  * These enums/interfaces are used to represent various client/server tasks and their data.
  */
 export enum ClientTaskType {
-    Volume = 0,
-    DockingTaskCount = 1
+    Volume = 0
 }
 
 export const ClientTaskTypeDescriptors = [
-    "Atoms volume",
-    "Number of docking tasks"
+    "Pocket volume",
 ];
 
 export interface ClientTask {
