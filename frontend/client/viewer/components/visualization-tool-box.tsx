@@ -7,8 +7,6 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { RcsbFv } from "@rcsb/rcsb-saguaro";
 
 export class VisualizationToolBox extends React.Component<{
-    downloadUrl: string,
-    downloadAs: string,
     molstarPlugin: PluginUIContext,
     pluginRcsb: RcsbFv,
     predictionData: PredictionData,
@@ -24,6 +22,7 @@ export class VisualizationToolBox extends React.Component<{
     polymerView: PolymerViewType,
     pocketsView: PocketsViewType,
     polymerColor: PolymerColorType,
+    is1DViewerVisible: boolean,
     isShowOnlyPredicted: boolean;
 }> {
 
@@ -41,6 +40,7 @@ export class VisualizationToolBox extends React.Component<{
             polymerView: this.props.polymerView,
             pocketsView: this.props.pocketsView,
             polymerColor: this.props.polymerColor,
+            is1DViewerVisible: true,
             isShowOnlyPredicted: false
         };
     }
@@ -60,6 +60,8 @@ export class VisualizationToolBox extends React.Component<{
         //be aware that the heights should correspond to the original viewer heights defined in CSS
         //55vh is the default height of the 3D viewer
         viewer3D.style.height = viewer3D.style.height === "85%" ? "55vh" : "85%";
+
+        this.setState({ is1DViewerVisible: !this.state.is1DViewerVisible });
     }
 
     scoresDataAvailable(data: number[] | undefined) {
@@ -95,7 +97,7 @@ export class VisualizationToolBox extends React.Component<{
                     <div className="visualization-toolbox-option">
                         <div className="visualization-toolbox-option-description">
                             <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.toggle1DViewer}>
-                                Toggle
+                                {this.state.is1DViewerVisible ? "Hide" : "Show"} 1D viewer
                             </Button>
                         </div>
                     </div>
@@ -103,9 +105,7 @@ export class VisualizationToolBox extends React.Component<{
                     <div className="visualization-toolbox-option">
                         <div className="visualization-toolbox-option-description">
                             <Button variant="outlined" color="primary" className="visualization-toolbox-button">
-                                <a href={this.props.downloadUrl} download={this.props.downloadAs} className="visualization-toolbox-option-link">
-                                    Download
-                                </a>
+                                TODO: reset
                             </Button>
                         </div>
                     </div>

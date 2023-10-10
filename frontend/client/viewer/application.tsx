@@ -139,12 +139,9 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         // Render the tool box on the bottom of the visualization using React.
         const toolBoxContainer = document.getElementById('visualization-toolbox');
         const toolBoxRoot = createRoot(toolBoxContainer!);
-        const downloadAs = `prankweb-${this.props.predictionInfo.metadata.predictionName}.zip`;
         const isPredicted = predictionInfo.metadata["predictedStructure"] === true;
 
         toolBoxRoot.render(<VisualizationToolBox
-            downloadUrl={getApiDownloadUrl(this.props.predictionInfo)}
-            downloadAs={downloadAs}
             molstarPlugin={this.props.molstarPlugin}
             predictionData={loadedData[0]}
             pluginRcsb={loadedData[1]}

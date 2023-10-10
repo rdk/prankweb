@@ -1,5 +1,7 @@
 import React from "react";
 import { PredictionInfo } from "../../prankweb-api";
+import { Button } from "@mui/material";
+import { getApiDownloadUrl } from "../../prankweb-api";
 
 export default function PredictionInfoTab(props: { predictionInfo: PredictionInfo; }) {
     const pInfo = props.predictionInfo;
@@ -15,6 +17,9 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
         url = `https://www.rcsb.org/structure/${pInfo.metadata.predictionName}`;
     }
 
+    const downloadAs = `prankweb-${props.predictionInfo.metadata.predictionName}.zip`;
+    const downloadUrl = getApiDownloadUrl(props.predictionInfo);
+
     return (
         <div>
             <h2>Prediction info</h2>
@@ -27,6 +32,11 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
                 <li>Metadata - prediction name: <a href={url} target="_blank" rel="nofollow noopener noreferrer">{pInfo.metadata.predictionName}</a></li>
                 <li>{isUserProvided ? "Structure provided by the user" : "Structure not provided by the user"}</li>
                 <li>{pInfo.metadata.predictedStructure === true ? "Structure is predicted" : "Structure is not predicted"}</li>
+                <Button variant="outlined" color="primary" className="visualization-toolbox-button">
+                    <a href={downloadUrl} download={downloadAs} className="visualization-toolbox-option-link">
+                        Download
+                    </a>
+                </Button>
                 TODO: here we should add something about the prediction model (P2Rank version etc.)
             </ul>
         </div>
