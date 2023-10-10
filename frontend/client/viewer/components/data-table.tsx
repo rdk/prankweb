@@ -67,9 +67,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         <TableHead>
             <TableRow>
                 <TableCell padding="checkbox"></TableCell>
-                {headCells.map((headCell) => (
+                {headCells.map((headCell, i) => (
                     <TableCell
-                        key={headCell.id + "_head"}
+                        key={i + "_head"}
                         align={'center'}
                         padding={'none'}
                         sortDirection={orderBy === headCell.id ? order : false}

@@ -50,10 +50,10 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {clientTasksParsed.map((row: ClientTaskLocalStorageData) => {
+                    {clientTasksParsed.map((row: ClientTaskLocalStorageData, i) => {
                         if (row.pocket === Number(pocket.rank)) {
                             return (
-                                <TableRow key={row.pocket + "_client"}>
+                                <TableRow key={i + "_client"}>
                                     <TableCell>{ClientTaskTypeDescriptors[row.type]}</TableCell>
                                     <TableCell>{"-"}</TableCell>
                                     <TableCell>{"-"}</TableCell>
@@ -65,10 +65,10 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
                             );
                         }
                     })}
-                    {serverTasksParsed.map((row: ServerTaskLocalStorageData) => {
+                    {serverTasksParsed.map((row: ServerTaskLocalStorageData, i) => {
                         if (row.pocket === Number(pocket.rank)) {
                             return (
-                                <TableRow key={row.pocket + "_server"}>
+                                <TableRow key={i + "_server"}>
                                     <TableCell>{ServerTaskTypeDescriptors[row.type]}</TableCell>
                                     <TableCell>{row.name}</TableCell>
                                     <TableCell>{row.created}</TableCell>
