@@ -136,7 +136,7 @@ export default class DataTableRow extends React.Component<{
                     {this.props.hasConservation && <TableCell align="right">{pocket.avgConservation}</TableCell>}
                     {this.props.hasAlphaFold && <TableCell align="right">{pocket.avgAlphaFold}</TableCell>}
                 </TableRow>
-                <TableRow>
+                <TableRow style={{ background: "linear-gradient(0deg, rgba(204,204,204,1) 0%, rgba(255,255,255,1) 50%" }}>
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={this.props.headCellsLength + 1}>
                         <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                             <Box sx={{ margin: 1 }}>
