@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { ClientTask, ClientTaskLocalStorageData, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
-import { Button, Typography } from "@mui/material";
+import { Button, Paper, Typography } from "@mui/material";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -140,8 +140,8 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
 
     return (
         <div>
-            <div>
-                <Typography variant="h6">Create task</Typography>
+            <Paper>
+                <Typography variant="h6" style={{ padding: 10 }}>Create task</Typography>
                 <table className="create-task-table">
                     <tbody>
                         <tr>
@@ -218,54 +218,51 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                             <td>
                                 <Button variant="contained" onClick={handleSubmitButton}>Create task</Button>
                             </td>
-                            <td></td>
+                            <td>
+
+                            </td>
                         </tr>
                     </tbody>
                 </table>
-            </div>
-            <div>
-                <Typography variant="h6">Finished tasks</Typography>
-                <div>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Timestamp</TableCell>
-                                <TableCell>Pocket</TableCell>
-                                <TableCell>Status/result</TableCell>
+            </Paper>
+            &nbsp;
+            <Paper>
+                <Typography variant="h6" style={{ padding: 10 }}>Finished tasks</Typography>
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Type</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Timestamp</TableCell>
+                            <TableCell>Pocket</TableCell>
+                            <TableCell>Status/result</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {finishedClientTasks.map((task: ClientTask, i: number) =>
+                            <TableRow key={i + "_client"}>
+                                <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
+                                <TableCell>{"-"}</TableCell>
+                                <TableCell>{task.created}</TableCell>
+                                <TableCell>{task.pocket}</TableCell>
+                                <TableCell>
+                                    {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
+                                    {task.type === ClientTaskType.Volume && " Å³"}
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {finishedClientTasks.map((task: ClientTask, i: number) => {
-                                return (
-                                    <TableRow key={i + "_client"}>
-                                        <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
-                                        <TableCell>{"-"}</TableCell>
-                                        <TableCell>{task.created}</TableCell>
-                                        <TableCell>{task.pocket}</TableCell>
-                                        <TableCell>
-                                            {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
-                                            {task.type === ClientTaskType.Volume && " Å³"}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                            {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) => {
-                                return (
-                                    <TableRow key={i + "_server"}>
-                                        <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
-                                        <TableCell>{task.name}</TableCell>
-                                        <TableCell>{task.created}</TableCell>
-                                        <TableCell>{task.pocket}</TableCell>
-                                        <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}>successful</span> : task.status}</TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
+                        )}
+                        {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) =>
+                            <TableRow key={i + "_server"}>
+                                <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
+                                <TableCell>{task.name}</TableCell>
+                                <TableCell>{task.created}</TableCell>
+                                <TableCell>{task.pocket}</TableCell>
+                                <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}>successful</span> : task.status}</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </Paper>
         </div>
     );
 }
