@@ -10,6 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import { visuallyHidden } from '@mui/utils';
 
 import "./data-table.css";
@@ -21,28 +22,34 @@ import { PocketData } from '../../custom-types';
 interface HeadCell {
     id: keyof PocketData | null;
     label: string;
+    tooltip: string;
 }
 
 const headCells: HeadCell[] = [
     {
         id: null,     // sort by rank even though there are buttons
         label: 'Tools',
+        tooltip: 'Tools for pocket visualization'
     },
     {
         id: 'rank',
         label: 'Rank',
+        tooltip: 'Pocket rank based on the score'
     },
     {
         id: 'score',
         label: 'Score',
+        tooltip: 'Pocket score assigned by P2Rank'
     },
     {
         id: 'probability',
         label: 'Probability',
+        tooltip: 'Probability of the pocket (see help page)'
     },
     {
         id: 'residues',
-        label: '# of residues'
+        label: '# of residues',
+        tooltip: 'Number of residues involved in the pocket'
     },
     //more are added dynamically based on available conservation/AlphaFold score in the EnhancedTable
 ];
@@ -79,7 +86,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                             direction={orderBy === headCell.id ? order : 'asc'}
                             onClick={createSortHandler(headCell.id)}
                         >
-                            {headCell.label}
+                            <Tooltip title={headCell.tooltip} placement="top">
+                                <span>{headCell.label}</span>
+                            </Tooltip>
                             {orderBy === headCell.id ? (
                                 <Box component="span" sx={visuallyHidden}>
                                     {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
@@ -176,6 +185,7 @@ export default function EnhancedTable(props: {
         headCells.push({
             id: 'avgConservation',
             label: 'Avg conservation',
+            tooltip: 'Average conservation score of the pocket residues (see help page)'
         });
     }
 
@@ -184,6 +194,7 @@ export default function EnhancedTable(props: {
         headCells.push({
             id: 'avgAlphaFold',
             label: 'Avg AlphaFold score',
+            tooltip: 'Average AlphaFold score of the pocket residues (see help page)'
         });
     }
 
