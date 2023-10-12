@@ -35,6 +35,7 @@ export class VisualizationToolBox extends React.Component<{
         this.changePocketsView = this.changePocketsView.bind(this);
         this.changePolymerColor = this.changePolymerColor.bind(this);
         this.changeShowConfident = this.changeShowConfident.bind(this);
+        this.handleMolstarCameraReset = this.handleMolstarCameraReset.bind(this);
 
         this.state = {
             polymerView: this.props.polymerView,
@@ -90,37 +91,13 @@ export class VisualizationToolBox extends React.Component<{
         this.props.onShowConfidentChange();
     }
 
+    handleMolstarCameraReset() {
+        this.props.molstarPlugin.canvas3d?.requestCameraReset();
+    }
+
     render() {
         return (
             <div className="visualization-toolbox-container">
-                <div className="visualization-toolbox-row">
-                    <div className="visualization-toolbox-option">
-                        <div className="visualization-toolbox-option-description">
-                            <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.toggle1DViewer}>
-                                {this.state.is1DViewerVisible ? "Hide" : "Show"} 1D viewer
-                            </Button>
-                        </div>
-                    </div>
-
-                    <div className="visualization-toolbox-option">
-                        <div className="visualization-toolbox-option-description">
-                            <Button variant="outlined" color="primary" className="visualization-toolbox-button">
-                                TODO: reset
-                            </Button>
-                        </div>
-                    </div>
-
-                    {this.props.isPredicted && (
-                        <div className="visualization-toolbox-option">
-                            <div className="visualization-toolbox-option-description">
-                                <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.changeShowConfident}>
-                                    {this.state.isShowOnlyPredicted ? "Show all regions" : "Show confident regions"}
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
                 <div className="visualization-toolbox-row">
                     <div className="visualization-toolbox-option">
                         <div className="visualization-toolbox-option-description">
@@ -181,6 +158,34 @@ export class VisualizationToolBox extends React.Component<{
                             </FormControl>
                         </div>
                     </div>
+                </div>
+
+                <div className="visualization-toolbox-row">
+                    <div className="visualization-toolbox-option">
+                        <div className="visualization-toolbox-option-description">
+                            <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.toggle1DViewer}>
+                                {this.state.is1DViewerVisible ? "Hide" : "Show"} 1D viewer
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="visualization-toolbox-option">
+                        <div className="visualization-toolbox-option-description">
+                            <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.handleMolstarCameraReset}>
+                                Reset 3D camera
+                            </Button>
+                        </div>
+                    </div>
+
+                    {this.props.isPredicted && (
+                        <div className="visualization-toolbox-option">
+                            <div className="visualization-toolbox-option-description">
+                                <Button variant="outlined" color="primary" className="visualization-toolbox-button" onClick={this.changeShowConfident}>
+                                    {this.state.isShowOnlyPredicted ? "Show all regions" : "Show confident regions"}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
