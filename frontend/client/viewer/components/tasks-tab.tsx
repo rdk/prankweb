@@ -40,10 +40,19 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             type: TaskType.Client,
             name: "Volume",
             compute: (params, customName, pocketIndex) => {
-                const promise = computePocketVolume(props.plugin, props.pockets[pocketIndex]);
+                let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
+                if (savedTasks) {
+                    const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
+                    const task = tasks.find(task => task.pocket === (pocketIndex + 1) && task.type === ClientTaskType.Volume);
+                    if (task) {
+                        // do not compute the same task twice
+                        return;
+                    }
+                }
 
+                const promise = computePocketVolume(props.plugin, props.pockets[pocketIndex]);
                 promise.then((task: ClientTask) => {
-                    let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
+                    savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
                     if (!savedTasks) savedTasks = "[]";
                     const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
 
