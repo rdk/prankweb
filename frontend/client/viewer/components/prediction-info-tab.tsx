@@ -51,6 +51,10 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
             value: isPredicted ? "yes" : "no"
         },
         {
+            name: "Prediction model",
+            value: "TODO"
+        },
+        {
             name: "",
             value: (
                 <Button variant="outlined" color="primary" className="visualization-toolbox-button">
@@ -59,10 +63,6 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
                     </a>
                 </Button>
             )
-        },
-        {
-            name: "Prediction model",
-            value: "TODO"
         }
     ];
 
