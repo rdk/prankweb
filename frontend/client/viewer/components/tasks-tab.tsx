@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { ClientTask, ClientTaskLocalStorageData, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -141,7 +141,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     return (
         <div>
             <div>
-                <h4>Create task</h4>
+                <Typography variant="h6">Create task</Typography>
                 <table className="create-task-table">
                     <tbody>
                         <tr>
@@ -224,7 +224,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                 </table>
             </div>
             <div>
-                <h4>Finished tasks</h4>
+                <Typography variant="h6">Finished tasks</Typography>
                 <div>
                     <Table size="small">
                         <TableHead>
