@@ -1,6 +1,6 @@
 import React from "react";
 import { PredictionInfo } from "../../prankweb-api";
-import { Button } from "@mui/material";
+import { Button, Paper, Table, TableRow, TableCell } from "@mui/material";
 import { getApiDownloadUrl } from "../../prankweb-api";
 
 export default function PredictionInfoTab(props: { predictionInfo: PredictionInfo; }) {
@@ -20,24 +20,62 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
     const downloadAs = `prankweb-${props.predictionInfo.metadata.predictionName}.zip`;
     const downloadUrl = getApiDownloadUrl(props.predictionInfo);
 
-    return (
-        <div>
-            <ul>
-                <li>Structure ID: {pInfo.id}</li>
-                <li>Database: {pInfo.database}</li>
-                <li>Created: {pInfo.created}</li>
-                <li>Last change: {pInfo.lastChange}</li>
-                <li>Metadata - structure name: {pInfo.metadata.structureName}</li>
-                <li>Metadata - prediction name: <a href={url} target="_blank" rel="nofollow noopener noreferrer">{pInfo.metadata.predictionName}</a></li>
-                <li>{isUserProvided ? "Structure provided by the user" : "Structure not provided by the user"}</li>
-                <li>{pInfo.metadata.predictedStructure === true ? "Structure is predicted" : "Structure is not predicted"}</li>
+    type shownProperty = {
+        name: string;
+        value: any;
+    };
+
+    const shownProperties: shownProperty[] = [
+        {
+            name: "Structure ID",
+            value: pInfo.id.toUpperCase(),
+        },
+        {
+            name: "Prediction name",
+            value: isUserProvided ? <span>{pInfo.metadata.predictionName}</span> : <a href={url} target="_blank" rel="nofollow noopener noreferrer">{pInfo.metadata.predictionName}</a>
+        },
+        {
+            name: "Database",
+            value: pInfo.database
+        },
+        {
+            name: "Created at",
+            value: pInfo.created
+        },
+        {
+            name: "Structure provided by the user",
+            value: isUserProvided ? "yes" : "no"
+        },
+        {
+            name: "Structure is predicted (AlphaFold)",
+            value: isPredicted ? "yes" : "no"
+        },
+        {
+            name: "",
+            value: (
                 <Button variant="outlined" color="primary" className="visualization-toolbox-button">
                     <a href={downloadUrl} download={downloadAs} className="visualization-toolbox-option-link">
-                        Download
+                        Download prediction data
                     </a>
                 </Button>
-                TODO: here we should add something about the prediction model (P2Rank version etc.)
-            </ul>
-        </div>
+            )
+        },
+        {
+            name: "Prediction model",
+            value: "TODO"
+        }
+    ];
+
+    return (
+        <Paper>
+            <Table>
+                {shownProperties.map((p, i) =>
+                    <TableRow key={i}>
+                        <TableCell>{p.name}</TableCell>
+                        <TableCell>{p.value}</TableCell>
+                    </TableRow>
+                )}
+            </Table>
+        </Paper>
     );
 }
