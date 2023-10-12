@@ -73,8 +73,8 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
         <div>
             <Paper>
                 <Table size="small">
-                    {shownProperties.map((property) =>
-                        <TableRow>
+                    {shownProperties.map((property, index) =>
+                        <TableRow key={index}>
                             <TableCell>{property.name}</TableCell>
                             <TableCell>{property.value}</TableCell>
                         </TableRow>
