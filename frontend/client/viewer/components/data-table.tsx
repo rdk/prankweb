@@ -29,7 +29,7 @@ const headCells: HeadCell[] = [
     {
         id: null,     // sort by rank even though there are buttons
         label: 'Tools',
-        tooltip: 'Tools for pocket visualization'
+        tooltip: ''
     },
     {
         id: 'rank',
@@ -86,9 +86,12 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                             direction={orderBy === headCell.id ? order : 'asc'}
                             onClick={createSortHandler(headCell.id)}
                         >
-                            <Tooltip title={headCell.tooltip} placement="top">
-                                <span>{headCell.label}</span>
-                            </Tooltip>
+                            {headCell.tooltip === "" ?
+                                <span>{headCell.label}</span> :
+                                <Tooltip title={headCell.tooltip} placement="top">
+                                    <span>{headCell.label}</span>
+                                </Tooltip>
+                            }
                             {orderBy === headCell.id ? (
                                 <Box component="span" sx={visuallyHidden}>
                                     {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
