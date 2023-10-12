@@ -140,7 +140,6 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
 
     return (
         <div>
-            <h3>Tasks</h3>
             <div>
                 <h4>Create task</h4>
                 <table className="create-task-table">
