@@ -56,7 +56,7 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
                                 <TableRow key={i + "_client"}>
                                     <TableCell>{ClientTaskTypeDescriptors[row.type]}</TableCell>
                                     <TableCell>{"-"}</TableCell>
-                                    <TableCell>{"-"}</TableCell>
+                                    <TableCell>{row.created}</TableCell>
                                     <TableCell>
                                         {(!isNaN(row.data)) ? row.data.toFixed(1) : row.data}
                                         {row.type === ClientTaskType.Volume && " Å³"}

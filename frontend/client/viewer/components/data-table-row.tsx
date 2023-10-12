@@ -23,7 +23,8 @@ export default class DataTableRow extends React.Component<{
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     setTab: (tab: number, initialPocket?: number) => void,
-    structureId: string;
+    structureId: string,
+    headCellsLength: number;
 }, {
     open: boolean,
     index: number,
@@ -136,7 +137,7 @@ export default class DataTableRow extends React.Component<{
                     {this.props.hasAlphaFold && <TableCell align="right">{pocket.avgAlphaFold}</TableCell>}
                 </TableRow>
                 <TableRow>
-                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={this.props.headCellsLength + 1}>
                         <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                             <Box sx={{ margin: 1 }}>
                                 <DataTableRowDetails pocket={pocket} setTab={this.props.setTab} structureId={this.props.structureId} />

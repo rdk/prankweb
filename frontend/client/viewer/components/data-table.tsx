@@ -217,7 +217,7 @@ export default function EnhancedTable(props: {
                             {visibleRows.map((row, index) => (
                                 <DataTableRow key={row.name + "_row"} pocket={row} emptyRows={emptyRows} hasConservation={hasConservation} hasAlphaFold={hasAlphaFold}
                                     setPocketVisibility={props.setPocketVisibility} showOnlyPocket={props.showOnlyPocket} focusPocket={props.focusPocket}
-                                    highlightPocket={props.highlightPocket} setTab={props.setTab} structureId={props.structureId} />
+                                    highlightPocket={props.highlightPocket} setTab={props.setTab} structureId={props.structureId} headCellsLength={headCells.length} />
                             ))}
                             {emptyRows > 0 && (
                                 <TableRow

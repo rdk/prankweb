@@ -59,6 +59,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     tasks.push({
                         "pocket": (pocketIndex + 1),
                         "type": ClientTaskType.Volume,
+                        "created": new Date().toISOString(),
                         "data": task.data
                     });
 
@@ -242,7 +243,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                     <TableRow key={i + "_client"}>
                                         <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
                                         <TableCell>{"-"}</TableCell>
-                                        <TableCell>{"-"}</TableCell>
+                                        <TableCell>{task.created}</TableCell>
                                         <TableCell>{task.pocket}</TableCell>
                                         <TableCell>
                                             {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
