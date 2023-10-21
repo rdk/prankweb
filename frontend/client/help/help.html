@@ -17,9 +17,45 @@
       All one needs to use PrankWeb is a device with a web-browser that supports WebGL.
     </p>
 
-    <h2 id="specify-what-protein-to-analyze">
+    <h2 id="quick-start">Quick start</h2>
+    <p>
+      To skip to the detailed description of the application, <a href="#detailed-description">click here</a>.
+    </p>
+    <h4>Structure selection</h4>
+    <p>
+      The user can specify what protein to analyze in three ways:
+    </p>
+    <ul>
+      <li>PDB code <i>(Experimental structure)</i></li>
+      <li>Upload a structure file (.pdb, .cif) with selected chains <i>(Custom structure)</i></li>
+      <li>Uniprot ID <i>(Predicted structure)</i></li>
+    </ul>
+    <p>
+      The user may also specify whether to <strong>use evolutionary conservation</strong> in the prediction model. This
+      makes the analysis slower, but more accurate. The conservation score calculated represents protein similarity to
+      other proteins in the same family. More information available <a href="#conservation">below</a>.
+    </p>
+    <h4>Visualization</h4>
+    <p>
+      Once the protein visualization is loaded, three main panels appear: sequence visualization, structural
+      visualization and the pocket panel. There are several properties that are displayed in the pocket details panel:
+    </p>
+    <ul>
+      <li>Rank based on P2Rank score</li>
+      <li>Score (P2Rank result)</li>
+      <li><a href="#probability-score">Probability of pocket</a></li>
+      <li>Number of pocket residues</li>
+      <li>Average conservation/AlphaFold score, if available</li>
+    </ul>
+    <p>
+      The user also may create tasks for each of the pockets. The tasks may be created directly from the tasks tab.
+    </p>
+
+    <hr>
+    <h2 id="detailed-description">Detailed description</h2>
+    <h3 id="specify-what-protein-to-analyze">
       Specify what structure to analyze
-    </h2>
+    </h3>
     <p>
       There are three options to obtain a structure:
     </p>
@@ -37,11 +73,11 @@
         Provided Uniprot ID PrankWeb can download structure from
         <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="nofollow noopener noreferrer">AlphaFold Protein
           Structure Database</a>.
-        For this option the structure visualisation is colored using residue-level confidence scores.
+        For this option the structure visualisation may be colored using residue-level confidence scores.
       </li>
     </ul>
 
-    <h2 id="conservation">Conservation</h2>
+    <h3 id="conservation">Conservation</h3>
     <p>
       Besides selecting what protein to analyze, one can also specify whether evolutionary conservation should be
       included in the prediction model by checking the <em>Use conservation</em> checkbox.
@@ -66,13 +102,13 @@
       0 and ~ 4 ( = log<sub>2</sub>(20) ) with higher values corresponding to higher conservation.
     </p>
 
-    <h2 id="visualization">Visualization</h2>
+    <h3 id="visualization">Visualization</h3>
     <p>
       Once the protein visualization is loaded, three main panels appear: sequence visualization, structural
       visualization and the pocket panel.
     </p>
     <img src="./assets/images/help-00.png" style="width: 100%" class="img-responsive center-block" />
-    <h3 id="structural-visualization-1">Structural visualization</h3>
+    <h4 id="structural-visualization-1">Structural visualization</h4>
     <p>
       The largest panel contains the three-dimensional visualization of the protein.
     </p>
@@ -100,7 +136,7 @@
       </li>
     </ul>
 
-    <h4 id="controls">Controls</h4>
+    <h5 id="controls">Controls</h5>
     <p>
       The molecule can be rotated by moving mouse while holding left mouse button.
       On a touch device, just slide your finger.
@@ -134,7 +170,7 @@
       <a href="https://github.com/molstar/molstar/" target="_blank" rel="nofollow noopener noreferrer">GitHub page</a>.
     </p>
 
-    <h3 id="sequence-visualization-1">Sequence visualization</h3>
+    <h4 id="sequence-visualization-1">Sequence visualization</h4>
     <p>The panel above protein 3D visualization displays protein sequence.</p>
     <ul>
       <li>
@@ -157,7 +193,7 @@
       You can use your mouse to zoom in, or zoom to the selected residue by clicking the responsible area.
     </p>
 
-    <h2 id="pocket-panel">Pocket panel</h2>
+    <h4 id="pocket-panel">Pocket panel</h4>
     <p>
       The right panel contains several control buttons and a list of predicted pockets.
       Use the control buttons to download PrankWeb report, or switch between the structural views.
