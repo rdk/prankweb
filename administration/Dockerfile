@@ -2,7 +2,7 @@
 # java-tools
 #
 
-FROM debian:bookworm-20211115 as java-tools
+FROM debian:bookworm-20231009 as java-tools
 
 RUN apt-get update \
   && apt-get -y --no-install-recommends install openjdk-17-jdk
@@ -17,17 +17,17 @@ RUN chmod +x ./gradlew && ./gradlew installDist \
 # administration
 #
 
-FROM debian:bookworm-20211115
+FROM debian:bookworm-20231009
 
 ARG UID=5988
 ARG GID=5988
 
 RUN apt-get update \
-   && apt-get -y --no-install-recommends install \
-   wget curl \
-   python3 python3-pip python3-venv \
-   openjdk-17-jre-headless \
-   libgomp1 vim
+  && apt-get -y --no-install-recommends install \
+  wget curl \
+  python3 python3-pip python3-venv \
+  openjdk-17-jre-headless \
+  libgomp1 vim
 
 # https://github.com/python/cpython/issues/102134
 ENV VIRTUAL_ENV=/opt/venv

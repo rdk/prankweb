@@ -1,4 +1,4 @@
-FROM debian:bookworm-20211115
+FROM debian:bookworm-20231009
 
 ARG UID=5988
 ARG GID=5988

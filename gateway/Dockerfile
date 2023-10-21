@@ -1,7 +1,7 @@
 #
 # Build web-application.
 #
-FROM node:19.7-bullseye AS frontend
+FROM node:20.8-bullseye AS frontend
 
 ARG GOOGLE_ANALYTICS
 
@@ -21,7 +21,7 @@ RUN npm run build
 #
 # Prepare passwords.
 #
-FROM debian:bookworm-20211115 as htpasswd
+FROM debian:bookworm-20231009 as htpasswd
 
 RUN apt-get update && apt-get -y install apache2-utils
 
@@ -35,7 +35,7 @@ RUN htpasswd -b -c /opt/htpasswd/.htpasswd ${WEB_SERVICE_USER} ${WEB_SERVICE_PAS
 #
 #
 #
-FROM nginx:1.21.1
+FROM nginx:1.25.2
 
 RUN rm /etc/nginx/conf.d/default.conf
 
