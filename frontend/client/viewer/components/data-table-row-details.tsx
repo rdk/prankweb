@@ -2,7 +2,7 @@ import * as React from 'react';
 import Table from '@mui/material/Table';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import { Button, Paper } from '@mui/material';
+import { Button, Paper, TableBody } from '@mui/material';
 import { PocketData } from "../../custom-types";
 import { TasksTable } from "./tasks-table";
 
@@ -52,12 +52,14 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
         <div>
             <Paper>
                 <Table size="small">
-                    {shownProperties.map((property, index) =>
-                        <TableRow key={index}>
-                            <TableCell>{property.name}</TableCell>
-                            <TableCell>{property.value}</TableCell>
-                        </TableRow>
-                    )}
+                    <TableBody>
+                        {shownProperties.map((property, index) =>
+                            <TableRow key={index}>
+                                <TableCell>{property.name}</TableCell>
+                                <TableCell>{property.value}</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
                 </Table>
             </Paper>
             &nbsp;

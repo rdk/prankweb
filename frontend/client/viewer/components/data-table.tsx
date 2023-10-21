@@ -58,11 +58,10 @@ interface EnhancedTableProps {
     onRequestSort: (event: React.MouseEvent<unknown>, property: keyof PocketData) => void;
     order: Order;
     orderBy: string;
-    rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-    const { order, orderBy, rowCount, onRequestSort } =
+    const { order, orderBy, onRequestSort } =
         props;
     const createSortHandler =
         (property: keyof PocketData | null) => (event: React.MouseEvent<unknown>) => {
@@ -214,7 +213,6 @@ export default function EnhancedTable(props: {
                             order={order}
                             orderBy={orderBy}
                             onRequestSort={handleRequestSort}
-                            rowCount={props.pockets.length}
                         />
                         <TableBody className='pocket-table-body'>
                             {visibleRows.map((row, index) => (

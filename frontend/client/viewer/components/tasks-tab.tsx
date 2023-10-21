@@ -56,7 +56,8 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                         "pocket": (pocketIndex + 1),
                         "type": ClientTaskType.Volume,
                         "created": new Date().toISOString(),
-                        "data": volume
+                        "data": volume,
+                        "discriminator": "client",
                     });
 
                     localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(tasks));
@@ -80,7 +81,8 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "created": new Date().toISOString(),
                     "status": "queued",
                     "type": ServerTaskType.Docking,
-                    "responseData": null
+                    "responseData": null,
+                    "discriminator": "server",
                 });
                 localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
                 computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], props.plugin);

@@ -1,4 +1,14 @@
+import { ClientTaskLocalStorageData, ServerTaskLocalStorageData } from "../../custom-types";
+
 export type Order = 'asc' | 'desc';
+
+export function isInstanceOfClientTaskLocalStorageData(obj: any): obj is ClientTaskLocalStorageData {
+    return obj.discriminator === 'client';
+}
+
+export function isInstanceOfServerTaskLocalStorageData(obj: any): obj is ServerTaskLocalStorageData {
+    return obj.discriminator === 'server';
+}
 
 export function getComparator<Key extends keyof any>(
     order: Order,

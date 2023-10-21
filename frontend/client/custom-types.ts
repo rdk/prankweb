@@ -234,6 +234,7 @@ export interface ClientTask {
 
 export interface ClientTaskLocalStorageData extends ClientTask {
     //potentially may contain more data
+    discriminator: 'client'; // used to distinguish between ClientTask and ServerTask
 }
 
 export interface ServerTaskInfo { // info about the task returned from the server
@@ -269,4 +270,5 @@ export interface ServerTask {
 
 export interface ServerTaskLocalStorageData extends ServerTask {
     //potentially may contain more data
+    discriminator: 'server'; // used to distinguish between ClientTask and ServerTask
 }
