@@ -86,11 +86,11 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
                 {/*<span style={{ padding: 10, paddingTop: 15, fontSize: "1.25rem", display: "block" }}>Tasks for pocket {pocket.rank}</span>*/}
                 <Table size="small">
                     <TableHead>
-                        <TableRow style={{ background: "black" }}>
-                            <TableCell style={{ color: "white" }}>Task type</TableCell>
-                            <TableCell style={{ color: "white" }}>Name</TableCell>
-                            <TableCell style={{ color: "white" }}>Timestamp</TableCell>
-                            <TableCell style={{ color: "white" }}>Status/result</TableCell>
+                        <TableRow style={{ background: "white" }}>
+                            <TableCell style={{ fontWeight: "bold" }}>Task type</TableCell>
+                            <TableCell style={{ fontWeight: "bold" }}>Name</TableCell>
+                            <TableCell style={{ fontWeight: "bold" }}>Timestamp</TableCell>
+                            <TableCell style={{ fontWeight: "bold" }}>Status/result</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
