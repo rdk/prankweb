@@ -4,19 +4,15 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ClientTaskLocalStorageData, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
+import { ClientTaskLocalStorageData, ClientTaskType, PocketData, ServerTaskLocalStorageData, ServerTaskType } from "../../custom-types";
 import { Button, Paper, Typography } from "@mui/material";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 
 import "./tasks-tab.css";
 import { PredictionInfo } from "../../prankweb-api";
-import { computeDockingTaskOnBackend, downloadDockingResult } from "../../tasks/server-docking-task";
+import { computeDockingTaskOnBackend } from "../../tasks/server-docking-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { computePocketVolume } from "../../tasks/client-atoms-volume";
+import { TasksTable } from "./tasks-table";
 
 enum TaskType {
     Client,
@@ -120,24 +116,6 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
         setForceUpdate(prevState => prevState + 1);
     };
 
-    const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
-        switch (serverTask.type) {
-            case ServerTaskType.Docking:
-                downloadDockingResult(serverTask.params[0], serverTask.responseData[0].url, serverTask.pocket.toString());
-                break;
-            default:
-                break;
-        }
-    };
-
-    let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
-    if (!savedTasks) savedTasks = "[]";
-    const tasksFromLocalStorage: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
-
-    let savedClientTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
-    if (!savedClientTasks) savedClientTasks = "[]";
-    const finishedClientTasks: ClientTaskLocalStorageData[] = JSON.parse(savedClientTasks);
-
     return (
         <div>
             <Paper>
@@ -228,40 +206,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             &nbsp;
             <Paper>
                 <Typography variant="h6" style={{ padding: 10 }}>Finished tasks</Typography>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Timestamp</TableCell>
-                            <TableCell>Pocket</TableCell>
-                            <TableCell>Status/result</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {finishedClientTasks.map((task: ClientTaskLocalStorageData, i: number) =>
-                            <TableRow key={i + "_client"}>
-                                <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
-                                <TableCell>{"-"}</TableCell>
-                                <TableCell>{task.created}</TableCell>
-                                <TableCell>{task.pocket}</TableCell>
-                                <TableCell>
-                                    {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
-                                    {task.type === ClientTaskType.Volume && " Å³"}
-                                </TableCell>
-                            </TableRow>
-                        )}
-                        {tasksFromLocalStorage.map((task: ServerTaskLocalStorageData, i: number) =>
-                            <TableRow key={i + "_server"}>
-                                <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
-                                <TableCell>{task.name}</TableCell>
-                                <TableCell>{task.created}</TableCell>
-                                <TableCell>{task.pocket}</TableCell>
-                                <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}>successful</span> : task.status}</TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                <TasksTable pocket={null} structureId={props.predictionInfo.id} />
             </Paper>
         </div>
     );
