@@ -2,13 +2,13 @@ import React from "react";
 import { createRoot } from 'react-dom/client';
 
 import "./application.css";
-import { PredictionInfo, getApiDownloadUrl } from "../prankweb-api";
+import { PredictionInfo } from "../prankweb-api";
 
 import { VisualizationToolBox } from "./components/visualization-tool-box";
 import BasicTabs from "./components/pocket-tabs";
 
 import { sendDataToPlugins } from './data-loader';
-import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTask, ServerTaskInfo, ServerTaskLocalStorageData, ServerTaskType } from "../custom-types";
+import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, ReactApplicationProps, ReactApplicationState, ServerTaskInfo, ServerTaskLocalStorageData } from "../custom-types";
 
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';

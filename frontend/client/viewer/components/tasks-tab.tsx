@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { ClientTask, ClientTaskLocalStorageData, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
+import { ClientTaskLocalStorageData, ClientTaskType, ClientTaskTypeDescriptors, PocketData, ServerTaskLocalStorageData, ServerTaskType, ServerTaskTypeDescriptors } from "../../custom-types";
 import { Button, Paper, Typography } from "@mui/material";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -51,7 +51,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                 }
 
                 const promise = computePocketVolume(props.plugin, props.pockets[pocketIndex]);
-                promise.then((task: ClientTask) => {
+                promise.then((volume: number) => {
                     savedTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
                     if (!savedTasks) savedTasks = "[]";
                     const tasks: ClientTaskLocalStorageData[] = JSON.parse(savedTasks);
@@ -60,7 +60,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                         "pocket": (pocketIndex + 1),
                         "type": ClientTaskType.Volume,
                         "created": new Date().toISOString(),
-                        "data": task.data
+                        "data": volume
                     });
 
                     localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(tasks));
@@ -87,7 +87,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "responseData": null
                 });
                 localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
-                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], [], props.plugin);
+                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], props.plugin);
             },
             parameterDescriptions: [
                 "Enter the molecule in SMILES format (e.g. c1ccccc1)",
@@ -239,7 +239,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {finishedClientTasks.map((task: ClientTask, i: number) =>
+                        {finishedClientTasks.map((task: ClientTaskLocalStorageData, i: number) =>
                             <TableRow key={i + "_client"}>
                                 <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
                                 <TableCell>{"-"}</TableCell>

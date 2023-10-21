@@ -1,6 +1,5 @@
 import { PredictionInfo } from "../prankweb-api";
-import { PocketData, ServerTaskType, Point3D } from "../custom-types";
-import { ServerTask } from "../custom-types";
+import { PocketData, Point3D } from "../custom-types";
 
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
@@ -60,10 +59,10 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
  * @param prediction Prediction info
  * @param pocket Pocket data
  * @param hash Task identifier (hash)
- * @param serverTasks A list of all server tasks
+ * @param plugin Mol* plugin
  * @returns Completed task data
  */
-export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, serverTasks: ServerTask[], plugin: PluginUIContext): Promise<any> {
+export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, plugin: PluginUIContext): Promise<any> {
     if (hash === "") {
         return;
     }

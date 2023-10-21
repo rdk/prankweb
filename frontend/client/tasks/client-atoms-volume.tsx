@@ -1,5 +1,5 @@
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-import { PocketData, ClientTask, ClientTaskType, Point3D } from "../custom-types";
+import { PocketData, Point3D } from "../custom-types";
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import qh from 'quickhull3d';
 
@@ -22,7 +22,7 @@ function computeTriangleVolume(p1: Point3D, p2: Point3D, p3: Point3D) {
     const v213 = p2.x * p1.y * p3.z;
     const v123 = p1.x * p2.y * p3.z;
 
-    return (1.0/6.0)*(-v321 + v231 + v312 - v132 - v213 + v123);
+    return (1.0 / 6.0) * (-v321 + v231 + v312 - v132 - v213 + v123);
 }
 
 /**
@@ -31,14 +31,10 @@ function computeTriangleVolume(p1: Point3D, p2: Point3D, p3: Point3D) {
  * @param pocket Pocket data
  * @returns Computed pocket volume
  */
-export async function computePocketVolume(plugin: PluginUIContext, pocket: PocketData): Promise<ClientTask> {
+export async function computePocketVolume(plugin: PluginUIContext, pocket: PocketData): Promise<number> {
 
-    if(pocketVolumes.has(pocket.name)) {
-        return {
-            "data": pocketVolumes.get(pocket.name),
-            "pocket": Number(pocket.rank),
-            "type": ClientTaskType.Volume
-        };
+    if (pocketVolumes.has(pocket.name)) {
+        return pocketVolumes.get(pocket.name)!;
     }
 
     const coords = getPocketAtomCoordinates(plugin, pocket.surface);
@@ -49,8 +45,8 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
     const hull = qh(points); //compute the convex hull
 
     const volumes: number[] = [];
-    
-    for(const face of hull) {
+
+    for (const face of hull) {
         volumes.push(computeTriangleVolume(coords[face[0]], coords[face[1]], coords[face[2]]));
     }
 
@@ -58,11 +54,5 @@ export async function computePocketVolume(plugin: PluginUIContext, pocket: Pocke
 
     pocketVolumes.set(pocket.name, finalVolume);
 
-    const data: ClientTask = {
-        "data": finalVolume,
-        "pocket": Number(pocket.rank),
-        "type": ClientTaskType.Volume
-    };
-
-    return data;
+    return finalVolume;
 }

@@ -211,11 +211,17 @@ export const DefaultPocketColors = [
 /**
  * These enums/interfaces are used to represent various client/server tasks and their data.
  */
+export interface Point3D {
+    x: number;
+    y: number;
+    z: number;
+}
+
 export enum ClientTaskType {
     Volume = 0
 }
 
-export const ClientTaskTypeDescriptors = [
+export const ClientTaskTypeDescriptors = [ //descriptors for the ClientTaskType
     "Pocket volume",
 ];
 
@@ -230,27 +236,7 @@ export interface ClientTaskLocalStorageData extends ClientTask {
     //potentially may contain more data
 }
 
-export interface Point3D {
-    x: number;
-    y: number;
-    z: number;
-}
-
-export enum ServerTaskType {
-    Docking = 0
-}
-
-export const ServerTaskTypeDescriptors = [
-    "Molecular docking"
-];
-
-export interface ServerTask {
-    pocket: string;
-    type: ServerTaskType;
-    data: ServerTaskInfo;
-}
-
-export interface ServerTaskInfo {
+export interface ServerTaskInfo { // info about the task returned from the server
     id: string;
     created: string;
     lastChange: string;
@@ -263,12 +249,24 @@ export interface ServerTaskInfo {
     responseData: any;  //response data
 }
 
-export interface ServerTaskLocalStorageData {
-    name: string,
-    params: string[],
-    pocket: number,
-    created: string,
-    status: string,
-    type: ServerTaskType,
+export enum ServerTaskType {
+    Docking = 0
+}
+
+export const ServerTaskTypeDescriptors = [ //descriptors for the ServerTaskType
+    "Molecular docking"
+];
+
+export interface ServerTask {
+    name: string;
+    params: string[];
+    pocket: number;
+    created: string;
+    status: string;
+    type: ServerTaskType;
     responseData: any;
+}
+
+export interface ServerTaskLocalStorageData extends ServerTask {
+    //potentially may contain more data
 }
