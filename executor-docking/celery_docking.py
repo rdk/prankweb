@@ -7,7 +7,8 @@ prankweb = celery.Celery("prankweb")
 
 if "CELERY_BROKER_URL" in os.environ:
     prankweb.conf.update({
-        "broker_url": os.environ["CELERY_BROKER_URL"]
+        "broker_url": os.environ["CELERY_BROKER_URL"],
+        "broker_connection_retry_on_startup": True,
     })
 elif "CELERY_BROKER_PATH" in os.environ:
     folder = os.environ["CELERY_BROKER_PATH"]
@@ -18,6 +19,7 @@ elif "CELERY_BROKER_PATH" in os.environ:
             "data_folder_out": folder + "/queue/",
             "data_folder_processed": folder + "/processed/"
         },
+        "broker_connection_retry_on_startup": True,
     })
 
 # TODO: uncomment this later

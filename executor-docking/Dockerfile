@@ -7,11 +7,11 @@ FROM debian:bookworm-20230208
 ARG CELERY_BROKER_URL="amqp://user-develop:develop@localhost:5672"
 
 RUN apt-get update \
- && apt-get -y --no-install-recommends install \
- wget curl \
- python3 python3-pip vim \
- python3-venv \
- openbabel libopenbabel-dev nano
+    && apt-get -y --no-install-recommends install \
+    wget curl \
+    python3 python3-pip vim \
+    python3-venv \
+    openbabel libopenbabel-dev nano
 
 ARG UID=5988
 ARG GID=5988
@@ -21,14 +21,13 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN groupadd --gid ${GID} user \
- && useradd --uid ${UID} --gid ${GID} user
+    && useradd --uid ${UID} --gid ${GID} user
 
 # Since WORKDIR created with current user (root) we precreate the folders.
 RUN mkdir /data \
- && mkdir /data/prankweb && chown user:user /data/prankweb \
- && mkdir /opt/executor-docking && chown user:user /opt/executor-docking 
+    && mkdir /data/prankweb && chown user:user /data/prankweb \
+    && mkdir /opt/executor-docking && chown user:user /opt/executor-docking 
 
-#
 # prankweb executor-docking
 WORKDIR /opt/executor-docking
 COPY --chown=user:user ./executor-docking/requirements.txt ./
@@ -45,7 +44,7 @@ RUN chmod a+x ./bin/lepro_linux_x86
 ENV PATH="${PATH}:/opt/executor-docking/bin"
 
 # install meeko and other python packages
-RUN pip3 install -U meeko numpy scipy rdkit pandas
+RUN pip3 install -r requirements-docking.txt
 
 # install adfr
 # inspired by https://github.com/coleygroup/pyscreener

@@ -2,10 +2,10 @@
 # java-tools
 #
 
-FROM debian:bookworm-20211115 as java-tools
+FROM debian:bookworm-20231009 as java-tools
 
 RUN apt-get update \
- && apt-get -y --no-install-recommends install openjdk-17-jdk
+  && apt-get -y --no-install-recommends install openjdk-17-jdk
 
 WORKDIR /opt/java-tools
 COPY ./java-tools ./
@@ -21,7 +21,7 @@ RUN chmod +x ./gradlew && ./gradlew installDist \
 # * /opt/alignment-based-conservation-dependencies
 #
 
-FROM debian:bookworm-20211115 as alignment-based-conservation
+FROM debian:bookworm-20231009 as alignment-based-conservation
 
 RUN apt-get update \
   && apt-get -y --no-install-recommends install \
@@ -67,7 +67,7 @@ RUN chmod a+x /opt/alignment-based-conservation/conservation_alignment_based.py 
 # * /opt/hmm-based-conservation-dependencies
 #
 
-FROM debian:bookworm-20211115 as hmm-based-conservation
+FROM debian:bookworm-20231009 as hmm-based-conservation
 
 RUN apt-get update \
   && apt-get -y --no-install-recommends install \
@@ -96,7 +96,7 @@ RUN chmod a+x /opt/hmm-based-conservation/conservation_hmm_based.py \
 # executor-p2rank
 #
 
-FROM debian:bookworm-20211115
+FROM debian:bookworm-20231009
 
 ARG UID=5988
 ARG GID=5988

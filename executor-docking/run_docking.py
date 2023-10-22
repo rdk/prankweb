@@ -9,6 +9,7 @@ import shutil
 import rdkit
 import meeko
 
+
 """
 This method will prepare the ligand from the SMILES string for docking and writes the PDBQT result to the given file.
 """
@@ -22,8 +23,14 @@ def prepare_ligand(inputFile: str, ligandFile: str):
     rdkit.Chem.AllChem.EmbedMolecule(protonated_lig,randomSeed=0xf00d,useRandomCoords=True)
 
     meeko_prep = meeko.MoleculePreparation()
-    meeko_prep.prepare(protonated_lig)
-    lig_pdbqt = meeko_prep.write_pdbqt_string()
+    mol_setups = meeko_prep.prepare(protonated_lig)
+    lig_pdbqt = ""
+    for setup in mol_setups:
+        pdbqt_string, is_ok, error_msg = meeko.PDBQTWriterLegacy.write_string(setup)
+        if is_ok:
+            lig_pdbqt += pdbqt_string
+
+    #lig_pdbqt = meeko_prep.write_pdbqt_string()
 
     with open(ligandFile, "w") as f:
         f.write(lig_pdbqt)
