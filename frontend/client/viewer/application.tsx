@@ -97,7 +97,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
 
     componentDidMount() {
         this.loadData();
-        this.getDockingTaskList();
     }
 
     /**
@@ -235,62 +234,6 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         const pocket = this.state.data.pockets[index];
         highlightSurfaceAtomsInViewerLabelId(this.props.molstarPlugin, pocket.surface, false);
         //currently the residues are not de-selected on mouse out, could be potentially changed in the future
-    }
-
-    /**
-     * Polls the server for the status of the docking tasks.
-     */
-    async getDockingTaskList() {
-        //this applies to the docking task only, may fetch multiple backend tasks in the future
-        let taskStatusJSON = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/tasks`, { cache: "no-store" })
-            .then(res => res.json())
-            .catch(err => {
-                return;
-            }); //we could handle the error, but we do not care if the poll fails sometimes
-
-        if (taskStatusJSON) {
-            //look into the local storage and check if there are any updates
-            let savedTasks = localStorage.getItem(`${this.props.predictionInfo.id}_serverTasks`);
-            if (!savedTasks) savedTasks = "[]";
-            const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
-            tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
-                if (task.status === "successful" || task.status === "failed") return;
-
-                const individualTask: ServerTaskInfo = taskStatusJSON["tasks"].find((t: ServerTaskInfo) => t.initialData.hash === task.params[0]);
-                if (individualTask) {
-                    if (individualTask.status !== task.status) {
-                        //update the status
-                        tasks[i].status = individualTask.status;
-
-                        //download the computed data
-                        if (individualTask.status === "successful") {
-                            const data = await fetch(`./api/v2/docking/${this.props.predictionInfo.database}/${this.props.predictionInfo.id}/public/result.json`, {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    "hash": task.params[0],
-                                    "pocket": task.pocket,
-                                })
-                            }).then(res => res.json()).catch(err => console.log(err));
-                            tasks[i].responseData = data;
-                        }
-
-                        //save the updated tasks
-                        localStorage.setItem(`${this.props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
-
-                        //and trigger re-render
-                        this.setState(prevState => ({
-                            numUpdated: prevState.numUpdated + 1
-                        }));
-                    }
-                }
-            });
-        }
-        //poll again after 7 seconds
-        setTimeout(() => this.getDockingTaskList(), 7000);
     }
 
     changeTab(num: number, pocketIndex?: number) {

@@ -8,11 +8,13 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Tooltip from '@mui/material/Tooltip';
 import { visuallyHidden } from '@mui/utils';
+import { useInterval } from "./tools";
 
 import { PocketData } from "../../custom-types";
 import { ClientTaskLocalStorageData, ServerTaskLocalStorageData, ServerTaskTypeDescriptors, ClientTaskTypeDescriptors, ClientTaskType, ServerTaskType } from "../../custom-types";
-import { downloadDockingResult } from "../../tasks/server-docking-task";
+import { downloadDockingResult, pollForDockingTask } from "../../tasks/server-docking-task";
 import { Order, getComparator, isInstanceOfClientTaskLocalStorageData, isInstanceOfServerTaskLocalStorageData } from "./tools";
+import { PredictionInfo } from "../../prankweb-api";
 
 interface HeadCell {
     id: keyof ClientTaskLocalStorageData | keyof ServerTaskLocalStorageData | null;
@@ -93,14 +95,14 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     );
 }
 
-export function TasksTable(props: { pocket: PocketData | null, structureId: string; }) {
+export function TasksTable(props: { pocket: PocketData | null, predictionInfo: PredictionInfo; }) {
 
-    let serverTasks = localStorage.getItem(`${props.structureId}_serverTasks`);
+    let serverTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
     if (!serverTasks) serverTasks = "[]";
     let serverTasksParsed: ServerTaskLocalStorageData[] = JSON.parse(serverTasks);
     if (props.pocket !== null) serverTasksParsed = serverTasksParsed.filter((task: ServerTaskLocalStorageData) => task.pocket === Number(props.pocket!.rank));
 
-    let clientTasks = localStorage.getItem(`${props.structureId}_clientTasks`);
+    let clientTasks = localStorage.getItem(`${props.predictionInfo.id}_clientTasks`);
     if (!clientTasks) clientTasks = "[]";
     let clientTasksParsed: ClientTaskLocalStorageData[] = JSON.parse(clientTasks);
     if (props.pocket !== null) clientTasksParsed = clientTasksParsed.filter((task: ClientTaskLocalStorageData) => task.pocket === Number(props.pocket!.rank));
@@ -130,6 +132,7 @@ export function TasksTable(props: { pocket: PocketData | null, structureId: stri
 
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<keyof ClientTaskLocalStorageData | keyof ServerTaskLocalStorageData>('name');
+    const [numRenders, setRender] = React.useState<number>(0);
 
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
@@ -147,6 +150,16 @@ export function TasksTable(props: { pocket: PocketData | null, structureId: stri
         [order, orderBy, clientTasksParsed, serverTasksParsed],
     );
 
+
+    // start polling for server tasks
+    const pollDocking = async () => {
+        const tasksChanged = await pollForDockingTask(props.predictionInfo);
+        if (serverTasks !== tasksChanged) {
+            setRender(numRenders + 1);
+        }
+    };
+    useInterval(pollDocking, 1000 * 7);
+
     return (
         <Table size="small">
             <EnhancedTableHead
@@ -156,8 +169,6 @@ export function TasksTable(props: { pocket: PocketData | null, structureId: stri
             />
             <TableBody>
                 {visibleRows.map((task: ClientTaskLocalStorageData | ServerTaskLocalStorageData, i: number) => {
-                    console.log(task);
-
                     if (isInstanceOfClientTaskLocalStorageData(task)) {
                         return (
                             <TableRow key={i + "_client"}>

@@ -5,8 +5,9 @@ import TableRow from '@mui/material/TableRow';
 import { Button, Paper, TableBody } from '@mui/material';
 import { PocketData } from "../../custom-types";
 import { TasksTable } from "./tasks-table";
+import { PredictionInfo } from "../../prankweb-api";
 
-export default function DataTableRowDetails(props: { pocket: PocketData; setTab: (tab: number, initialPocket?: number) => void, structureId: string; }) {
+export default function DataTableRowDetails(props: { pocket: PocketData; setTab: (tab: number, initialPocket?: number) => void, predictionInfo: PredictionInfo; }) {
     const pocket = props.pocket;
 
     const handleCreateTask = () => {
@@ -65,7 +66,7 @@ export default function DataTableRowDetails(props: { pocket: PocketData; setTab:
             &nbsp;
             <Paper>
                 {/*<span style={{ padding: 10, paddingTop: 15, fontSize: "1.25rem", display: "block" }}>Tasks for pocket {pocket.rank}</span>*/}
-                <TasksTable pocket={props.pocket} structureId={props.structureId} />
+                <TasksTable pocket={props.pocket} predictionInfo={props.predictionInfo} />
                 <Button variant="outlined" onClick={handleCreateTask} style={{ margin: 10 }}>Create task</Button>
             </Paper>
         </div>

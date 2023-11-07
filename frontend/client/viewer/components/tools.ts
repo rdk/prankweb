@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ClientTaskLocalStorageData, ServerTaskLocalStorageData } from "../../custom-types";
 
 export type Order = 'asc' | 'desc';
@@ -58,3 +59,28 @@ export function calculateColorWithAlpha(alpha: number, bgColor: string) {
     const b = parseInt(color.substring(4, 6), 16); // hexToB
     return `rgba(${r},${g},${b},${alpha})`;
 }
+
+/**
+ * Hook that calls the given callback function in the given interval.
+ * Taken from https://overreacted.io/making-setinterval-declarative-with-react-hooks/
+ * @param callback Callback function
+ * @param delay Delay in milliseconds
+ */
+export const useInterval = (callback: any, delay: number) => {
+    const savedCallback = useRef<any>();
+
+    useEffect(() => {
+        savedCallback.current = callback;
+    }, [callback]);
+
+
+    useEffect(() => {
+        function tick() {
+            savedCallback.current();
+        }
+        if (delay !== null) {
+            const id = setInterval(tick, delay);
+            return () => clearInterval(id);
+        }
+    }, [delay]);
+};

@@ -1,5 +1,5 @@
 import { PredictionInfo } from "../prankweb-api";
-import { PocketData, Point3D } from "../custom-types";
+import { PocketData, Point3D, ServerTaskInfo, ServerTaskLocalStorageData } from "../custom-types";
 
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
@@ -107,7 +107,6 @@ export function dockingHash(prediction: PredictionInfo, pocket: PocketData, form
  * @returns void
 */
 export function downloadDockingResult(hash: string, fileURL: string, pocket: string) {
-    console.log(fileURL);
     // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     fetch(fileURL, {
         method: 'POST',
@@ -137,4 +136,55 @@ export function downloadDockingResult(hash: string, fileURL: string, pocket: str
             link.click();
             link.parentNode!.removeChild(link);
         });
+}
+
+/**
+ * A method that is meant to be called periodically to check if any of the tasks has finished.
+ * @param predictionInfo Prediction info
+ * @returns null if no task has finished, otherwise the finished task
+ */
+export async function pollForDockingTask(predictionInfo: PredictionInfo) {
+    let taskStatusJSON = await fetch(`./api/v2/docking/${predictionInfo.database}/${predictionInfo.id}/tasks`, { cache: "no-store" })
+        .then(res => res.json())
+        .catch(err => {
+            return;
+        }); //we could handle the error, but we do not care if the poll fails sometimes
+
+    if (taskStatusJSON) {
+        //look into the local storage and check if there are any updates
+        let savedTasks = localStorage.getItem(`${predictionInfo.id}_serverTasks`);
+        if (!savedTasks) savedTasks = "[]";
+        const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
+        tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
+            if (task.status === "successful" || task.status === "failed") return;
+
+            const individualTask: ServerTaskInfo = taskStatusJSON["tasks"].find((t: ServerTaskInfo) => t.initialData.hash === task.params[0] && t.initialData.pocket === task.pocket.toString());
+            if (individualTask) {
+                if (individualTask.status !== task.status) {
+                    //update the status
+                    tasks[i].status = individualTask.status;
+
+                    //download the computed data
+                    if (individualTask.status === "successful") {
+                        const data = await fetch(`./api/v2/docking/${predictionInfo.database}/${predictionInfo.id}/public/result.json`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                "hash": task.params[0],
+                                "pocket": task.pocket,
+                            })
+                        }).then(res => res.json()).catch(err => console.log(err));
+                        tasks[i].responseData = data;
+                    }
+
+                    //save the updated tasks
+                    localStorage.setItem(`${predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
+                }
+            }
+        });
+    }
+    return localStorage.getItem(`${predictionInfo.id}_serverTasks`);
 }

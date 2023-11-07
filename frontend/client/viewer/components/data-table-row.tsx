@@ -12,6 +12,7 @@ import "./data-table.css";
 import { PocketData } from '../../custom-types';
 import { calculateColorWithAlpha } from './tools';
 import DataTableRowDetails from "./data-table-row-details";
+import { PredictionInfo } from "../../prankweb-api";
 
 export default class DataTableRow extends React.Component<{
     pocket: PocketData,
@@ -23,7 +24,7 @@ export default class DataTableRow extends React.Component<{
     focusPocket: (index: number) => void,
     highlightPocket: (index: number, isHighlighted: boolean) => void,
     setTab: (tab: number, initialPocket?: number) => void,
-    structureId: string,
+    predictionInfo: PredictionInfo,
     headCellsLength: number;
 }, {
     open: boolean,
@@ -140,7 +141,7 @@ export default class DataTableRow extends React.Component<{
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={this.props.headCellsLength + 1}>
                         <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                             <Box sx={{ margin: 1 }}>
-                                <DataTableRowDetails pocket={pocket} setTab={this.props.setTab} structureId={this.props.structureId} />
+                                <DataTableRowDetails pocket={pocket} setTab={this.props.setTab} predictionInfo={this.props.predictionInfo} />
                             </Box>
                         </Collapse>
                     </TableCell>
