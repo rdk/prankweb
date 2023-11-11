@@ -2,8 +2,9 @@ import React from "react";
 import { PredictionInfo } from "../../prankweb-api";
 import { Button, Paper, Table, TableRow, TableCell } from "@mui/material";
 import { getApiDownloadUrl } from "../../prankweb-api";
+import { PredictionData } from "../../custom-types";
 
-export default function PredictionInfoTab(props: { predictionInfo: PredictionInfo; }) {
+export default function PredictionInfoTab(props: { predictionInfo: PredictionInfo; predictionData: PredictionData; }) {
     const pInfo = props.predictionInfo;
     const isUserProvided = pInfo.database.includes("user-upload");
     const isPredicted = pInfo.metadata.predictedStructure === true;
@@ -51,8 +52,8 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
             value: isPredicted ? "yes" : "no"
         },
         {
-            name: "Prediction model",
-            value: "TODO"
+            name: "P2Rank version",
+            value: props.predictionData.metadata.p2rank_version || "unknown, possibly 2.4"
         },
         {
             name: "",

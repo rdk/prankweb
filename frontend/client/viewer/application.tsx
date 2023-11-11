@@ -267,6 +267,7 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
                         key={this.state.numUpdated}
                         setTab={this.changeTab}
                         initialPocket={this.state.initialPocket}
+                        predictionData={this.state.data}
                     />
                 </div>
             );

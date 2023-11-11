@@ -42,6 +42,8 @@ export interface PocketData {
 
 export interface Metadata {
     //metadata can contain anything at this point
+    "p2rank_version": string | undefined;
+    [key: string]: any;
 }
 
 export interface PredictionData {

@@ -4,7 +4,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import EnhancedTable from "./data-table";
 
-import { PocketData } from "../../custom-types";
+import { PocketData, PredictionData } from "../../custom-types";
 import { PredictionInfo } from "../../prankweb-api";
 import PredictionInfoTab from "./prediction-info-tab";
 import TasksTab from "./tasks-tab";
@@ -28,6 +28,7 @@ export default function BasicTabs(props: {
     tab: number,
     setTab: (tab: number, initialPocket?: number) => void,
     initialPocket: number;
+    predictionData: PredictionData;
 }) {
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -51,7 +52,7 @@ export default function BasicTabs(props: {
                     toggleAllPockets={props.toggleAllPockets} predictionInfo={props.predictionInfo} />
             </CustomTabPanel>
             <CustomTabPanel value={props.tab} index={1}>
-                <PredictionInfoTab predictionInfo={props.predictionInfo} />
+                <PredictionInfoTab predictionInfo={props.predictionInfo} predictionData={props.predictionData} />
             </CustomTabPanel>
             <CustomTabPanel value={props.tab} index={2}>
                 <TasksTab pockets={props.pockets} predictionInfo={props.predictionInfo} plugin={props.plugin} initialPocket={props.initialPocket} />

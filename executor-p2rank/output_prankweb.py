@@ -68,6 +68,16 @@ def _extension(file_name: str) -> str:
     """For 'name.ext' return 'ext'."""
     return file_name[file_name.rindex(".") + 1:]
 
+def _get_p2rank_version(file_name: str) -> str:
+    """Returns the P2rank version from the params file.
+    Supposes that one of the parameters starts with 'version:',
+    otherwise returns 'unknown'."""
+
+    with open(file_name) as stream:
+        for line in stream:
+            if line.startswith("version:"):
+                return line.split(":")[1].strip()
+    return "unknown"
 
 def _prepare_prediction_file(
         output_file: str,
@@ -82,6 +92,9 @@ def _prepare_prediction_file(
     structure_file = os.path.join(
         configuration.working_directory, "structure-information.json")
 
+    parameters_file = os.path.join(
+        p2rank_output, "params.txt")
+
     configuration.execute_command(
         f"{configuration.java_tools} structure-info"
         f" --input={structure.raw_structure_file}"
@@ -94,6 +107,7 @@ def _prepare_prediction_file(
             "pockets": load_pockets(predictions_file),
             "metadata": {
                 **structure.metadata,
+                "p2rank_version": _get_p2rank_version(parameters_file)
             },
         }, stream, indent=2)
 
