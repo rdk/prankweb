@@ -2,16 +2,37 @@
 # executor-docking
 #
 
-FROM debian:bookworm-20230208
+FROM ubuntu:23.10
+
+# to prevent apt-get install from asking questions
+ARG DEBIAN_FRONTEND=noninteractive
 
 ARG CELERY_BROKER_URL="amqp://user-develop:develop@localhost:5672"
 
-RUN apt-get update \
-    && apt-get -y --no-install-recommends install \
-    wget curl \
-    python3 python3-pip vim \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    python3 \
+    python3-pip \
     python3-venv \
-    openbabel libopenbabel-dev nano
+    openbabel \
+    libopenbabel-dev nano \
+    software-properties-common \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libgdbm-dev \
+    libdb5.3-dev \
+    libbz2-dev \
+    libexpat1-dev \
+    liblzma-dev \
+    tk-dev \
+    libffi-dev
 
 ARG UID=5988
 ARG GID=5988
@@ -30,47 +51,47 @@ RUN mkdir /data \
 
 # prankweb executor-docking
 WORKDIR /opt/executor-docking
-COPY --chown=user:user ./executor-docking/requirements.txt ./
 
+RUN wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz && \
+    tar xzf Python-2.7.18.tgz && \
+    rm Python-2.7.18.tgz && \
+    cd Python-2.7.18 && \
+    ./configure --enable-optimizations && \
+    make altinstall
+
+RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py && \
+    python2.7 get-pip.py
+
+RUN python2.7 -m pip install numpy
+
+RUN wget -q https://vina.scripps.edu/wp-content/uploads/sites/55/2020/12/autodock_vina_1_1_2_linux_x86.tgz && \
+    tar -xzvf autodock_vina_1_1_2_linux_x86.tgz && \
+    rm autodock_vina_1_1_2_linux_x86.tgz && \
+    mv autodock_vina_1_1_2_linux_x86 /opt/vina && \
+    ln -s /opt/vina/bin/vina /usr/local/bin/vina
+
+RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgltools/download/491/ && \
+    tar -xzf mgltools_x86_64Linux2_1.5.7p1.tar.gz && \
+    rm mgltools_x86_64Linux2_1.5.7p1.tar.gz && \
+    mv mgltools_x86_64Linux2_1.5.7 /opt/mgltools_x86_64Linux2_1.5.7 && \
+    tar -xzf /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz -C /opt/mgltools_x86_64Linux2_1.5.7/ && \
+    rm /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs.tar.gz
+
+ENV PATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/:${PATH}"
+ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
+
+# a trick to work around a bug in MolKit MMCIF parser (MolKit/__init__.py calls MMCIFParser with an argument modelsAs=True, which is not supported by the parser)
+RUN sed -i 's/^        parser = MMCIFParser(filename, modelsAs=modelsAs)$/        parser = MMCIFParser(filename)/' /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/MolKit/__init__.py
+
+# install dodo (docking in docker)
+# https://github.com/kiarka7/DODO
+RUN wget -q https://raw.githubusercontent.com/luk27official/DODO/6de235fda620daafb64964c1efd556f5653b7fd8/run_docking.py -O /opt/executor-docking/run_docking.py
+
+COPY --chown=user:user ./executor-docking/requirements.txt ./
 RUN pip3 install -r requirements.txt
 
 COPY --chown=user:user ./executor-docking/ ./
 RUN chmod a+x ./run_task.py
-
-# docking tools
-# lepro as a binary
-RUN chmod a+x ./bin/lepro_linux_x86
-
-ENV PATH="${PATH}:/opt/executor-docking/bin"
-
-# install meeko and other python packages
-RUN pip3 install -r requirements-docking.txt
-
-# install adfr
-# inspired by https://github.com/coleygroup/pyscreener
-
-RUN wget -O ADFRsuite.tar.gz https://ccsb.scripps.edu/adfr/download/1038/ -q \
-    && mv ADFRsuite.tar.gz ../ && cd .. \
-    && tar -xzvf ADFRsuite.tar.gz \
-    && cd ADFRsuite_* \
-    && echo "Y" | ./install.sh -d . -c 0 \
-    && cd .. \
-    && rm -rf ADFRsuite.tar.gz
-
-# a trick to work around a bug in MolKit MMCIF parser (MolKit/__init__.py calls MMCIFParser with an argument modelsAs=True, which is not supported by the parser)
-RUN sed -i 's/^        parser = MMCIFParser(filename, modelsAs=modelsAs)$/        parser = MMCIFParser(filename)/' /opt/ADFRsuite_x86_64Linux_1.0/CCSBpckgs/MolKit/__init__.py
-
-ENV PATH="${PATH}:/opt/ADFRsuite_x86_64Linux_1.0/bin"
-
-# install vina
-
-RUN mkdir /opt/vina && cd /opt/vina \
-    && wget https://vina.scripps.edu/wp-content/uploads/sites/55/2020/12/autodock_vina_1_1_2_linux_x86.tgz -q \
-    && tar -xzvf autodock_vina_1_1_2_linux_x86.tgz \
-    && mkdir /opt/vina/bin \
-    && mv autodock_vina_1_1_2_linux_x86/bin/* /opt/vina/bin/
-
-ENV PATH="${PATH}:/opt/vina/bin"
 
 #
 # environment

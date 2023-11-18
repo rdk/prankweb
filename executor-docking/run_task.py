@@ -9,8 +9,10 @@ import enum
 import json
 import time
 import glob
+import gzip
+import shutil
 
-from run_docking import dock_molecule
+from run_docking import run_docking
 
 class Status(enum.Enum):
     """
@@ -63,6 +65,35 @@ def get_prediction_path(docking_directory: str):
     #currently assuming that the docking and predictions paths are different just by the name
     return os.path.join(get_prediction_directory(docking_directory), "public", "prediction.json")
 
+def prepare_docking(input_file: str, structure_file_gzip: str, task_directory: str):
+    # unzip the pdb/mmCIF file
+    extension = structure_file_gzip.split(".")[-2]
+    structureFile = os.path.join(task_directory, ("structure." + extension))
+
+    with gzip.open(structure_file_gzip, 'rb') as f_in:
+        with open(structureFile, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    
+    # create a smiles file from the ligand
+    ligandFile = os.path.join(task_directory, "ligand.smi")
+    with open(input_file) as inp, open(ligandFile, "w") as f:
+        input_json = json.load(inp)
+        f.write(input_json["hash"])
+
+    # prepare the input file
+    new_input_file = os.path.join(task_directory, "docking_parameters.json")
+    with open(input_file) as inp, open(new_input_file, "w") as out:
+        input_json = json.load(inp)
+        out_json = {}
+
+        out_json["receptor"] = structureFile
+        out_json["ligand"] = ligandFile
+        out_json["output"] = os.path.join(task_directory, "public", "out_vina.pdbqt")
+        out_json["center"] = input_json["bounding_box"]["center"]
+        out_json["size"] = input_json["bounding_box"]["size"]
+
+        json.dump(out_json, out)
+
 def execute_directory_task(docking_directory: str, taskId: int):
     """
     Method to execute a task for a given directory and a given taskId.
@@ -98,7 +129,8 @@ def execute_directory_task(docking_directory: str, taskId: int):
     
     #try to dock the molecule
     try:
-        dock_molecule(os.path.join(docking_directory, str(taskId), "input.json"), structure_file, os.path.join(docking_directory, str(taskId)))
+        prepare_docking(os.path.join(docking_directory, str(taskId), "input.json"), structure_file, os.path.join(docking_directory, str(taskId)))
+        run_docking(os.path.join(docking_directory, str(taskId), "docking_parameters.json"), os.path.join(docking_directory, str(taskId)), os.path.join(docking_directory, str(taskId)), "public")
     except Exception as e:
         print(repr(e))
         print(str(e))
@@ -118,7 +150,7 @@ def execute_directory_task(docking_directory: str, taskId: int):
     else:
         prediction_name = docking_directory.split("/")[6]
 
-    result_url = "./api/v2/docking/" + database_name + "/" + prediction_name + "/public/out_vina.pdbqt"
+    result_url = "./api/v2/docking/" + database_name + "/" + prediction_name + "/public/results.zip"
     result.append({
         "url": result_url
     })

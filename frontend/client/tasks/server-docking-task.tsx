@@ -129,7 +129,7 @@ export function downloadDockingResult(hash: string, fileURL: string, pocket: str
             link.href = url;
             link.setAttribute(
                 'download',
-                `result.pdbqt`,
+                `result.zip`,
             );
 
             document.body.appendChild(link);
