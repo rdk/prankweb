@@ -46,7 +46,8 @@ services:
         GID: ${GID}
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
-      PRANKWEB_DATA: "/data/prankweb"
+      PRANKWEB_DATA_PREDICTIONS: "/data/prankweb/predictions/"
+      PRANKWEB_DATA_DOCKING: "/data/prankweb/docking/"
     restart: unless-stopped
     volumes:
       - predictions:/data/prankweb
