@@ -17,6 +17,7 @@ databases = {
     ]
 }
 
+# prediction routes
 
 @api_v2.route(
     "/prediction/<database_name>/<prediction_name>",
@@ -61,12 +62,17 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
         return "", 404
     return database.get_file(prediction_name.upper(), file_name)
 
+# docking routes
 
 @api_v2.route(
     "/docking/<database_name>/<prediction_name>/post",
     methods=["POST"]
 )
 def route_post_docking_file(database_name: str, prediction_name: str):
+    """Post a docking task to the server.
+    Request body should be a JSON object with the following fields:
+    - hash: str (SMILES for the ligand)
+    - pocket: int (pocket number)"""
     data = request.get_json(force=True) or {}
     dt = DockingTask(database_name=database_name)
     return dt.post_task(prediction_name.upper(), data)
@@ -76,6 +82,10 @@ def route_post_docking_file(database_name: str, prediction_name: str):
     methods=["POST"]
 )
 def route_get_docking_file_with_param(database_name: str, prediction_name: str, file_name: str):
+    """Get a docking file from the server.
+    Request body should be a JSON object with the following fields:
+    - hash: str (SMILES for the ligand)
+    - pocket: int (pocket number)"""
     data = request.get_json(force=True)
     param = data.get("hash", None)
     pocket = data.get("pocket", None)
@@ -89,5 +99,6 @@ def route_get_docking_file_with_param(database_name: str, prediction_name: str, 
     methods=["GET"]
 )
 def route_get_all_docking_tasks(database_name: str, prediction_name: str):
+    """Get all docking tasks from the server."""
     dt = DockingTask(database_name=database_name)
     return dt.get_all_tasks(prediction_name.upper())
