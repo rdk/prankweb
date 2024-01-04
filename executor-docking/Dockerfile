@@ -2,7 +2,7 @@
 # executor-docking
 #
 
-FROM ubuntu:23.10
+FROM ubuntu:23.10 AS base
 
 # to prevent apt-get install from asking questions
 ARG DEBIAN_FRONTEND=noninteractive
@@ -83,9 +83,12 @@ ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
 # a trick to work around a bug in MolKit MMCIF parser (MolKit/__init__.py calls MMCIFParser with an argument modelsAs=True, which is not supported by the parser)
 RUN sed -i 's/^        parser = MMCIFParser(filename, modelsAs=modelsAs)$/        parser = MMCIFParser(filename)/' /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/MolKit/__init__.py
 
+# stage 2 - install docking scripts
+FROM base AS final
+
 # install dodo (docking in docker)
 # https://github.com/kiarka7/DODO
-RUN wget -q https://raw.githubusercontent.com/luk27official/DODO/6de235fda620daafb64964c1efd556f5653b7fd8/run_docking.py -O /opt/executor-docking/run_docking.py
+RUN wget -q https://raw.githubusercontent.com/kiarka7/DODO/1a9001a2996325f78a656c14fcf1503b8bfc0674/run_docking.py -O /opt/executor-docking/run_docking.py
 
 COPY --chown=user:user ./executor-docking/requirements.txt ./
 RUN pip3 install -r requirements.txt
