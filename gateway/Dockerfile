@@ -43,7 +43,7 @@ FROM nginx:1.25.2
 
 RUN rm /etc/nginx/conf.d/default.conf
 
-COPY --from=frontend /opt/frontend/dist /opt/prankweb-frontend
+COPY --from=build /opt/frontend/dist /opt/prankweb-frontend
 COPY --from=htpasswd /opt/htpasswd/.htpasswd /etc/apache2/.htpasswd
 
 COPY ./gateway/nginx/gateway.conf /etc/nginx/conf.d/
