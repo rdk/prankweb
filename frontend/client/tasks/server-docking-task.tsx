@@ -126,10 +126,11 @@ export function downloadDockingResult(hash: string, fileURL: string, pocket: str
                 new Blob([blob]),
             );
             const link = document.createElement('a');
+            const today = new Date();
             link.href = url;
             link.setAttribute(
                 'download',
-                `result.zip`,
+                `result-${today.toISOString()}.zip`,
             );
 
             document.body.appendChild(link);
