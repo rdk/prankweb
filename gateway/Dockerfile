@@ -13,6 +13,10 @@ COPY ./frontend/package-lock.json ./
 
 RUN npm ci
 
+#
+# Build the application.
+#
+FROM frontend AS build
 # copy the rest of the source codes and build the application
 COPY ./frontend/ ./
 
