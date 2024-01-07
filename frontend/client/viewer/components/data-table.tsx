@@ -19,6 +19,7 @@ import DataTableRow from './data-table-row';
 import { getComparator, Order } from './tools';
 import { PocketData } from '../../custom-types';
 import { PredictionInfo } from "../../prankweb-api";
+import NoPockets from "./no-pockets";
 
 interface HeadCell {
     id: keyof PocketData | null;
@@ -200,6 +201,8 @@ export default function EnhancedTable(props: {
             tooltip: 'Average AlphaFold score of the pocket residues (see help page)'
         });
     }
+
+    if (props.pockets.length === 0) return <NoPockets />;
 
     return (
         <Box sx={{ width: '100%' }}>

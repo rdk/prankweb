@@ -13,6 +13,7 @@ import { computeDockingTaskOnBackend } from "../../tasks/server-docking-task";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { computePocketVolume } from "../../tasks/client-atoms-volume";
 import { TasksTable } from "./tasks-table";
+import NoPockets from "./no-pockets";
 
 enum TaskType {
     Client,
@@ -117,6 +118,8 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     const forceComponentUpdate = () => {
         setForceUpdate(prevState => prevState + 1);
     };
+
+    if (props.pockets.length === 0) return <NoPockets />;
 
     return (
         <div>
