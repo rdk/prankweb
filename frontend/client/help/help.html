@@ -51,7 +51,8 @@
       The user also may create tasks for each of the pockets. The tasks may be created directly from the tasks tab.
     </p>
 
-    <hr>
+    <hr style="height: 1em; border: 0; box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);">
+
     <h2 id="detailed-description">Detailed description</h2>
     <h3 id="specify-what-protein-to-analyze">
       Specify what structure to analyze
@@ -73,7 +74,7 @@
         Provided Uniprot ID PrankWeb can download structure from
         <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="nofollow noopener noreferrer">AlphaFold Protein
           Structure Database</a>.
-        For this option the structure visualisation may be colored using residue-level confidence scores.
+        For this option the structure visualization may be colored using residue-level confidence scores.
       </li>
     </ul>
 
@@ -105,7 +106,7 @@
     <h3 id="visualization">Visualization</h3>
     <p>
       Once the protein visualization is loaded, three main panels appear: sequence visualization, structural
-      visualization and the pocket panel.
+      visualization and the tabs panel.
     </p>
     <img src="./assets/images/help-00.png" style="width: 100%" class="img-responsive center-block" />
     <h4 id="structural-visualization-1">Structural visualization</h4>
@@ -115,10 +116,10 @@
     <ul>
       <li>
         By default, the protein surface is displayed, and individual pocket areas are highlighted with different colors.
-        Ligands (if available) are displayed with yellow.
+        Ligands (if available) are displayed in the ball and stick representation.
       </li>
       <li>
-        The user may change the coloring of the protein in the tool box on the right side.
+        The user may change the coloring of the protein in the tool box on the bottom, under the visualization.
       </li>
       <li>
         If a conservation score is available, the protein atoms may be colored with shades of gray according to the
@@ -131,8 +132,16 @@
         The colors are defined by <a href="https://alphafold.ebi.ac.uk/">AlphaFold</a> (blue depicts more confidence).
       </li>
       <li>
-        To switch between the views of the protein, use <b>Protein visualisation</b> and <b>Pockets visualisation</b>
-        selections at top of the pocket panel on the right.
+        To switch between the views of the protein, use <b>Protein visualization</b> and <b>Pockets visualization</b>
+        selections in the visualization tool box.
+      </li>
+      <li>
+        The user may reset the camera by clicking the <b>Reset 3D camera</b> button.
+      </li>
+      <li>
+        If the visualised structure is predicted, then the tool box also contains a toggle button.
+        Using the button user can toggle between visualization of a whole structure and confidently predicted regions
+        (confidence score &gt; 70).
       </li>
     </ul>
 
@@ -185,6 +194,10 @@
       <li>
         If available, conservation and AlphaFold scores are portrayed using a bar chart.
       </li>
+      <li>
+        The user may toggle the 1D sequence viewer by clicking the <b>Show/Hide 1D viewer</b> button below the 3D
+        viewer.
+      </li>
     </ul>
     <p>
       As one hovers over the sequence with mouse, the residues are highlighted in the 3D visualization.
@@ -193,19 +206,32 @@
       You can use your mouse to zoom in, or zoom to the selected residue by clicking the responsible area.
     </p>
 
-    <h4 id="pocket-panel">Pocket panel</h4>
+    <h4 id="tabs-panel">Tabs panel</h4>
     <p>
-      The right panel contains several control buttons and a list of predicted pockets.
-      Use the control buttons to download PrankWeb report, or switch between the structural views.
-      In the pocket list, pocket name, rank, <a href="#probability-score">probability score</a>, size, average
-      conservation score (if available) and average AlphaFold score (if available) is displayed for each pocket.
-      Each pocket also contains several buttons related to visibility of the pockets in the visualizations.
-      The user might show the dialog with additional information as well.
+      The right panel contains several tabs with three main functionalities: pocket list, structure information and task
+      management panel. First, let's describe the pocket list.
     </p>
     <p>
-      If the visualised structure is predicted, then this panel also contains a warning and a toggle button.
-      Using the button user can toggle between visualisation of a whole structure and confidently predicted regions
-      (confidence score &gt; 70).
+      The pocket list is a sortable table containing all details about the individual pockets. Each pocket has its own
+      row in the table. Each row contains the pocket name, rank, <a href="#probability-score">probability
+        score</a>, number of pockets, average conservation score (if available) and average AlphaFold score (if
+      available).
+      The table can be sorted by clicking on the column names. It is also possible to show/hide
+      individual pockets by clicking on the eye icon and also to focus on the pocket by clicking on the magnifying glass
+      icon. The pocket may also be expanded by clicking on the caret icon. This expanded view shows additional
+      information about the pocket, and also shows all computed tasks for the pocket (and allows to compute a new one).
+    </p>
+    <p>
+      The structure information tab contains information about the protein structure. It shows the prediction name,
+      structure ID, database, creation time and used P2Rank version, if available. The user may also download the
+      prediction data here.
+    </p>
+    <p>
+      The task management panel allows the user to create and view tasks for the pockets. The user may create a new task
+      by specifying the task type, name and parameters (e.g. for docking task, the user may specify the ligand to dock
+      in SMILES format).
+      Then, the task status is displayed in the table. The user may also view the results of the task by clicking on the
+      pocket details in the expanded view (see the pocket list).
     </p>
 
     <h3 id="probability-score">Probability score calculation</h3>
