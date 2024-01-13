@@ -40,8 +40,8 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
             value: pInfo.database
         },
         {
-            name: "Created at",
-            value: pInfo.created
+            name: "Created at (YYYY-MM-DD, UTC)",
+            value: pInfo.created.replace("T", " ").replace("Z", "")
         },
         {
             name: "Structure provided by the user",
@@ -58,7 +58,7 @@ export default function PredictionInfoTab(props: { predictionInfo: PredictionInf
         {
             name: "",
             value: (
-                <Button variant="outlined" color="primary" className="visualization-toolbox-button">
+                <Button variant="contained" color="primary" className="visualization-toolbox-button">
                     <a href={downloadUrl} download={downloadAs} className="visualization-toolbox-option-link">
                         Download prediction data
                     </a>
