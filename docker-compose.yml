@@ -31,7 +31,7 @@ services:
     build: https://github.com/mher/flower.git
     command: "celery flower --url_prefix=service/flower"
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER:-user}:${RABBITMQ_DEFAULT_PASS:-1234}@rabbitmq:5672"
     depends_on:
       rabbitmq:
           condition: service_healthy
@@ -46,10 +46,12 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
-      PRANKWEB_DATA: "/data/prankweb"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER:-user}:${RABBITMQ_DEFAULT_PASS:-1234}@rabbitmq:5672"
+      PRANKWEB_DATA_PREDICTIONS: "/data/prankweb/predictions/"
+      PRANKWEB_DATA_DOCKING: "/data/prankweb/docking/"
     volumes:
-      - predictions:/data/prankweb
+      - predictions:/data/prankweb/predictions
+      - docking:/data/prankweb/docking
   executor-p2rank:
     build:
       context: ./
@@ -57,16 +59,34 @@ services:
       args:
         UID: ${UID:-5988}
         GID: ${GID:-5988}
-    command: ["celery", "--app=celery_p2rank", "worker", "--concurrency=4", "--hostname=executor-p2rank"]
+    command: ["celery", "--app=celery_p2rank", "worker", "--queues=p2rank", "--concurrency=4", "--hostname=executor-p2rank"]
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
-      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER:-user}:${RABBITMQ_DEFAULT_PASS:-1234}@rabbitmq:5672"
       LOCK_DIRECTORY: "/data/prankweb/lock"
     volumes:
       - conservation:/data/conservation
-      - predictions:/data/prankweb
+      - predictions:/data/prankweb/predictions
+      - docking:/data/prankweb/docking
+  executor-docking:
+    build:
+      context: ./
+      dockerfile: ./executor-docking/Dockerfile
+      args:
+        UID: ${UID:-5988}
+        GID: ${GID:-5988}
+    command: ["celery", "--app=celery_docking", "worker", "--queues=docking", "--concurrency=4", "--hostname=executor-docking"]
+    environment:
+      CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER:-user}:${RABBITMQ_DEFAULT_PASS:-1234}@rabbitmq:5672"
+    restart: unless-stopped
+    volumes:
+      - docking:/data/prankweb/docking
+      - predictions:/data/prankweb/predictions
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
   prometheus:
     build:
       context: ./
@@ -92,3 +112,6 @@ volumes:
   services:
     external: True
     name: prankweb_services
+  docking:
+    external: True
+    name: prankweb_docking

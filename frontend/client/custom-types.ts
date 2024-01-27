@@ -42,6 +42,8 @@ export interface PocketData {
 
 export interface Metadata {
     //metadata can contain anything at this point
+    "p2rank_version": string | undefined;
+    [key: string]: any;
 }
 
 export interface PredictionData {
@@ -59,7 +61,7 @@ interface AminoAcid {
     name: string;
 }
 
-export const aminoCodeMap : AminoAcid[] = [
+export const aminoCodeMap: AminoAcid[] = [
     { letter: "A", code: "ALA", name: "Alanine" },
     { letter: "R", code: "ARG", name: "Arginine" },
     { letter: "N", code: "ASN", name: "Asparagine" },
@@ -122,7 +124,7 @@ export enum PocketsViewType {
 }
 
 export enum PolymerColorType {
-    Clean = 0,
+    White = 0,
     Conservation = 1,
     AlphaFold = 2
 }
@@ -147,7 +149,7 @@ export interface ReactApplicationProps {
     predictionInfo: PredictionInfo,
     polymerView: PolymerViewType,
     pocketsView: PocketsViewType,
-    polymerColor: PolymerColorType
+    polymerColor: PolymerColorType;
 }
 
 export interface ReactApplicationState {
@@ -159,6 +161,9 @@ export interface ReactApplicationState {
     polymerColor: PolymerColorType,
     isShowOnlyPredicted: boolean,
     pluginRcsb: RcsbFv | undefined,
+    numUpdated: number,
+    tabIndex: number,
+    initialPocket: number;
 }
 
 /**
@@ -189,7 +194,7 @@ export const AlphaFoldColorsMolStar = [
     Color.fromRgb(101, 203, 243),
     Color.fromRgb(255, 219, 19),
     Color.fromRgb(255, 125, 69)
-]
+];
 
 /**
  * This array contains first colors used to color the pockets.
@@ -204,3 +209,68 @@ export const DefaultPocketColors = [
     "0072B2",
     "DA74AD"
 ];
+
+/**
+ * These enums/interfaces are used to represent various client/server tasks and their data.
+ */
+export interface Point3D {
+    x: number;
+    y: number;
+    z: number;
+}
+
+export enum ClientTaskType {
+    Volume = 0
+}
+
+export const ClientTaskTypeDescriptors = [ //descriptors for the ClientTaskType
+    "Pocket volume",
+];
+
+export interface ClientTask {
+    pocket: number;
+    type: ClientTaskType;
+    created: string;
+    data: any;
+}
+
+export interface ClientTaskLocalStorageData extends ClientTask {
+    //potentially may contain more data
+    discriminator: 'client'; // used to distinguish between ClientTask and ServerTask
+}
+
+export interface ServerTaskInfo { // info about the task returned from the server
+    id: string;
+    created: string;
+    lastChange: string;
+    status: string;
+    initialData: {
+        hash: string;       //hash of the data
+        pocket: string;     //pocket id
+        [key: string]: any; //other data
+    };   //initial data
+    responseData: any;  //response data
+}
+
+export enum ServerTaskType {
+    Docking = 0
+}
+
+export const ServerTaskTypeDescriptors = [ //descriptors for the ServerTaskType
+    "Molecular docking"
+];
+
+export interface ServerTask {
+    name: string;
+    params: string[];
+    pocket: number;
+    created: string;
+    status: string;
+    type: ServerTaskType;
+    responseData: any;
+}
+
+export interface ServerTaskLocalStorageData extends ServerTask {
+    //potentially may contain more data
+    discriminator: 'server'; // used to distinguish between ClientTask and ServerTask
+}

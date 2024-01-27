@@ -1,175 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-@require("../partials/head.html")
+  @require("../partials/head.html")
 </head>
+
 <body>
-@require("../partials/navigation.html")
-<div class="container">
+  @require("../partials/navigation.html")
+  <div class="container">
 
-  <h1 id="user-guide">User guide</h1>
-  <p>
-    PrankWeb is a web-based application that allows to predict and visualize protein-ligand binding sites.
-    Furthermore, it allows to compare the location of predicted pockets with highly conserved areas as well as actual ligand binding sites.
-    All one needs to use PrankWeb is a device with a web-browser that supports WebGL.
-  </p>
+    <h1 id="user-guide">User guide</h1>
+    <p>
+      PrankWeb is a web-based application that allows to predict and visualize protein-ligand binding sites.
+      Furthermore, it allows to compare the location of predicted pockets with highly conserved areas as well as actual
+      ligand binding sites.
+      All one needs to use PrankWeb is a device with a web-browser that supports WebGL.
+    </p>
 
-  <h2 id="specify-what-protein-to-analyze">
-    Specify what structure to analyze
-  </h2>
-  <p>
-    There are three options to obtain a structure:
-  </p>
-  <ul>
-    <li>
-      PrankWeb can download it automatically from PDB database provided the protein identification code.
-    </li>
-    <li>
-      A structure file,
-      <a href="http://www.wwpdb.org/documentation/file-format" target="_blank" rel="nofollow noopener noreferrer">PDB</a>
-      or mmCif, can be uploaded from user's computer.
-    </li>
-    <li>
-      Provided Uniprot ID PrankWeb can download structure from
-      <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="nofollow noopener noreferrer">AlphaFold Protein Structure Database</a>.
-      For this option the structure visualisation is colored using residue-level confidence scores.
-    </li>
-  </ul>
+    <h2 id="quick-start">Quick start</h2>
+    <p>
+      To skip to the detailed description of the application, <a href="#detailed-description">click here</a>.
+    </p>
+    <h4>Structure selection</h4>
+    <p>
+      The user can specify what protein to analyze in three ways:
+    </p>
+    <ul>
+      <li>PDB code <i>(Experimental structure)</i></li>
+      <li>Upload a structure file (.pdb, .cif) with selected chains <i>(Custom structure)</i></li>
+      <li>Uniprot ID <i>(Predicted structure)</i></li>
+    </ul>
+    <p>
+      The user may also specify whether to <strong>use evolutionary conservation</strong> in the prediction model. This
+      makes the analysis slower, but more accurate. The conservation score calculated represents protein similarity to
+      other proteins in the same family. More information available <a href="#conservation">below</a>.
+    </p>
+    <h4>Visualization</h4>
+    <p>
+      Once the protein visualization is loaded, three main panels appear: sequence visualization, structural
+      visualization and the pocket panel. There are several properties that are displayed in the pocket details panel:
+    </p>
+    <ul>
+      <li>Rank based on P2Rank score</li>
+      <li>Score (P2Rank result)</li>
+      <li><a href="#probability-score">Probability of pocket</a></li>
+      <li>Number of pocket residues</li>
+      <li>Average conservation/AlphaFold score, if available</li>
+    </ul>
+    <p>
+      The user also may create tasks for each of the pockets. The tasks may be created directly from the tasks tab.
+    </p>
 
-  <h2>Conservation</h2>
-  <p>
-    Besides selecting what protein to analyze, one can also specify whether evolutionary conservation should be included in the prediction model by checking the <em>Use conservation</em> checkbox.
-    Note that calculating conservation score can increase the time of analysis.
-  </p>
-  <p>
-    The new conservation pipeline operates as follows.
-    First, polypeptide chain sequences are extracted from the input file using P2Rank.
-    The phmmer tool from the <a href="http://hmmer.org/" target="_blank" rel="nofollow noopener noreferrer">HMMER software package</a> is then used to identify and align similar sequences for each respective query; UniRef50 Release 2021 03 is used as the single target sequence database.
-    Up to 1,000 sequences are then randomly selected from each MSA to form the respective sample MSAs; weights are assigned to the individual sequences constituting the sample MSAs using the Gerstein/Sonnhammer/Chothia algorithm implemented in the <em>esl-weigh</em> miniapp included with the HMMER software.
-    Finally, per-column information content (i.e., conservation score) and gap character frequency values are calculated using the <em>esl-alistat</em> miniapp, taking the individual sequence weights into account; positions containing the gap character in more than 50% of sequences are masked to appear as possessing no conservation at all.
-  </p>
-  <p>
-    The range of the conservation corresponds to the range of the per-residue of information content which is between 0 and ~ 4 ( = log<sub>2</sub>(20) ) with higher values corresponding to higher conservation.
-  </p>
+    <hr style="height: 1em; border: 0; box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);">
 
-  <h2 id="visualization">Visualization</h2>
-  <p>
-    Once the protein visualization is loaded, three main panels appear: sequence visualization, structural visualization and the pocket panel.
-  </p>
-  <img src="./assets/images/help-00.png"
-       style="width: 100%"
-       class="img-responsive center-block"
-    />
-  <h3 id="structural-visualization-1">Structural visualization</h3>
-  <p>
-    The largest panel contains the three-dimensional visualization of the protein.
-  </p>
-  <ul>
-    <li>
-      By default, the protein surface is displayed, and individual pocket areas are highlighted with different colors.
-      Ligands (if available) are displayed with yellow.
-    </li>
-    <li>
-      The user may change the coloring of the protein in the tool box on the right side. 
-    </li>
-    <li>
-      If a conservation score is available, the protein atoms may be colored with shades of gray according to the score of each residue.
-      Darker color depicts higher score.
-    </li>
-    <li>
-      If an AlphaFold score (pLDDT) is available, the protein atoms may be colored with the apropriate color according to the score of each residue.
-      The colors are defined by <a href="https://alphafold.ebi.ac.uk/">AlphaFold</a> (blue depicts more confidence).
-    </li>
-    <li>
-      To switch between the views of the protein, use <b>Protein visualisation</b> and <b>Pockets visualisation</b> selections at top of the pocket panel on the right.
-    </li>
-  </ul>
+    <h2 id="detailed-description">Detailed description</h2>
+    <h3 id="specify-what-protein-to-analyze">
+      Specify what structure to analyze
+    </h3>
+    <p>
+      There are three options to obtain a structure:
+    </p>
+    <ul>
+      <li>
+        PrankWeb can download it automatically from PDB database provided the protein identification code.
+      </li>
+      <li>
+        A structure file,
+        <a href="http://www.wwpdb.org/documentation/file-format" target="_blank"
+          rel="nofollow noopener noreferrer">PDB</a>
+        or mmCif, can be uploaded from user's computer.
+      </li>
+      <li>
+        Provided Uniprot ID PrankWeb can download structure from
+        <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="nofollow noopener noreferrer">AlphaFold Protein
+          Structure Database</a>.
+        For this option the structure visualization may be colored using residue-level confidence scores.
+      </li>
+    </ul>
 
-  <h4 id="controls">Controls</h4>
-  <p>
-    The molecule can be rotated by moving mouse while holding left mouse button.
-    On a touch device, just slide your finger.
-    To zoom in or out, use your mouse wheel button or use the pinch gesture on a touch display.
-    In order to move the protein, hold the right mouse button.
-    Lastly, for slabbing the protein, scroll the mouse wheel or use the three finger gesture.
-  </p>
-  <p>Using the buttons in the top-right corner, one can:</p>
-  <ul>
-    <li>Reset the camera.</li>
-    <li>Create a snapshot of current visualization.</li>
-    <li>Toggle the advanced control panel.</li>
-    <li>Toggle full-screen mode.</li>
-    <li>
-      Setup the scene such as the visualization background or the field of view.
-    </li>
-    <li>Toggle the selection mode.</li>
-  </ul>
-  <p>The panel with advanced controls is toggled by default. It is located on the left side of the viewer. Using the buttons, the user is able to:</p>
-  <ul>
-    <li>Work with the structure and download it.</li>
-    <li>Toggle the state tree and thus toggle all of the available representations.</li>
-    <li>Save the current plugin state.</li>
-    <li>View the help panel.</li>
-  </ul>
+    <h3 id="conservation">Conservation</h3>
+    <p>
+      Besides selecting what protein to analyze, one can also specify whether evolutionary conservation should be
+      included in the prediction model by checking the <em>Use conservation</em> checkbox.
+      Note that calculating conservation score can increase the time of analysis.
+    </p>
+    <p>
+      The new conservation pipeline operates as follows.
+      First, polypeptide chain sequences are extracted from the input file using P2Rank.
+      The phmmer tool from the <a href="http://hmmer.org/" target="_blank" rel="nofollow noopener noreferrer">HMMER
+        software package</a> is then used to identify and align similar sequences for each respective query; UniRef50
+      Release 2021 03 is used as the single target sequence database.
+      Up to 1,000 sequences are then randomly selected from each MSA to form the respective sample MSAs; weights are
+      assigned to the individual sequences constituting the sample MSAs using the Gerstein/Sonnhammer/Chothia algorithm
+      implemented in the <em>esl-weigh</em> miniapp included with the HMMER software.
+      Finally, per-column information content (i.e., conservation score) and gap character frequency values are
+      calculated using the <em>esl-alistat</em> miniapp, taking the individual sequence weights into account; positions
+      containing the gap character in more than 50% of sequences are masked to appear as possessing no conservation at
+      all.
+    </p>
+    <p>
+      The range of the conservation corresponds to the range of the per-residue of information content which is between
+      0 and ~ 4 ( = log<sub>2</sub>(20) ) with higher values corresponding to higher conservation.
+    </p>
 
-  <p>
-    For more help with Mol*, please visit its <a href="https://molstar.org/viewer-docs/" target="_blank" rel="nofollow noopener noreferrer">official page</a> or the
-    <a href="https://github.com/molstar/molstar/" target="_blank" rel="nofollow noopener noreferrer">GitHub page</a>.
-  </p>
+    <h3 id="visualization">Visualization</h3>
+    <p>
+      Once the protein visualization is loaded, three main panels appear: sequence visualization, structural
+      visualization and the tabs panel.
+    </p>
+    <img src="./assets/images/help-00.png" style="width: 100%" class="img-responsive center-block" />
+    <h4 id="structural-visualization-1">Structural visualization</h4>
+    <p>
+      The largest panel contains the three-dimensional visualization of the protein.
+    </p>
+    <ul>
+      <li>
+        By default, the protein surface is displayed, and individual pocket areas are highlighted with different colors.
+        Ligands (if available) are displayed in the ball and stick representation.
+      </li>
+      <li>
+        The user may change the coloring of the protein in the tool box on the bottom, under the visualization.
+      </li>
+      <li>
+        If a conservation score is available, the protein atoms may be colored with shades of gray according to the
+        score of each residue.
+        Darker color depicts higher score.
+      </li>
+      <li>
+        If an AlphaFold score (pLDDT) is available, the protein atoms may be colored with the apropriate color according
+        to the score of each residue.
+        The colors are defined by <a href="https://alphafold.ebi.ac.uk/">AlphaFold</a> (blue depicts more confidence).
+      </li>
+      <li>
+        To switch between the views of the protein, use <b>Protein visualization</b> and <b>Pockets visualization</b>
+        selections in the visualization tool box.
+      </li>
+      <li>
+        The user may reset the camera by clicking the <b>Reset 3D camera</b> button.
+      </li>
+      <li>
+        If the visualised structure is predicted, then the tool box also contains a toggle button.
+        Using the button user can toggle between visualization of a whole structure and confidently predicted regions
+        (confidence score &gt; 70).
+      </li>
+    </ul>
 
-  <h3 id="sequence-visualization-1">Sequence visualization</h3>
-  <p>The panel above protein 3D visualization displays protein sequence.</p>
-  <ul>
-    <li>
-      All chains are concatenated and visualized at once.
-    </li>
-    <li>
-      Colored rectangles depict areas with predicted pockets and real binding areas (if available).
-    </li>
-    <li>
-      Real binding sites are residues within 4 &#8491; from any ligand atom.
-    </li>
-    <li>
-      If available, conservation and AlphaFold scores are portrayed using a bar chart.
-    </li>
-  </ul>
-  <p>
-    As one hovers over the sequence with mouse, the residues are highlighted in the 3D visualization.
-    This feature allows to analyze the protein both from the structural and sequential point of view.
-    By default, the sequence view is zoomed out so that the whole protein is displayed.
-    You can use your mouse to zoom in, or zoom to the selected residue by clicking the responsible area.
-  </p>
+    <h5 id="controls">Controls</h5>
+    <p>
+      The molecule can be rotated by moving mouse while holding left mouse button.
+      On a touch device, just slide your finger.
+      To zoom in or out, use your mouse wheel button or use the pinch gesture on a touch display.
+      In order to move the protein, hold the right mouse button.
+      Lastly, for slabbing the protein, scroll the mouse wheel or use the three finger gesture.
+    </p>
+    <p>Using the buttons in the top-right corner, one can:</p>
+    <ul>
+      <li>Reset the camera.</li>
+      <li>Create a snapshot of current visualization.</li>
+      <li>Toggle the advanced control panel.</li>
+      <li>Toggle full-screen mode.</li>
+      <li>
+        Setup the scene such as the visualization background or the field of view.
+      </li>
+      <li>Toggle the selection mode.</li>
+    </ul>
+    <p>The panel with advanced controls is toggled by default. It is located on the left side of the viewer. Using the
+      buttons, the user is able to:</p>
+    <ul>
+      <li>Work with the structure and download it.</li>
+      <li>Toggle the state tree and thus toggle all of the available representations.</li>
+      <li>Save the current plugin state.</li>
+      <li>View the help panel.</li>
+    </ul>
 
-  <h2 id="pocket-panel">Pocket panel</h2>
-  <p>
-    The right panel contains several control buttons and a list of predicted pockets.
-    Use the control buttons to download PrankWeb report, or switch between the structural views.
-    In the pocket list, pocket name, rank, <a href="#probability-score">probability score</a>, size, average conservation score (if available) and average AlphaFold score (if available) is displayed for each pocket.
-    Each pocket also contains several buttons related to visibility of the pockets in the visualizations.
-    The user might show the dialog with additional information as well.
-  </p>
-  <p>
-    If the visualised structure is predicted, then this panel also contains a warning and a toggle button.
-    Using the button user can toggle between visualisation of a whole structure and confidently predicted regions (confidence score &gt; 70).
-  </p>
+    <p>
+      For more help with Mol*, please visit its <a href="https://molstar.org/viewer-docs/" target="_blank"
+        rel="nofollow noopener noreferrer">official page</a> or the
+      <a href="https://github.com/molstar/molstar/" target="_blank" rel="nofollow noopener noreferrer">GitHub page</a>.
+    </p>
 
-  <h3 id="probability-score">Probability score calculation</h3>
-  <p>
-    The transformer that calculates probability scores from raw scores is calibrated for each individual model (Default, Default+Conservation, Alphafold, Alphafold+Conservation) on the calibration dataset (HOLO4K).
-    The probability score <em>P(x)</em> for a given raw score <em>x</em> is calculated the following way: <em>P(x) = T<sub>x</sub> / (T<sub>x</sub> + F<sub>x</sub>)</em> where <em>T<sub>x</sub></em> is the number of true pockets with a raw score &leq;x and <em>F<sub>x</sub></em> is the number for false pockets with the score &geq;x (both refer to the predictions of a particular model on the calibration dataset).
-  </p>
+    <h4 id="sequence-visualization-1">Sequence visualization</h4>
+    <p>The panel above protein 3D visualization displays protein sequence.</p>
+    <ul>
+      <li>
+        All chains are concatenated and visualized at once.
+      </li>
+      <li>
+        Colored rectangles depict areas with predicted pockets and real binding areas (if available).
+      </li>
+      <li>
+        Real binding sites are residues within 4 &#8491; from any ligand atom.
+      </li>
+      <li>
+        If available, conservation and AlphaFold scores are portrayed using a bar chart.
+      </li>
+      <li>
+        The user may toggle the 1D sequence viewer by clicking the <b>Show/Hide 1D viewer</b> button below the 3D
+        viewer.
+      </li>
+    </ul>
+    <p>
+      As one hovers over the sequence with mouse, the residues are highlighted in the 3D visualization.
+      This feature allows to analyze the protein both from the structural and sequential point of view.
+      By default, the sequence view is zoomed out so that the whole protein is displayed.
+      You can use your mouse to zoom in, or zoom to the selected residue by clicking the responsible area.
+    </p>
 
-  <h2 id="contact-us">Contact us</h2>
-  <p>
-    Something is not working or are you missing certain functionality/feature?
-    Please let us know by creating a
-    <a href="https://github.com/cusbg/prankweb/issues/new/choose" target="_blank" rel="nofollow noopener noreferrer">GitHub issue</a>.
-    Alternatively, if you prefer to use email, please feel free to reach us at
-    david.hoksza&nbsp;(at)&nbsp;matfyz.cuni.cz.
-  </p>
+    <h4 id="tabs-panel">Tabs panel</h4>
+    <p>
+      The right panel contains several tabs with three main functionalities: pocket list, structure information and task
+      management panel. First, let's describe the pocket list.
+    </p>
+    <p>
+      The pocket list is a sortable table containing all details about the individual pockets. Each pocket has its own
+      row in the table. Each row contains the pocket name, rank, <a href="#probability-score">probability
+        score</a>, number of pockets, average conservation score (if available) and average AlphaFold score (if
+      available).
+      The table can be sorted by clicking on the column names. It is also possible to show/hide
+      individual pockets by clicking on the eye icon and also to focus on the pocket by clicking on the magnifying glass
+      icon. The pocket may also be expanded by clicking on the caret icon. This expanded view shows additional
+      information about the pocket, and also shows all computed tasks for the pocket (and allows to compute a new one).
+    </p>
+    <p>
+      The structure information tab contains information about the protein structure. It shows the prediction name,
+      structure ID, database, creation time and used P2Rank version, if available. The user may also download the
+      prediction data here.
+    </p>
+    <p>
+      The task management panel allows the user to create and view tasks for the pockets. The user may create a new task
+      by specifying the task type, name and parameters (e.g. for docking task, the user may specify the ligand to dock
+      in SMILES format).
+      Then, the task status is displayed in the table. The user may also view the results of the task by clicking on the
+      pocket details in the expanded view (see the pocket list).
+    </p>
 
-  @require("../partials/footer.html")
+    <h3 id="probability-score">Probability score calculation</h3>
+    <p>
+      The transformer that calculates probability scores from raw scores is calibrated for each individual model
+      (Default, Default+Conservation, Alphafold, Alphafold+Conservation) on the calibration dataset (HOLO4K).
+      The probability score <em>P(x)</em> for a given raw score <em>x</em> is calculated the following way: <em>P(x) =
+        T<sub>x</sub> / (T<sub>x</sub> + F<sub>x</sub>)</em> where <em>T<sub>x</sub></em> is the number of true pockets
+      with a raw score &leq;x and <em>F<sub>x</sub></em> is the number for false pockets with the score &geq;x (both
+      refer to the predictions of a particular model on the calibration dataset).
+    </p>
 
-</div>
+    <h2 id="contact-us">Contact us</h2>
+    <p>
+      Something is not working or are you missing certain functionality/feature?
+      Please let us know by creating a
+      <a href="https://github.com/cusbg/prankweb/issues/new/choose" target="_blank"
+        rel="nofollow noopener noreferrer">GitHub issue</a>.
+      Alternatively, if you prefer to use email, please feel free to reach us at
+      david.hoksza&nbsp;(at)&nbsp;matfyz.cuni.cz.
+    </p>
+
+    @require("../partials/footer.html")
+
+  </div>
 </body>
+
 </html>

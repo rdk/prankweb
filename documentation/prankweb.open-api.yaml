@@ -1,14 +1,14 @@
-openapi: 3.0.0
+openapi: 3.0.2
 
 info:
   title: Prankweb API
-  version: 1.0.0
+  version: 1.0.1
 
 servers:
-  - url: https://prankweb.cz/api/v2/predictions/
+  - url: https://prankweb.cz/api/v2/
 
 paths:
-  /{database}/{task}/:
+  /predictions/{database}/{task}/:
     get:
       parameters:
         - in: path
@@ -28,7 +28,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
-  /{database}/{task}/log:
+  /predictions/{database}/{task}/log:
     get:
       parameters:
         - in: path
@@ -48,7 +48,7 @@ paths:
             text/plain:
               schema:
                 type: string
-  /{database}/{task}/public/prediction.json:
+  /predictions/{database}/{task}/public/prediction.json:
     get:
       parameters:
         - in: path
@@ -68,6 +68,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Prediction'
+  /docking/{database}/{task}/tasks:
+    get:
+      parameters:
+        - in: path
+          name: database
+          required: true
+          schema:
+            $ref: '#/components/schemas/DatabaseId'
+        - in: path
+          name: task
+          required: true
+          schema:
+            $ref: '#/components/schemas/TaskId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DockingTaskList'
+  /docking/{database}/{task}/public/result.json:
+    post:
+      parameters:
+        - in: path
+          name: database
+          required: true
+          schema:
+            $ref: '#/components/schemas/DatabaseId'
+        - in: path
+          name: task
+          required: true
+          schema:
+            $ref: '#/components/schemas/TaskId'
+      requestBody:
+        description: The request needs to contain the hash and the pocket number.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DockingRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DockingResponse'
 
 components:
   schemas:
@@ -148,3 +195,45 @@ components:
                     type: number
                   end:
                     type: number
+    DockingTaskList:
+      type: object
+      properties:
+        identifier:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              created:
+                type: string
+                format: date-time
+              lastChange:
+                type: string
+                format: date-time
+              status:
+                type: string
+                enum: ['queued', 'running', 'failed', 'successful']
+              initialData:
+                type: object
+                properties:
+                  hash:
+                    type: string
+                  pocket:
+                    type: string
+    DockingRequest:
+      type: object
+      properties:
+        hash:
+          type: string
+        pocket:
+          type: number
+    DockingResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          url:
+            type: string

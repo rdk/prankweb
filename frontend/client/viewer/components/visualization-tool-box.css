@@ -1,0 +1,42 @@
+.visualization-toolbox-row {
+    align-items: center;
+    padding-top: 10px;
+    width: 100%;
+}
+
+.visualization-toolbox-option {
+    width: 33.3%;
+    display: inline-block;
+    text-align: center;
+}
+
+.visualization-toolbox-option > * {
+    vertical-align: middle;
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    cursor: pointer;
+}
+
+.visualization-toolbox-formcontrol {
+    width: 100%;
+}
+
+.visualization-toolbox-select {
+    width: 100%;
+}
+
+.visualization-toolbox-button {
+    width: 100%;
+}
+
+.visualization-toolbox-option-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.visualization-toolbox-option-link {
+    text-decoration: none;
+    color: inherit;
+}

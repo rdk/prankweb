@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:20.8-bullseye
 
 WORKDIR /opt/p2rank-monitor
 
