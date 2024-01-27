@@ -68,7 +68,7 @@ services:
         condition: service_healthy
     environment:
       CELERY_BROKER_URL: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672"
-      LOCK_DIRECTORY: "/data/prankweb/lock"
+      LOCK_DIRECTORY: "/data/prankweb/predictions/lock"
     restart: unless-stopped
     volumes:
       - conservation:/data/conservation
