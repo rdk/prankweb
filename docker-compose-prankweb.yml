@@ -50,7 +50,8 @@ services:
       PRANKWEB_DATA_DOCKING: "/data/prankweb/docking/"
     restart: unless-stopped
     volumes:
-      - predictions:/data/prankweb
+      - predictions:/data/prankweb/predictions
+      - docking:/data/prankweb/docking
     depends_on:
       rabbitmq:
         condition: service_healthy
