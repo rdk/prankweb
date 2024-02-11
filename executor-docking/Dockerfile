@@ -88,7 +88,7 @@ FROM base AS final
 
 # install dodo (docking in docker)
 # https://github.com/kiarka7/DODO
-RUN wget -q https://raw.githubusercontent.com/kiarka7/DODO/1a9001a2996325f78a656c14fcf1503b8bfc0674/run_docking.py -O /opt/executor-docking/run_docking.py
+RUN wget -q https://raw.githubusercontent.com/kiarka7/DODO/28d8a35611a6086607f6abc1928a44961cb711ac/run_docking.py -O /opt/executor-docking/run_docking.py
 
 COPY --chown=user:user ./executor-docking/requirements.txt ./
 RUN pip3 install -r requirements.txt
