@@ -228,8 +228,6 @@ components:
       properties:
         hash:
           type: string
-        pocket:
-          type: number
     DockingResponse:
       type: array
       items:

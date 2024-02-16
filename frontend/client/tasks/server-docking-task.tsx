@@ -3,6 +3,7 @@ import { PocketData, Point3D, ServerTaskInfo, ServerTaskLocalStorageData } from 
 
 import { getPocketAtomCoordinates } from "../viewer/molstar-visualise";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
+import { md5 } from 'hash-wasm';
 
 /**
  * Computes distance of 2 points in 3D space.
@@ -58,16 +59,19 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
  * Sends requests to the backend to compute the docking task and periodically checks if the task is finished.
  * @param prediction Prediction info
  * @param pocket Pocket data
- * @param hash Task identifier (hash)
+ * @param smiles SMILES ligand identifier
  * @param plugin Mol* plugin
+ * @param pH pH value
  * @returns Completed task data
  */
-export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, hash: string, plugin: PluginUIContext): Promise<any> {
-    if (hash === "") {
+export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, smiles: string, plugin: PluginUIContext, pH: string): Promise<any> {
+    if (smiles === "") {
         return;
     }
 
     const box = computeBoundingBox(plugin, pocket);
+
+    const hash = await dockingHash(pocket.rank, smiles, pH);
 
     await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/post`, {
         method: 'POST',
@@ -78,6 +82,8 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
         body: JSON.stringify({
             "hash": hash,
             "pocket": pocket.rank,
+            "smiles": smiles,
+            "pH": pH,
             "bounding_box": box
         }),
     }).then((res) => {
@@ -90,23 +96,27 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
 }
 
 /**
- * Returns a hash that identifies this task, in this case directly the user input.
- * @param prediction Prediction info
- * @param pocket Pocket data
- * @param formData Form data (user input)
+ * Returns a hash that identifies this task.
+ * @param pocket Pocket identifier
+ * @param smiles SMILES identifier
+ * @param pH pH value
  * @returns Computed hash
 */
-export function dockingHash(prediction: PredictionInfo, pocket: PocketData, formData: string) {
-    return formData;
+export async function dockingHash(pocket: string, smiles: string, pH: string) {
+    return await md5(`${pocket}_${smiles}_${pH}`);
 }
 
 /**
  * Downloads the result of the task.
- * @param hash Task identifier (hash)
+ * @param smiles SMILES identifier
  * @param fileURL URL to download the result from
+ * @param pocket Pocket identifier
+ * @param pH pH value
  * @returns void
 */
-export function downloadDockingResult(hash: string, fileURL: string, pocket: string) {
+export async function downloadDockingResult(smiles: string, fileURL: string, pocket: string, pH: string) {
+    const hash = await dockingHash(pocket, smiles, pH);
+
     // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     fetch(fileURL, {
         method: 'POST',
@@ -115,8 +125,7 @@ export function downloadDockingResult(hash: string, fileURL: string, pocket: str
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            "hash": hash,
-            "pocket": pocket
+            "hash": hash
         })
     })
         .then((response) => response.blob())
@@ -156,10 +165,14 @@ export async function pollForDockingTask(predictionInfo: PredictionInfo) {
         let savedTasks = localStorage.getItem(`${predictionInfo.id}_serverTasks`);
         if (!savedTasks) savedTasks = "[]";
         const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
+        if (tasks.length === 0) return;
+        if (tasks.every((task: ServerTaskLocalStorageData) => task.status === "successful" || task.status === "failed")) return;
         tasks.forEach(async (task: ServerTaskLocalStorageData, i: number) => {
             if (task.status === "successful" || task.status === "failed") return;
 
-            const individualTask: ServerTaskInfo = taskStatusJSON["tasks"].find((t: ServerTaskInfo) => t.initialData.hash === task.params[0] && t.initialData.pocket === task.pocket.toString());
+            const expectedHash = await dockingHash(task.pocket.toString(), task.params[0], task.params[1]);
+
+            const individualTask: ServerTaskInfo = taskStatusJSON["tasks"].find((t: ServerTaskInfo) => t.initialData.hash === expectedHash);
             if (individualTask) {
                 if (individualTask.status !== task.status) {
                     //update the status
@@ -167,6 +180,7 @@ export async function pollForDockingTask(predictionInfo: PredictionInfo) {
 
                     //download the computed data
                     if (individualTask.status === "successful") {
+                        const hash = await dockingHash(task.pocket.toString(), individualTask.initialData.smiles, individualTask.initialData.pH);
                         const data = await fetch(`./api/v2/docking/${predictionInfo.database}/${predictionInfo.id}/public/result.json`, {
                             method: 'POST',
                             headers: {
@@ -174,8 +188,7 @@ export async function pollForDockingTask(predictionInfo: PredictionInfo) {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                "hash": task.params[0],
-                                "pocket": task.pocket,
+                                "hash": hash
                             })
                         }).then(res => res.json()).catch(err => console.log(err));
                         tasks[i].responseData = data;

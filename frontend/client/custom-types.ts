@@ -247,6 +247,8 @@ export interface ServerTaskInfo { // info about the task returned from the serve
     initialData: {
         hash: string;       //hash of the data
         pocket: string;     //pocket id
+        smiles: string;     //SMILES representation of the ligand
+        pH: string;         //pH value
         [key: string]: any; //other data
     };   //initial data
     responseData: any;  //response data

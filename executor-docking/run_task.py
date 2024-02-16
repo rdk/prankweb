@@ -78,7 +78,7 @@ def prepare_docking(input_file: str, structure_file_gzip: str, task_directory: s
     ligandFile = os.path.join(task_directory, "ligand.smi")
     with open(input_file) as inp, open(ligandFile, "w") as f:
         input_json = json.load(inp)
-        f.write(input_json["hash"])
+        f.write(input_json["smiles"])
 
     # prepare the input file
     new_input_file = os.path.join(task_directory, "docking_parameters.json")

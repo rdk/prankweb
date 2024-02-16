@@ -72,6 +72,15 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             type: TaskType.Server,
             name: "Docking",
             compute: (params, customName, pocketIndex) => {
+                // check if pH is a number
+                const pH = params[1].replaceAll(",", ".").replaceAll(" ", "");
+                if (isNaN(parseFloat(pH))) {
+                    setInvalidInput(true);
+                    return;
+                }
+                setInvalidInput(false);
+                const smiles = params[0].replaceAll(" ", "");
+
                 let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
                 if (!savedTasks) savedTasks = "[]";
                 const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
@@ -86,10 +95,11 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "discriminator": "server",
                 });
                 localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
-                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], props.plugin);
+                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], smiles, props.plugin, pH);
             },
             parameterDescriptions: [
                 "Enter the molecule in SMILES format (e.g. c1ccccc1)",
+                "Enter the pH of the environment (e.g. 7.4)"
             ]
         }
     ];
@@ -99,6 +109,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     const [name, setName] = React.useState<string>("");
     const [parameters, setParameters] = React.useState<string[]>([]);
     const [forceUpdate, setForceUpdate] = React.useState<number>(0);
+    const [invalidInput, setInvalidInput] = React.useState<boolean>(false);
 
     const handleTaskTypeChange = (event: SelectChangeEvent) => {
         const newTask = tasks.find(task => task.id == Number(event.target.value))!;
@@ -196,6 +207,14 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                     </td>
                                 </tr>
                             )
+                        }
+                        {
+                            invalidInput &&
+                            <tr>
+                                <td colSpan={2}>
+                                    <Typography variant="body1" style={{ color: "red" }}>Error: The task could not be created. Check the formatting.</Typography>
+                                </td>
+                            </tr>
                         }
                         <tr>
                             <td>
