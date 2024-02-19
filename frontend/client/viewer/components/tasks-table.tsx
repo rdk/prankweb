@@ -173,6 +173,13 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
         setRender(numRenders + 1);
     };
 
+    const makeDateMoreReadable = (date: string) => {
+        // expected format: "2023-10-07T14:00:00.000Z"
+        date = date.replace("T", " ");
+        // remove .000Z
+        return date.slice(0, -5);
+    };
+
     return (
         <Table size="small">
             <EnhancedTableHead
@@ -188,7 +195,7 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
                                 {props.pocket === null && <TableCell>{task.pocket}</TableCell>}
                                 <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
                                 <TableCell>{"-"}</TableCell>
-                                <TableCell>{task.created}</TableCell>
+                                <TableCell>{makeDateMoreReadable(task.created)}</TableCell>
                                 <TableCell>
                                     {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
                                     {task.type === ClientTaskType.Volume && " Å³"}
@@ -208,7 +215,7 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
                                 {props.pocket === null && <TableCell>{task.pocket}</TableCell>}
                                 <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
                                 <TableCell>{task.name}</TableCell>
-                                <TableCell>{task.created}</TableCell>
+                                <TableCell>{makeDateMoreReadable(task.created)}</TableCell>
                                 <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}>successful</span> : task.status}</TableCell>
                                 <TableCell>
                                     <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeTaskFromLocalStorage(task)}>
