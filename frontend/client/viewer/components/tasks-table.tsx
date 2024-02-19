@@ -166,10 +166,17 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
     };
     useInterval(pollDocking, 1000 * 7);
 
-    const removeTaskFromLocalStorage = (task: ClientTaskLocalStorageData | ServerTaskLocalStorageData) => () => {
-        const clientTasksParsed: ClientTaskLocalStorageData[] | ServerTaskLocalStorageData[] = JSON.parse(localStorage.getItem(`${props.predictionInfo.id}_clientTasks`) || "[]");
-        const newClientTasks = clientTasksParsed.filter((t: ClientTaskLocalStorageData | ServerTaskLocalStorageData) => t.created !== task.created);
+    const removeClientTaskFromLocalStorage = (task: ClientTaskLocalStorageData) => () => {
+        const clientTasksParsed: ClientTaskLocalStorageData[] = JSON.parse(localStorage.getItem(`${props.predictionInfo.id}_clientTasks`) || "[]");
+        const newClientTasks = clientTasksParsed.filter((t: ClientTaskLocalStorageData) => t.created !== task.created);
         localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(newClientTasks));
+        setRender(numRenders + 1);
+    };
+
+    const removeServerTaskFromLocalStorage = (task: ServerTaskLocalStorageData) => () => {
+        const serverTasksParsed: ServerTaskLocalStorageData[] = JSON.parse(localStorage.getItem(`${props.predictionInfo.id}_serverTasks`) || "[]");
+        const newServerTasks = serverTasksParsed.filter((t: ServerTaskLocalStorageData) => t.created !== task.created);
+        localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(newServerTasks));
         setRender(numRenders + 1);
     };
 
@@ -201,7 +208,7 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
                                     {task.type === ClientTaskType.Volume && " Å³"}
                                 </TableCell>
                                 <TableCell>
-                                    <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeTaskFromLocalStorage(task)}>
+                                    <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeClientTaskFromLocalStorage(task)}>
                                         <i className="bi bi-trash" style={{ "display": "block", "fontSize": "small" }}></i>
                                     </button>
                                 </TableCell>
@@ -218,7 +225,7 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
                                 <TableCell>{makeDateMoreReadable(task.created)}</TableCell>
                                 <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}>successful</span> : task.status}</TableCell>
                                 <TableCell>
-                                    <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeTaskFromLocalStorage(task)}>
+                                    <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeServerTaskFromLocalStorage(task)}>
                                         <i className="bi bi-trash" style={{ "display": "block", "fontSize": "small" }}></i>
                                     </button>
                                 </TableCell>
