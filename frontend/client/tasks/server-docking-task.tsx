@@ -61,17 +61,17 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
  * @param pocket Pocket data
  * @param smiles SMILES ligand identifier
  * @param plugin Mol* plugin
- * @param pH pH value
+ * @param exhaustiveness exhaustiveness value (for Autodock Vina)
  * @returns Completed task data
  */
-export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, smiles: string, plugin: PluginUIContext, pH: string): Promise<any> {
+export async function computeDockingTaskOnBackend(prediction: PredictionInfo, pocket: PocketData, smiles: string, plugin: PluginUIContext, exhaustiveness: string): Promise<any> {
     if (smiles === "") {
         return;
     }
 
     const box = computeBoundingBox(plugin, pocket);
 
-    const hash = await dockingHash(pocket.rank, smiles, pH);
+    const hash = await dockingHash(pocket.rank, smiles, exhaustiveness);
 
     await fetch(`./api/v2/docking/${prediction.database}/${prediction.id}/post`, {
         method: 'POST',
@@ -83,7 +83,7 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
             "hash": hash,
             "pocket": pocket.rank,
             "smiles": smiles,
-            "pH": pH,
+            "exhaustiveness": exhaustiveness,
             "bounding_box": box
         }),
     }).then((res) => {
@@ -99,11 +99,11 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
  * Returns a hash that identifies this task.
  * @param pocket Pocket identifier
  * @param smiles SMILES identifier
- * @param pH pH value
+ * @param exhaustiveness exhaustiveness value (for Autodock Vina)
  * @returns Computed hash
 */
-export async function dockingHash(pocket: string, smiles: string, pH: string) {
-    return await md5(`${pocket}_${smiles}_${pH}`);
+export async function dockingHash(pocket: string, smiles: string, exhaustiveness: string) {
+    return await md5(`${pocket}_${smiles}_${exhaustiveness}`);
 }
 
 /**
@@ -111,11 +111,11 @@ export async function dockingHash(pocket: string, smiles: string, pH: string) {
  * @param smiles SMILES identifier
  * @param fileURL URL to download the result from
  * @param pocket Pocket identifier
- * @param pH pH value
+ * @param exhaustiveness exhaustiveness value (for Autodock Vina)
  * @returns void
 */
-export async function downloadDockingResult(smiles: string, fileURL: string, pocket: string, pH: string) {
-    const hash = await dockingHash(pocket, smiles, pH);
+export async function downloadDockingResult(smiles: string, fileURL: string, pocket: string, exhaustiveness: string) {
+    const hash = await dockingHash(pocket, smiles, exhaustiveness);
 
     // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
     fetch(fileURL, {
@@ -180,7 +180,7 @@ export async function pollForDockingTask(predictionInfo: PredictionInfo) {
 
                     //download the computed data
                     if (individualTask.status === "successful") {
-                        const hash = await dockingHash(task.pocket.toString(), individualTask.initialData.smiles, individualTask.initialData.pH);
+                        const hash = await dockingHash(task.pocket.toString(), individualTask.initialData.smiles, individualTask.initialData.exhaustiveness);
                         const data = await fetch(`./api/v2/docking/${predictionInfo.database}/${predictionInfo.id}/public/result.json`, {
                             method: 'POST',
                             headers: {

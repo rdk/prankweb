@@ -72,9 +72,9 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             type: TaskType.Server,
             name: "Docking",
             compute: (params, customName, pocketIndex) => {
-                // check if pH is a number
-                const pH = params[1].replaceAll(",", ".").replaceAll(" ", "");
-                if (isNaN(parseFloat(pH))) {
+                // check if exhaustiveness is a number
+                const exhaustiveness = params[1].replaceAll(",", ".").replaceAll(" ", "");
+                if (isNaN(parseFloat(exhaustiveness))) {
                     setInvalidInput(true);
                     return;
                 }
@@ -95,11 +95,11 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "discriminator": "server",
                 });
                 localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
-                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], smiles, props.plugin, pH);
+                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], smiles, props.plugin, exhaustiveness);
             },
             parameterDescriptions: [
                 "Enter the molecule in SMILES format (e.g. c1ccccc1)",
-                "Enter the pH of the environment (e.g. 7.4)"
+                "Enter the exhaustiveness for Autodock Vina (recommended: 32)"
             ]
         }
     ];

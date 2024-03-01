@@ -91,6 +91,7 @@ def prepare_docking(input_file: str, structure_file_gzip: str, task_directory: s
         out_json["output"] = os.path.join(task_directory, "public", "out_vina.pdbqt")
         out_json["center"] = input_json["bounding_box"]["center"]
         out_json["size"] = input_json["bounding_box"]["size"]
+        out_json["exhaustiveness"] = input_json["exhaustiveness"]
 
         json.dump(out_json, out)
 

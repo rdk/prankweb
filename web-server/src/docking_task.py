@@ -222,7 +222,7 @@ def _create_info(taskinfo: TaskInfo):
             "hash": taskinfo.data["hash"],
             "pocket": taskinfo.data["pocket"],
             "smiles": taskinfo.data["smiles"],
-            "pH": taskinfo.data["pH"],
+            "exhaustiveness": taskinfo.data["exhaustiveness"],
         }
     }
 

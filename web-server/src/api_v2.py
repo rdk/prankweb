@@ -74,7 +74,7 @@ def route_post_docking_file(database_name: str, prediction_name: str):
     - hash: str (a hash of the ligand with parameters)
     - pocket: int (pocket number)
     - smiles: str (SMILES for the ligand)
-    - pH: float (pH value)
+    - exhaustiveness: float (exhaustiveness value)
     - bounding_box: dict (bounding box for the docking)"""
     data = request.get_json(force=True) or {}
     dt = DockingTask(database_name=database_name)
