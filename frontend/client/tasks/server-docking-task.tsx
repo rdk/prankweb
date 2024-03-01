@@ -48,9 +48,9 @@ function computeBoundingBox(plugin: PluginUIContext, pocket: PocketData) {
             z: center.z
         },
         size: {
-            x: Math.ceil(sideLength),
-            y: Math.ceil(sideLength),
-            z: Math.ceil(sideLength)
+            x: Math.ceil(sideLength) + 5, // the bounding box is a bit larger than the pocket for more accurate results
+            y: Math.ceil(sideLength) + 5,
+            z: Math.ceil(sideLength) + 5
         }
     };
 }
