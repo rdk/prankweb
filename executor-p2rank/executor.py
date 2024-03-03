@@ -202,7 +202,7 @@ def _prepare_conservation(
         output_file = os.path.join(output_directory, f"conservation-{chain}")
         fasta = _read_fasta(fasta_file)
         if fasta in cache:
-            logger.info("We already have conservation for given chain.")
+            logger.info(f"We already have conservation for '{chain}'.")
             shutil.copy(cache[fasta], output_file)
         else:
             _prepare_conservation_for_chain(

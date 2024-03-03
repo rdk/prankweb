@@ -2,12 +2,13 @@
 # executor-docking
 #
 
-FROM ubuntu:23.10 AS base
+FROM ubuntu:23.10
 
-# to prevent apt-get install from asking questions
-ARG DEBIAN_FRONTEND=noninteractive
-
+ARG UID=5988
+ARG GID=5988
 ARG CELERY_BROKER_URL="amqp://user-develop:develop@localhost:5672"
+# To prevent apt-get install from asking questions
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -34,9 +35,7 @@ RUN apt-get update && \
     tk-dev \
     libffi-dev
 
-ARG UID=5988
-ARG GID=5988
-
+# https://github.com/python/cpython/issues/102134
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -49,7 +48,7 @@ RUN mkdir /data \
     && mkdir /data/prankweb && chown user:user /data/prankweb \
     && mkdir /opt/executor-docking && chown user:user /opt/executor-docking 
 
-# prankweb executor-docking
+# Prankweb executor-docking
 WORKDIR /opt/executor-docking
 
 RUN wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz && \
@@ -80,13 +79,10 @@ RUN curl -L -o mgltools_x86_64Linux2_1.5.7p1.tar.gz https://ccsb.scripps.edu/mgl
 ENV PATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/Utilities24/:${PATH}"
 ENV PYTHONPATH="/opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/:${PYTHONPATH}"
 
-# a trick to work around a bug in MolKit MMCIF parser (MolKit/__init__.py calls MMCIFParser with an argument modelsAs=True, which is not supported by the parser)
+# A trick to work around a bug in MolKit MMCIF parser (MolKit/__init__.py calls MMCIFParser with an argument modelsAs=True, which is not supported by the parser)
 RUN sed -i 's/^        parser = MMCIFParser(filename, modelsAs=modelsAs)$/        parser = MMCIFParser(filename)/' /opt/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/MolKit/__init__.py
 
-# stage 2 - install docking scripts
-FROM base AS final
-
-# install dodo (docking in docker)
+# Install dodo (docking in docker)
 # https://github.com/kiarka7/DODO
 RUN wget -q https://raw.githubusercontent.com/kiarka7/DODO/9d77b3b1f03a8b656eec5f5ae465ac9f2521965e/run_docking.py -O /opt/executor-docking/run_docking.py
 
@@ -99,5 +95,4 @@ RUN chmod a+x ./run_task.py
 #
 # environment
 WORKDIR /opt/executor-docking
-
 USER ${UID}:${GID}
