@@ -13,8 +13,9 @@ import { PocketsViewType, PolymerColorType, PolymerViewType, PredictionData, Rea
 import { DefaultPluginUISpec } from 'molstar/lib/mol-plugin-ui/spec';
 import { createPluginUI } from 'molstar/lib/mol-plugin-ui';
 import 'molstar/lib/mol-plugin-ui/skin/light.scss';
-import { RcsbFv, RcsbFvTrackDataElementInterface } from "@rcsb/rcsb-saguaro";
+import { RcsbFv, RcsbFvTrackDataElementInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
 import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerView, showPocketInCurrentRepresentation } from './molstar-visualise';
+import { renderReact18 } from 'molstar/lib/mol-plugin-ui/react18';
 
 /**
  * A function to render the actual PrankWeb viewer.
@@ -22,26 +23,31 @@ import { highlightSurfaceAtomsInViewerLabelId, overPaintPolymer, updatePolymerVi
  */
 export async function renderProteinView(predictionInfo: PredictionInfo) {
     const wrapper = document.getElementById('application-molstar')!;
-    const MolstarPlugin = await createPluginUI(wrapper, {
-        ...DefaultPluginUISpec(),
-        layout: {
-            initial: {
-                isExpanded: false,
-                showControls: true,
-                controlsDisplay: "reactive",
-                regionState: {
-                    top: "hidden",    //sequence
-                    left: (window.innerWidth > 1200) ? "collapsed" : "hidden",
-                    //tree with some components, hide for small and medium screens
-                    bottom: "hidden", //shows log information
-                    right: "hidden"   //structure tools
+    const MolstarPlugin = await createPluginUI(
+        {
+            target: wrapper,
+            render: renderReact18,
+            spec: {
+                ...DefaultPluginUISpec(),
+                layout: {
+                    initial: {
+                        isExpanded: false,
+                        showControls: true,
+                        controlsDisplay: "reactive",
+                        regionState: {
+                            top: "hidden",    //sequence
+                            left: (window.innerWidth > 1200) ? "collapsed" : "hidden",
+                            //tree with some components, hide for small and medium screens
+                            bottom: "hidden", //shows log information
+                            right: "hidden"   //structure tools
+                        }
+                    }
+                },
+                components: {
+                    remoteState: 'none'
                 }
             }
-        },
-        components: {
-            remoteState: 'none'
-        }
-    });
+        });
 
     // If the Mol* plugin is maximized, hide the React components.
     MolstarPlugin.layout.events.updated.subscribe(() => {
@@ -199,9 +205,10 @@ export class Application extends React.Component<ReactApplicationProps, ReactApp
         //resolve RCSB at first - do it by recoloring the pocket to the default color value
         //currently there is no other way to "remove" one of the pockets without modyfing the others
         const newColor = isVisible ? "#" + this.state.data.pockets[index].color : "#F9F9F9";
-        const track = this.state.pluginRcsb.getBoardData().find(e => e.trackId === "pocketsTrack");
+        const track = this.state.pluginRcsb.getBoardData().find(e => e.trackId.indexOf("pocketsTrack") !== -1);
         if (track) {
-            track.trackData!.filter((e: RcsbFvTrackDataElementInterface) => e.provenanceName === `pocket${index + 1}`).forEach((foundPocket: RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
+            // this shouldn't be any but I couldn't find a way to avoid it
+            track.trackData!.filter((e: any) => e.provenanceName === `pocket${index + 1}`).forEach((foundPocket: RcsbFvTrackDataElementInterface) => (foundPocket.color = newColor));
             const newData = track.trackData;
             this.state.pluginRcsb.updateTrackData("pocketsTrack", newData!);
         }
