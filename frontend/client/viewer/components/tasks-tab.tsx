@@ -79,6 +79,13 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     setInvalidInput(true);
                     return;
                 }
+
+                // 1-64 is the allowed range
+                if (Number(exhaustiveness) < 1 || Number(exhaustiveness) > 64) {
+                    setInvalidInput(true);
+                    return;
+                }
+
                 setInvalidInput(false);
                 const smiles = params[0].replaceAll(" ", "");
 
@@ -100,7 +107,7 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             },
             parameterDescriptions: [
                 "Enter the molecule in SMILES format (e.g. c1ccccc1)",
-                "Enter the exhaustiveness for Autodock Vina (recommended: 32)"
+                "Enter the exhaustiveness for Autodock Vina (recommended: 32, allowed range: 1-64)"
             ],
             parameterDefaults: ["", "32"]
         }
