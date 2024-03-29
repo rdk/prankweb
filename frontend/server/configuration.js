@@ -8,4 +8,4 @@ module.exports = {
   // Use the option bellow to proxy commands to task runner instance.
   // This allows you to run tasks or connect to existing instance (https://prankweb.cz).
   "proxy-service": "https://prankweb.cz",
-}
+};

@@ -27,6 +27,7 @@ type TaskTypeMenuItem = {
     name: string,
     compute: (params: string[], customName: string, pocketIndex: number) => void;
     parameterDescriptions: string[];
+    parameterDefaults?: string[];
 };
 
 export default function TasksTab(props: { pockets: PocketData[], predictionInfo: PredictionInfo, plugin: PluginUIContext, initialPocket: number; }) {
@@ -72,6 +73,22 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
             type: TaskType.Server,
             name: "Docking",
             compute: (params, customName, pocketIndex) => {
+                // check if exhaustiveness is a number
+                const exhaustiveness = params[1].replaceAll(",", ".").replaceAll(" ", "");
+                if (isNaN(parseFloat(exhaustiveness))) {
+                    setInvalidInput(true);
+                    return;
+                }
+
+                // 1-64 is the allowed range
+                if (Number(exhaustiveness) < 1 || Number(exhaustiveness) > 64) {
+                    setInvalidInput(true);
+                    return;
+                }
+
+                setInvalidInput(false);
+                const smiles = params[0].replaceAll(" ", "");
+
                 let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
                 if (!savedTasks) savedTasks = "[]";
                 const tasks: ServerTaskLocalStorageData[] = JSON.parse(savedTasks);
@@ -86,11 +103,13 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "discriminator": "server",
                 });
                 localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
-                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], params[0], props.plugin);
+                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], smiles, props.plugin, exhaustiveness);
             },
             parameterDescriptions: [
                 "Enter the molecule in SMILES format (e.g. c1ccccc1)",
-            ]
+                "Enter the exhaustiveness for Autodock Vina (recommended: 32, allowed range: 1-64)"
+            ],
+            parameterDefaults: ["", "32"]
         }
     ];
 
@@ -99,11 +118,13 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
     const [name, setName] = React.useState<string>("");
     const [parameters, setParameters] = React.useState<string[]>([]);
     const [forceUpdate, setForceUpdate] = React.useState<number>(0);
+    const [invalidInput, setInvalidInput] = React.useState<boolean>(false);
 
     const handleTaskTypeChange = (event: SelectChangeEvent) => {
         const newTask = tasks.find(task => task.id == Number(event.target.value))!;
         setTask(newTask);
-        setParameters(Array(newTask.parameterDescriptions.length).fill(""));
+        if (newTask.parameterDefaults) setParameters(newTask.parameterDefaults);
+        else setParameters(Array(newTask.parameterDescriptions.length).fill(""));
     };
 
     const handlePocketRankChange = (event: SelectChangeEvent) => {
@@ -196,6 +217,14 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                                     </td>
                                 </tr>
                             )
+                        }
+                        {
+                            invalidInput &&
+                            <tr>
+                                <td colSpan={2}>
+                                    <Typography variant="body1" style={{ color: "red" }}>Error: The task could not be created. Check the formatting.</Typography>
+                                </td>
+                            </tr>
                         }
                         <tr>
                             <td>

@@ -71,8 +71,11 @@ def route_get_file(database_name: str, prediction_name: str, file_name: str):
 def route_post_docking_file(database_name: str, prediction_name: str):
     """Post a docking task to the server.
     Request body should be a JSON object with the following fields:
-    - hash: str (SMILES for the ligand)
-    - pocket: int (pocket number)"""
+    - hash: str (a hash of the ligand with parameters)
+    - pocket: int (pocket number)
+    - smiles: str (SMILES for the ligand)
+    - exhaustiveness: float (exhaustiveness value)
+    - bounding_box: dict (bounding box for the docking)"""
     data = request.get_json(force=True) or {}
     dt = DockingTask(database_name=database_name)
     return dt.post_task(prediction_name.upper(), data)
@@ -84,15 +87,13 @@ def route_post_docking_file(database_name: str, prediction_name: str):
 def route_get_docking_file_with_param(database_name: str, prediction_name: str, file_name: str):
     """Get a docking file from the server.
     Request body should be a JSON object with the following fields:
-    - hash: str (SMILES for the ligand)
-    - pocket: int (pocket number)"""
+    - hash: str (a hash of the ligand with parameters)"""
     data = request.get_json(force=True)
     param = data.get("hash", None)
-    pocket = data.get("pocket", None)
-    if data is None or param is None or pocket is None:
+    if data is None or param is None:
         return "", 404
     dt = DockingTask(database_name=database_name)
-    return dt.get_file_with_post_param(prediction_name.upper(), file_name, param, str(pocket))
+    return dt.get_file_with_post_param(prediction_name.upper(), file_name, param)
 
 @api_v2.route(
     "/docking/<database_name>/<prediction_name>/tasks",

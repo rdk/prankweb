@@ -245,9 +245,11 @@ export interface ServerTaskInfo { // info about the task returned from the serve
     lastChange: string;
     status: string;
     initialData: {
-        hash: string;       //hash of the data
-        pocket: string;     //pocket id
-        [key: string]: any; //other data
+        hash: string;               //hash of the data
+        pocket: string;             //pocket id
+        smiles: string;             //SMILES representation of the ligand
+        exhaustiveness: string;     //exhaustiveness value (for Autodock Vina)
+        [key: string]: any;         //other data
     };   //initial data
     responseData: any;  //response data
 }

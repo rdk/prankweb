@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { visuallyHidden } from '@mui/utils';
 import { useInterval } from "./tools";
 
+import "bootstrap-icons/font/bootstrap-icons.css";
 import { PocketData } from "../../custom-types";
 import { ClientTaskLocalStorageData, ServerTaskLocalStorageData, ServerTaskTypeDescriptors, ClientTaskTypeDescriptors, ClientTaskType, ServerTaskType } from "../../custom-types";
 import { downloadDockingResult, pollForDockingTask } from "../../tasks/server-docking-task";
@@ -43,6 +44,11 @@ const headCells: HeadCell[] = [
         label: 'Status/result',
         tooltip: 'Task status or result'
     },
+    {
+        id: null,
+        label: '',
+        tooltip: 'Delete task from the list'
+    }
     //more are added dynamically, if needed
 ];
 
@@ -110,7 +116,7 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
     const handleResultClick = (serverTask: ServerTaskLocalStorageData) => {
         switch (serverTask.type) {
             case ServerTaskType.Docking:
-                downloadDockingResult(serverTask.params[0], serverTask.responseData[0].url, serverTask.pocket.toString());
+                downloadDockingResult(serverTask.params[0], serverTask.responseData[0].url, serverTask.pocket.toString(), serverTask.params[1]);
                 break;
             default:
                 break;
@@ -160,6 +166,27 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
     };
     useInterval(pollDocking, 1000 * 7);
 
+    const removeClientTaskFromLocalStorage = (task: ClientTaskLocalStorageData) => () => {
+        const clientTasksParsed: ClientTaskLocalStorageData[] = JSON.parse(localStorage.getItem(`${props.predictionInfo.id}_clientTasks`) || "[]");
+        const newClientTasks = clientTasksParsed.filter((t: ClientTaskLocalStorageData) => t.created !== task.created);
+        localStorage.setItem(`${props.predictionInfo.id}_clientTasks`, JSON.stringify(newClientTasks));
+        setRender(numRenders + 1);
+    };
+
+    const removeServerTaskFromLocalStorage = (task: ServerTaskLocalStorageData) => () => {
+        const serverTasksParsed: ServerTaskLocalStorageData[] = JSON.parse(localStorage.getItem(`${props.predictionInfo.id}_serverTasks`) || "[]");
+        const newServerTasks = serverTasksParsed.filter((t: ServerTaskLocalStorageData) => t.created !== task.created);
+        localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(newServerTasks));
+        setRender(numRenders + 1);
+    };
+
+    const makeDateMoreReadable = (date: string) => {
+        // expected format: "2023-10-07T14:00:00.000Z"
+        date = date.replace("T", " ");
+        // remove .000Z
+        return date.slice(0, -5);
+    };
+
     return (
         <Table size="small">
             <EnhancedTableHead
@@ -175,10 +202,15 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
                                 {props.pocket === null && <TableCell>{task.pocket}</TableCell>}
                                 <TableCell>{ClientTaskTypeDescriptors[task.type]}</TableCell>
                                 <TableCell>{"-"}</TableCell>
-                                <TableCell>{task.created}</TableCell>
+                                <TableCell>{makeDateMoreReadable(task.created)}</TableCell>
                                 <TableCell>
                                     {(!isNaN(task.data)) ? task.data.toFixed(1) : task.data}
                                     {task.type === ClientTaskType.Volume && " Å³"}
+                                </TableCell>
+                                <TableCell>
+                                    <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeClientTaskFromLocalStorage(task)}>
+                                        <i className="bi bi-trash" style={{ "display": "block", "fontSize": "small" }}></i>
+                                    </button>
                                 </TableCell>
                             </TableRow>
                         );
@@ -190,8 +222,13 @@ export function TasksTable(props: { pocket: PocketData | null, predictionInfo: P
                                 {props.pocket === null && <TableCell>{task.pocket}</TableCell>}
                                 <TableCell>{ServerTaskTypeDescriptors[task.type]}</TableCell>
                                 <TableCell>{task.name}</TableCell>
-                                <TableCell>{task.created}</TableCell>
+                                <TableCell>{makeDateMoreReadable(task.created)}</TableCell>
                                 <TableCell>{task.status === "successful" ? <span onClick={() => handleResultClick(task)} style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}>successful</span> : task.status}</TableCell>
+                                <TableCell>
+                                    <button type="button" className="btn btn-outline-secondary btnIcon" style={{ "padding": "0.25rem" }} onClick={removeServerTaskFromLocalStorage(task)}>
+                                        <i className="bi bi-trash" style={{ "display": "block", "fontSize": "small" }}></i>
+                                    </button>
+                                </TableCell>
                             </TableRow>
                         );
                     }

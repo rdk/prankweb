@@ -1,10 +1,12 @@
-import { RcsbFv, RcsbFvDisplayTypes, RcsbFvTrackDataElementInterface, RcsbFvRowConfigInterface, RcsbFvBoardConfigInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
+import { RcsbFv, RcsbFvDisplayTypes, RcsbFvTrackDataElementInterface, RcsbFvBoardConfigInterface, RcsbFvRowExtendedConfigInterface, RcsbFvTrackData } from "@rcsb/rcsb-saguaro";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { PredictionData, AlphaFoldColorsRcsb, AlphaFoldThresholdsRcsb, DefaultPocketColors } from '../custom-types';
 import { highlightInViewerLabelIdWithoutFocus, highlightInViewerAuthId } from "./molstar-visualise";
 
-//contains the last highlighted element
+// contains the last highlighted element
 let lastElement: number = -1;
+// ID of the DOM element where the plugin is placed
+const domElementId = "application-rcsb";
 
 /*  
     This is a workaround for the RcsbFvDisplayTypes being const enum with string values.
@@ -44,12 +46,12 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
         includeAxis: true,
         highlightHoverPosition: true,
         highlightHoverCallback: (trackData: Array<RcsbFvTrackDataElementInterface>) => onHighlight(data, molstarPlugin, trackData),
-        elementClickCallBack: (trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) => elementClicked(data, molstarPlugin, trackData, event)
+        elementClickCallback: (trackData?: RcsbFvTrackDataElementInterface, event?: MouseEvent) => elementClicked(data, molstarPlugin, trackData, event)
     };
 
     const rowConfigData = createRowConfigDataRcsb(data);
 
-    const elementId = "application-rcsb"; //div where the plugin is placed
+    const elementId = domElementId; // div where the plugin is placed
 
     let rcsbPlugin = new RcsbFv({
         rowConfigData,
@@ -67,7 +69,6 @@ export function initRcsb(data: PredictionData, molstarPlugin: PluginUIContext) {
 function calculateViewerWidth() {
     const width = window.innerWidth;
 
-
     const xs = 768;
     const lg = 1200;
 
@@ -76,14 +77,8 @@ function calculateViewerWidth() {
 
     if (width <= xs) return width;
 
-    //TODO: temp solution, needs to be changed
+    // not the best solution, but it works for this layout
     return Math.floor(width * (7 / 12)) - 250;
-
-    if (width <= lg) {
-        return Math.floor(width * (8 / 12)) - 230;
-    }
-
-    return Math.floor(width * (10 / 12)) - 230;
 }
 
 /**
@@ -134,8 +129,9 @@ function onHighlight(data: PredictionData, molstarPlugin: PluginUIContext, track
  * @returns Configuration for the viewer
  */
 function createRowConfigDataRcsb(data: PredictionData) {
-    const rowConfigData: Array<RcsbFvRowConfigInterface> = [];
+    const rowConfigData: Array<RcsbFvRowExtendedConfigInterface> = [];
     rowConfigData.push({
+        boardId: domElementId,
         trackId: "sequenceTrack",
         trackHeight: 20,
         trackColor: "#F9F9F9",
@@ -144,7 +140,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         rowTitle: "SEQUENCE",
         trackData: [{
             begin: 1,
-            value: data.structure.sequence.join('')
+            label: data.structure.sequence.join('')
         }]
     });
 
@@ -169,6 +165,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         }
 
         rowConfigData.push({
+            boardId: domElementId,
             trackId: "bindingsTrack",
             trackHeight: 20,
             trackColor: "#F9F9F9",
@@ -214,6 +211,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         }
 
         rowConfigData.push({
+            boardId: domElementId,
             trackId: "pocketsTrack",
             trackHeight: 20,
             trackColor: "#F9F9F9",
@@ -241,6 +239,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         }
 
         rowConfigData.push({
+            boardId: domElementId,
             trackId: "conservationTrack",
             trackHeight: 40,
             trackColor: "#F9F9F9",
@@ -268,6 +267,7 @@ function createRowConfigDataRcsb(data: PredictionData) {
         }
 
         rowConfigData.push({
+            boardId: domElementId,
             trackId: "alphafoldTrack",
             trackHeight: 40,
             trackColor: "#F9F9F9",
