@@ -142,7 +142,7 @@ def execute_directory_task(docking_directory: str, taskId: int):
         return
 
     #parse the prediction file and do some calculations - in this case just counting the number of residues per pocket
-    #API is /docking/<database_name>/<prediction_name>/public/<file_name>
+    #API is /docking/<database_name>/<prediction_name>/<hash>/public/<file_name>
     #split docking_directory to get database_name and prediction_name
     result = []
     database_name = docking_directory.split("/")[4]
@@ -151,7 +151,7 @@ def execute_directory_task(docking_directory: str, taskId: int):
     else:
         prediction_name = docking_directory.split("/")[6]
 
-    result_url = "./api/v2/docking/" + database_name + "/" + prediction_name + "/public/results.zip"
+    result_url = "./api/v2/docking/" + database_name + "/" + prediction_name + "/" + status["tasks"][taskId]["initialData"]["hash"] + "/public/results.zip"
     result.append({
         "url": result_url
     })

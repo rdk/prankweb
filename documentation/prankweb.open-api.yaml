@@ -2,7 +2,7 @@ openapi: 3.0.2
 
 info:
   title: Prankweb API
-  version: 1.0.1
+  version: 1.1.0
 
 servers:
   - url: https://prankweb.cz/api/v2/
@@ -17,17 +17,17 @@ paths:
           schema:
             $ref: '#/components/schemas/DatabaseId'
         - in: path
-          name: task
+          name: prediction_task_id
           required: true
           schema:
-            $ref: '#/components/schemas/TaskId'
+            $ref: '#/components/schemas/PredictionTaskId'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/PredictionTask'
   /predictions/{database}/{task}/log:
     get:
       parameters:
@@ -37,10 +37,10 @@ paths:
           schema:
             $ref: '#/components/schemas/DatabaseId'
         - in: path
-          name: task
+          name: prediction_task_id
           required: true
           schema:
-            $ref: '#/components/schemas/TaskId'
+            $ref: '#/components/schemas/PredictionTaskId'
       responses:
         '200':
           description: Success
@@ -57,10 +57,15 @@ paths:
           schema:
             $ref: '#/components/schemas/DatabaseId'
         - in: path
-          name: task
+          name: prediction_task_id
           required: true
           schema:
-            $ref: '#/components/schemas/TaskId'
+            $ref: '#/components/schemas/PredictionTaskId'
+        - in: path
+          name: docking_task_hash
+          required: true
+          schema:
+            $ref: '#/components/schemas/DockingRequest'
       responses:
         '200':
           description: Success
@@ -77,10 +82,10 @@ paths:
           schema:
             $ref: '#/components/schemas/DatabaseId'
         - in: path
-          name: task
+          name: prediction_task_id
           required: true
           schema:
-            $ref: '#/components/schemas/TaskId'
+            $ref: '#/components/schemas/PredictionTaskId'
       responses:
         '200':
           description: Success
@@ -89,7 +94,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DockingTaskList'
   /docking/{database}/{task}/public/result.json:
-    post:
+    get:
       parameters:
         - in: path
           name: database
@@ -97,11 +102,11 @@ paths:
           schema:
             $ref: '#/components/schemas/DatabaseId'
         - in: path
-          name: task
+          name: prediction_task_id
           required: true
           schema:
-            $ref: '#/components/schemas/TaskId'
-      requestBody:
+            $ref: '#/components/schemas/PredictionTaskId'
+      queryParameters:
         description: The request needs to contain the hash of the docking task.
         required: true
         content:
@@ -120,9 +125,9 @@ components:
   schemas:
     DatabaseId:
       type : string
-    TaskId:
+    PredictionTaskId:
       type : string
-    Task:
+    PredictionTask:
       type: object
       properties:
         id:
@@ -224,10 +229,7 @@ components:
                   pocket:
                     type: string
     DockingRequest:
-      type: object
-      properties:
-        hash:
-          type: string
+      type: string
     DockingResponse:
       type: array
       items:
