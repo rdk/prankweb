@@ -40,7 +40,7 @@
                             <input class="form-check-input" type="radio" id="input-uniprot" value="input-uniprot"
                                 name="input-type">
                             <label class="form-check-label" for="input-uniprot">
-                                Predicted structure
+                                AlphaFold structure
                             </label>
                         </div>
                     </div>
@@ -79,6 +79,11 @@
                             <label for="user-file-chains" class="form-label">Restrict to chains</label>
                             <input type="text" class="form-control" id="user-file-chains" name="userFileChains"
                                 placeholder="A,B" title="Optional. Comma separated list of chains to analyze.">
+                        </div>
+                        <div>
+                            <input class="form-check-input" type="checkbox" id="alphafold-user-model"
+                                title="If checked, an AlphaFold model will be used to classify protein binding sites.">
+                            <label for="user-alphafold" class="form-label">Custom AlphaFold structure</label>
                         </div>
                     </div>
                     <div id="input-uniprot-block" style="display: none">

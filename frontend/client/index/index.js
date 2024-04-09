@@ -30,6 +30,7 @@ class View {
     this.uniprotCode = document.getElementById("uniprot-code");
     this.message = document.getElementById("message");
     this.conservation = document.getElementById("conservation");
+    this.alphaFoldUserModel = document.getElementById("alphafold-user-model");
     this.submit = document.getElementById("submit-button");
     //
     this.controller = null;
@@ -40,13 +41,13 @@ class View {
     //
     this.pdbInput.addEventListener(
       "change",
-      () => controller.onInputChange(View.PDB_VIEW))
+      () => controller.onInputChange(View.PDB_VIEW));
     this.userInput.addEventListener(
       "change",
-      () => controller.onInputChange(View.USER_VIEW))
+      () => controller.onInputChange(View.USER_VIEW));
     this.uniprotInput.addEventListener(
       "change",
-      () => controller.onInputChange(View.UNIPROT_VIEW))
+      () => controller.onInputChange(View.UNIPROT_VIEW));
     this.pdbSealStructure.addEventListener(
       "change",
       (event) => controller.onPdbSealedChange(event.target.checked));
@@ -209,7 +210,7 @@ class View {
     const label = document.createElement("label");
     label.appendChild(input);
     label.appendChild(document.createTextNode(
-      `\u00A0${chain}\u00A0\u00A0`))
+      `\u00A0${chain}\u00A0\u00A0`));
     label.className = "form-check-label";
     return label;
   }
@@ -265,6 +266,9 @@ class View {
     return this.conservation.checked;
   }
 
+  getAlphaFoldUserModel() {
+    return this.alphaFoldUserModel.checked;
+  }
 }
 
 class Controller {
@@ -338,7 +342,7 @@ class Controller {
       return true;
     } else {
       if (chains.count > 0) {
-        this.view.setMessage("At least one chain must be selected.")
+        this.view.setMessage("At least one chain must be selected.");
       }
       return false;
     }
@@ -400,7 +404,7 @@ class Controller {
     if (!this.validatePdbCode(code)) {
       return;
     }
-    await this.fetchChainsForPdbCode(code, false)
+    await this.fetchChainsForPdbCode(code, false);
     if (code !== this.view.getPdbCode()) {
       // User changed the code in a meanwhile.
       return;
@@ -455,7 +459,7 @@ class Submit {
     const structure = view.getUserFileObject();
     const chains = view.getUserChains();
     const conservation = view.getConservation();
-    //
+    const alphaFoldUserModel = view.getAlphaFoldUserModel();
     const formData = new FormData();
     formData.append(
       "structure", structure, structure.name);
@@ -465,13 +469,14 @@ class Submit {
         "chains": chains,
         "structure-sealed": chains.length === 0,
         "compute-conservation": conservation,
+        "use-alphafold-model": alphaFoldUserModel
       }),
       "configuration.json");
     this.sendPostRequest("./api/v2/prediction/v3-user-upload", formData);
   }
 
   asJsonBlob(content) {
-    return new Blob([JSON.stringify(content)], {"type": "text/json"});
+    return new Blob([JSON.stringify(content)], { "type": "text/json" });
   }
 
   sendPostRequest(url, data) {
@@ -493,9 +498,9 @@ class Submit {
     const conservation = view.getConservation();
     let url;
     if (conservation) {
-      url = this.createUrl("v3-alphafold-conservation-hmm", code, [])
+      url = this.createUrl("v3-alphafold-conservation-hmm", code, []);
     } else {
-      url = this.createUrl("v3-alphafold", code, [])
+      url = this.createUrl("v3-alphafold", code, []);
     }
     window.location.href = url;
   }
