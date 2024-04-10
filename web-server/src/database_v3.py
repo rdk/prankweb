@@ -296,18 +296,6 @@ def _create_identifier():
     return today + "-" + str(uuid.uuid4()).upper()
 
 
-def _get_p2rank_configuration(conservation: bool, alphaFoldModel: bool):
-    if alphaFoldModel:
-        if conservation:
-            return "alphafold_conservation_hmm"
-        else:
-            return "alphafold"
-    
-    if conservation:
-        return "conservation_hmm"
-
-    return "default"
-
 def _configuration_to_prediction(
         root_directory: str, identifier: str, database: str,
         user_configuration, structure_file: str):
@@ -315,9 +303,13 @@ def _configuration_to_prediction(
         chain.upper()
         for chain in user_configuration.get("chains", [])
     })
-    conservation = user_configuration.get("compute-conservation", False)
-    alphaFoldModel = user_configuration.get("use-alphafold-model", False)
-    p2rank_cfg = _get_p2rank_configuration(conservation, alphaFoldModel)
+
+    allowed_models = ["default", "alphafold", "conservation_hmm", "alphafold_conservation_hmm"]
+    model = user_configuration.get("prediction-model", "default")
+    if model not in allowed_models:
+        model = "default"
+
+    conservation = "conservation" in model
 
     return Prediction(
         directory=os.path.join(root_directory, identifier),
@@ -325,7 +317,7 @@ def _configuration_to_prediction(
         database=database,
         chains=chains,
         structure_sealed=user_configuration.get("structure-sealed", False),
-        p2rank_configuration=p2rank_cfg,
+        p2rank_configuration=model,
         structure_file=structure_file,
         conservation="hmm" if conservation else "none",
         metadata={},

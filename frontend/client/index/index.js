@@ -29,8 +29,8 @@ class View {
     this.uniprotSection = document.getElementById("input-uniprot-block");
     this.uniprotCode = document.getElementById("uniprot-code");
     this.message = document.getElementById("message");
-    this.conservation = document.getElementById("conservation");
-    this.alphaFoldUserModel = document.getElementById("alphafold-user-model");
+    this.conservationPdb = document.getElementById("conservation-pdb");
+    this.conservationUniprot = document.getElementById("conservation-uniprot");
     this.submit = document.getElementById("submit-button");
     //
     this.controller = null;
@@ -263,11 +263,21 @@ class View {
   }
 
   getConservation() {
-    return this.conservation.checked;
+    // this does not apply to user uploaded files, those are treated differently as the user
+    // selects the model directly
+    switch (this.getInputSection()) {
+      case View.PDB_VIEW:
+        return this.conservationPdb.checked;
+      case View.UNIPROT_VIEW:
+        return this.conservationUniprot.checked;
+      default:
+        return false;
+    }
   }
 
-  getAlphaFoldUserModel() {
-    return this.alphaFoldUserModel.checked;
+  getModelUserUpload() {
+    const selectedModel = document.querySelector('input[name="user-input-model"]:checked');
+    return selectedModel.value;
   }
 }
 
@@ -458,8 +468,7 @@ class Submit {
   submitUserFile(view) {
     const structure = view.getUserFileObject();
     const chains = view.getUserChains();
-    const conservation = view.getConservation();
-    const alphaFoldUserModel = view.getAlphaFoldUserModel();
+    const model = view.getModelUserUpload();
     const formData = new FormData();
     formData.append(
       "structure", structure, structure.name);
@@ -468,8 +477,7 @@ class Submit {
       this.asJsonBlob({
         "chains": chains,
         "structure-sealed": chains.length === 0,
-        "compute-conservation": conservation,
-        "use-alphafold-model": alphaFoldUserModel
+        "prediction-model": model,
       }),
       "configuration.json");
     this.sendPostRequest("./api/v2/prediction/v3-user-upload", formData);
