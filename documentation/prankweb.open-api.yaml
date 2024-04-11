@@ -88,7 +88,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DockingTaskList'
-  /docking/{database}/{prediction_task_id}/public/result.json:
+  /docking/{database}/{prediction_task_id}/{docking_task_hash}/public/result.json:
     get:
       parameters:
         - in: path
@@ -101,8 +101,8 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/PredictionTaskId'
-        - in: query
-          name: hash
+        - in: path
+          name: docking_task_hash
           required: true
           schema:
             type: string
