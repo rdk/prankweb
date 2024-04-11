@@ -8,7 +8,7 @@ servers:
   - url: https://prankweb.cz/api/v2/
 
 paths:
-  /predictions/{database}/{task}/:
+  /prediction/{database}/{prediction_task_id}:
     get:
       parameters:
         - in: path
@@ -28,7 +28,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PredictionTask'
-  /predictions/{database}/{task}/log:
+  /prediction/{database}/{prediction_task_id}/log:
     get:
       parameters:
         - in: path
@@ -48,7 +48,7 @@ paths:
             text/plain:
               schema:
                 type: string
-  /predictions/{database}/{task}/public/prediction.json:
+  /prediction/{database}/{prediction_task_id}/public/prediction.json:
     get:
       parameters:
         - in: path
@@ -61,11 +61,6 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/PredictionTaskId'
-        - in: path
-          name: docking_task_hash
-          required: true
-          schema:
-            $ref: '#/components/schemas/DockingRequest'
       responses:
         '200':
           description: Success
@@ -73,7 +68,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Prediction'
-  /docking/{database}/{task}/tasks:
+  /docking/{database}/{prediction_task_id}/tasks:
     get:
       parameters:
         - in: path
@@ -93,7 +88,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DockingTaskList'
-  /docking/{database}/{task}/public/result.json:
+  /docking/{database}/{prediction_task_id}/public/result.json:
     get:
       parameters:
         - in: path
@@ -106,13 +101,11 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/PredictionTaskId'
-      queryParameters:
-        description: The request needs to contain the hash of the docking task.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DockingRequest'
+        - in: query
+          name: hash
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Success
@@ -132,6 +125,8 @@ components:
       properties:
         id:
           type: string
+        database:
+          type: string
         created:
           type: string
           format: date-time
@@ -141,6 +136,8 @@ components:
         status:
           type: string
           enum: ['queued', 'running', 'failed', 'successful']
+        metadata:
+          type: object
     Prediction:
       type: object
       properties:
@@ -228,8 +225,6 @@ components:
                     type: string
                   pocket:
                     type: string
-    DockingRequest:
-      type: string
     DockingResponse:
       type: array
       items:
