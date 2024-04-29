@@ -87,12 +87,11 @@ export async function computeDockingTaskOnBackend(prediction: PredictionInfo, po
             "bounding_box": box
         }),
     }).then((res) => {
-        console.log(res);
-    }
-    ).catch(err => {
-        console.log(err);
+        return res.json();
+    }).catch(err => {
+        console.error(err);
+        return null;
     });
-    return;
 }
 
 /**

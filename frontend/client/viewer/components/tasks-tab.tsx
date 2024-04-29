@@ -88,6 +88,12 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
 
                 setInvalidInput(false);
                 const smiles = params[0].replaceAll(" ", "");
+                // check if SMILES is < 300 characters, otherwise
+                // TODO: add an option to prepare a script that will run DODO with the ligand
+                if (smiles.length > 300) {
+                    setInvalidInput(true);
+                    return;
+                }
 
                 let savedTasks = localStorage.getItem(`${props.predictionInfo.id}_serverTasks`);
                 if (!savedTasks) savedTasks = "[]";
@@ -103,10 +109,13 @@ export default function TasksTab(props: { pockets: PocketData[], predictionInfo:
                     "discriminator": "server",
                 });
                 localStorage.setItem(`${props.predictionInfo.id}_serverTasks`, JSON.stringify(tasks));
-                computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], smiles, props.plugin, exhaustiveness);
+                const taskPostRequest = computeDockingTaskOnBackend(props.predictionInfo, props.pockets[pocketIndex], smiles, props.plugin, exhaustiveness);
+                if (taskPostRequest === null) {
+                    tasks[tasks.length - 1].status = "failed";
+                }
             },
             parameterDescriptions: [
-                "Enter the molecule in SMILES format (e.g. c1ccccc1)",
+                "Enter the molecule in SMILES format (e.g. c1ccccc1), max 300 characters",
                 "Enter the exhaustiveness for Autodock Vina (recommended: 32, allowed range: 1-64)"
             ],
             parameterDefaults: ["", "32"]
