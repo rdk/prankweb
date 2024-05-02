@@ -68,8 +68,8 @@ def main(arguments):
         structure_file=arguments["file"]
     )
     execute(configuration)
-    if not arguments.get("keep-working", False):
-        shutil.rmtree(arguments["working"])
+    #if not arguments.get("keep-working", False):
+    #    shutil.rmtree(arguments["working"])
 
 
 def _setuplog_handler():

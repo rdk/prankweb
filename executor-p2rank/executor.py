@@ -210,6 +210,9 @@ def _prepare_conservation(
                 configuration)
             cache[fasta] = output_file
         result[chain] = output_file
+
+    logger.info("Structure: " + str(structure))
+    logger.info("Structure file: " + configuration.structure_file)
     return result
 
 
@@ -232,6 +235,13 @@ def _prepare_conservation_for_chain(
             configuration.execute_command)
     else:
         raise Exception(f"Unknown conservation type '{conservation_type}' !")
+
+def prepare_conservation_for_chain(
+        fasta_file: str,
+        working_directory: str,
+        output_file: str,
+        configuration: Execution):
+    _prepare_conservation_for_chain(fasta_file, working_directory, output_file, configuration)
 
 
 def _read_fasta(path):
